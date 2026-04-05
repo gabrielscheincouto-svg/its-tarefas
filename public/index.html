@@ -244,6 +244,98 @@
   .reason-modal textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,91,219,0.06);}
 
   @media(min-width:1920px){.summary{width:400px;}.s-title,.c-title{font-size:15px;}.logo-text{font-size:24px;}}
+
+  /* ===== MOBILE BOTTOM NAV ===== */
+  .mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);z-index:200;padding:6px 0 env(safe-area-inset-bottom,6px);box-shadow:0 -2px 10px rgba(0,0,0,0.06);}
+  .mobile-nav-inner{display:flex;justify-content:space-around;align-items:center;}
+  .mob-tab{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 12px;border:none;background:none;font-family:inherit;font-size:10px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:8px;transition:all 0.15s;}
+  .mob-tab.active{color:var(--accent);background:var(--accent-light);}
+  .mob-tab-icon{font-size:20px;line-height:1;}
+
+  /* ===== MOBILE FAB ===== */
+  .mobile-fab{display:none;position:fixed;bottom:76px;right:16px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));color:white;border:none;font-size:28px;font-weight:300;box-shadow:0 4px 16px rgba(59,91,219,0.35);cursor:pointer;z-index:200;align-items:center;justify-content:center;}
+
+  /* ===== MOBILE RESPONSIVE ===== */
+  @media(max-width:768px){
+    body{overflow:auto;overflow-x:hidden;}
+
+    /* Header compact */
+    .header{padding:8px 12px;flex-wrap:wrap;gap:8px;}
+    .header-left{gap:10px;}
+    .logo-icon{width:34px;height:34px;font-size:12px;border-radius:9px;}
+    .logo-text{font-size:15px;}
+    .logo-sub{font-size:8px;letter-spacing:1px;}
+    .header-stats{gap:4px;order:3;width:100%;justify-content:center;padding-top:4px;}
+    .stat-chip{padding:4px 10px;font-size:10px;gap:4px;}
+    .header-right{gap:6px;}
+    .clock{font-size:16px;}
+    .date-disp{display:none;}
+    .icon-btn{width:32px;height:32px;font-size:14px;}
+    .user-pill{padding:4px 10px 4px 4px;font-size:11px;}
+    .user-pill .avatar{width:22px;height:22px;}
+
+    /* Alert */
+    .alert-banner{padding:7px 12px;font-size:11px;}
+
+    /* Main layout: stack vertically */
+    .main{flex-direction:column;height:auto;min-height:calc(100vh - 110px);padding-bottom:64px;}
+
+    /* Summary: full width, collapsible via mobile nav */
+    .summary{width:100%;min-width:unset;border-right:none;border-bottom:1px solid var(--border);max-height:none;overflow-y:visible;}
+    .summary.mob-hidden{display:none;}
+    .sum-sec{padding:12px 14px;}
+    .qa{padding:12px 14px;}
+    .qa-text{min-height:50px;font-size:11px;}
+
+    /* Kanban: full width, vertical stack */
+    .kanban{overflow:visible;}
+    .kanban.mob-hidden{display:none;}
+    .filter-bar{padding:8px 12px;gap:4px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;}
+    .f-chip{padding:5px 12px;font-size:10px;white-space:nowrap;flex-shrink:0;}
+    .board{flex-direction:column;gap:12px;padding:12px;overflow-x:visible;}
+    .col{min-width:unset;width:100%;}
+    .col-body{max-height:none;overflow-y:visible;}
+    .card{padding:10px 12px;cursor:pointer;}
+    .card:hover{transform:none;}
+    .add-btn{padding:12px;font-size:13px;}
+
+    /* Modals: full screen on mobile */
+    .overlay{align-items:flex-end;}
+    .modal{width:100%;max-width:100vw;border-radius:20px 20px 0 0;max-height:85vh;padding:20px 16px;}
+    .modal h2{font-size:16px;margin-bottom:14px;}
+    .fg input,.fg select{padding:12px 13px;font-size:14px;}
+    .f-actions{gap:6px;}
+    .f-actions .btn{padding:12px 16px;font-size:13px;flex:1;}
+    .checklist-section{padding:10px;}
+    .checklist-add{flex-wrap:wrap;}
+    .checklist-add input{min-width:0;}
+
+    /* Settings full screen */
+    .settings{width:100%;left:0;}
+
+    /* Reason modal */
+    .reason-modal{width:100%;border-radius:20px 20px 0 0;}
+
+    /* Toast */
+    .toast-box{top:auto;bottom:76px;right:12px;left:12px;}
+    .toast{max-width:100%;}
+
+    /* Show mobile nav & fab */
+    .mobile-nav{display:block;}
+    .mobile-fab{display:flex;}
+
+    /* Hide header stats on mobile since we show them in summary */
+    .header-stats{display:none;}
+  }
+
+  /* Small phones */
+  @media(max-width:380px){
+    .header{padding:6px 8px;}
+    .logo-text{font-size:13px;}
+    .logo-icon{width:30px;height:30px;font-size:10px;}
+    .board{padding:8px;}
+    .modal{padding:16px 12px;}
+  }
 </style>
 </head>
 <body>
@@ -445,6 +537,19 @@
 
   <button class="btn btn-s" style="width:100%;margin-top:8px;padding:12px;" onclick="toggleSettings()">Fechar</button>
 </div>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="mobile-nav" id="mobileNav">
+  <div class="mobile-nav-inner">
+    <button class="mob-tab active" onclick="mobTab('kanban')" id="mobTabKanban"><span class="mob-tab-icon">&#128203;</span>Tarefas</button>
+    <button class="mob-tab" onclick="mobTab('resumo')" id="mobTabResumo"><span class="mob-tab-icon">&#128200;</span>Resumo</button>
+    <button class="mob-tab" onclick="mobTab('equipe')" id="mobTabEquipe"><span class="mob-tab-icon">&#128101;</span>Equipe</button>
+    <button class="mob-tab" onclick="toggleSettings()" id="mobTabConfig"><span class="mob-tab-icon">&#9881;</span>Config</button>
+  </div>
+</nav>
+
+<!-- Mobile FAB (add task) -->
+<button class="mobile-fab" id="mobileFab" onclick="openModal('todo')">+</button>
 
 <div class="toast-box" id="toasts"></div>
 
@@ -1075,7 +1180,63 @@ document.getElementById('templatesModal').addEventListener('click',function(e){i
 document.getElementById('reasonModal').addEventListener('click',function(e){if(e.target===this)cancelDeadlineReason();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();closeImport();closeTemplates();cancelDeadlineReason();document.getElementById('settingsPanel').classList.remove('active');}});
 
+// ===== MOBILE NAVIGATION =====
+let currentMobTab = 'kanban';
+
+function mobTab(tab) {
+  currentMobTab = tab;
+  const summary = document.querySelector('.summary');
+  const kanban = document.querySelector('.kanban');
+
+  // Reset all tabs
+  document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
+
+  if (tab === 'kanban') {
+    document.getElementById('mobTabKanban').classList.add('active');
+    summary.classList.add('mob-hidden');
+    kanban.classList.remove('mob-hidden');
+    document.getElementById('mobileFab').style.display = 'flex';
+  } else if (tab === 'resumo') {
+    document.getElementById('mobTabResumo').classList.add('active');
+    summary.classList.remove('mob-hidden');
+    kanban.classList.add('mob-hidden');
+    document.getElementById('mobileFab').style.display = 'none';
+    // Show only summary sections (vencidas, vencem em breve), hide team and quick add
+    document.querySelectorAll('.sum-sec').forEach((s, i) => s.style.display = i < 2 ? '' : 'none');
+    document.querySelector('.qa').style.display = 'none';
+  } else if (tab === 'equipe') {
+    document.getElementById('mobTabEquipe').classList.add('active');
+    summary.classList.remove('mob-hidden');
+    kanban.classList.add('mob-hidden');
+    document.getElementById('mobileFab').style.display = 'none';
+    // Show only team section and quick add
+    document.querySelectorAll('.sum-sec').forEach((s, i) => s.style.display = i === 2 ? '' : 'none');
+    document.querySelector('.qa').style.display = '';
+  }
+}
+
+// Apply mobile default view on load
+function initMobileView() {
+  if (window.innerWidth <= 768) {
+    mobTab('kanban');
+  }
+}
+
+// Handle resize
+window.addEventListener('resize', function() {
+  if (window.innerWidth > 768) {
+    // Desktop: show everything
+    document.querySelector('.summary').classList.remove('mob-hidden');
+    document.querySelector('.kanban').classList.remove('mob-hidden');
+    document.querySelectorAll('.sum-sec').forEach(s => s.style.display = '');
+    document.querySelector('.qa').style.display = '';
+  } else {
+    mobTab(currentMobTab);
+  }
+});
+
 init();
+initMobileView();
 </script>
 </body>
 </html>
