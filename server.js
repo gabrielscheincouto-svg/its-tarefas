@@ -184,6 +184,40 @@ app.delete('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
     res.json({ ok: true });
 });
 
+// ===== TASK HISTORY HELPER =====
+async function logTaskHistory(taskId, userId, userName, action, fieldChanged, oldValue, newValue, reason) {
+    try {
+        await supabase.from('task_history').insert({
+            task_id: taskId,
+            user_id: userId,
+            user_name: userName,
+            action,
+            field_changed: fieldChanged || null,
+            old_value: oldValue !== undefined && oldValue !== null ? String(oldValue) : null,
+            new_value: newValue !== undefined && newValue !== null ? String(newValue) : null,
+            reason: reason || null,
+            created_at: new Date().toISOString()
+        });
+    } catch (err) {
+        console.error('Erro ao gravar historico:', err.message);
+    }
+}
+
+// Field labels in Portuguese for history display
+const fieldLabels = {
+    client: 'Cliente',
+    title: 'Descricao',
+    assignee_id: 'Responsavel',
+    deadline: 'Prazo',
+    priority: 'Prioridade',
+    status: 'Status',
+    value: 'Valor',
+    contract_link: 'Link do Contrato'
+};
+
+const statusLabels = { todo: 'A Fazer', doing: 'Em Andamento', done: 'Concluido' };
+const priorityLabels = { normal: 'Normal', alta: 'Alta', urgente: 'Urgente' };
+
 // ===== TASK ROUTES =====
 app.get('/api/tasks', requireAuth, async (req, res) => {
     const { data: tasks } = await supabase.from('tasks').select('*').neq('status', 'archived');
@@ -208,13 +242,30 @@ app.post('/api/tasks', requireAuth, async (req, res) => {
            }).select();
 
            if (error) return res.status(500).json({ error: error.message });
+
+    // Log task creation
+    if (newTasks && newTasks[0]) {
+        await logTaskHistory(newTasks[0].id, req.session.userId, req.session.userName, 'created', null, null, null, null);
+    }
+
     const enriched = await enrichTasks(newTasks);
     res.json(enriched[0]);
 });
 
 app.put('/api/tasks/:id', requireAuth, async (req, res) => {
     const id = Number(req.params.id);
-    const { client, title, assignee_id, deadline, priority, status, value, contract_link } = req.body;
+    const { client, title, assignee_id, deadline, priority, status, value, contract_link, deadline_reason } = req.body;
+
+    // Fetch current task to compare changes
+    const { data: currentTasks } = await supabase.from('tasks').select('*').eq('id', id).limit(1);
+    const current = currentTasks && currentTasks[0];
+    if (!current) return res.status(404).json({ error: 'Tarefa nao encontrada' });
+
+    // Require reason if deadline is changing
+    if (deadline && deadline !== current.deadline && !deadline_reason) {
+        return res.status(400).json({ error: 'Motivo obrigatorio ao alterar o prazo', require_reason: true });
+    }
+
     const updates = { updated_at: new Date().toISOString() };
     if (client) updates.client = client;
     if (title) updates.title = title;
@@ -225,8 +276,34 @@ app.put('/api/tasks/:id', requireAuth, async (req, res) => {
     if (value !== undefined) updates.value = value;
     if (contract_link !== undefined) updates.contract_link = contract_link;
 
-          const { data: updated, error } = await supabase.from('tasks').update(updates).eq('id', id).select();
+    const { data: updated, error } = await supabase.from('tasks').update(updates).eq('id', id).select();
     if (error) return res.status(500).json({ error: error.message });
+
+    // Log all changes
+    const fieldsToCheck = ['client', 'title', 'assignee_id', 'deadline', 'priority', 'status', 'value', 'contract_link'];
+    const { data: allUsers } = await supabase.from('users').select('id, name');
+
+    for (const field of fieldsToCheck) {
+        if (updates[field] !== undefined && String(updates[field]) !== String(current[field])) {
+            let oldVal = current[field];
+            let newVal = updates[field];
+
+            // Resolve assignee names
+            if (field === 'assignee_id' && allUsers) {
+                const oldUser = allUsers.find(u => u.id === current[field]);
+                const newUser = allUsers.find(u => u.id === updates[field]);
+                oldVal = oldUser ? oldUser.name : oldVal;
+                newVal = newUser ? newUser.name : newVal;
+            }
+            if (field === 'status') { oldVal = statusLabels[oldVal] || oldVal; newVal = statusLabels[newVal] || newVal; }
+            if (field === 'priority') { oldVal = priorityLabels[oldVal] || oldVal; newVal = priorityLabels[newVal] || newVal; }
+            if (field === 'value') { oldVal = oldVal ? `R$ ${Number(oldVal).toFixed(2)}` : 'Nenhum'; newVal = newVal ? `R$ ${Number(newVal).toFixed(2)}` : 'Nenhum'; }
+
+            const reason = field === 'deadline' ? deadline_reason : null;
+            await logTaskHistory(id, req.session.userId, req.session.userName, 'updated', fieldLabels[field] || field, oldVal, newVal, reason);
+        }
+    }
+
     const enriched = await enrichTasks(updated || []);
     res.json(enriched[0]);
 });
@@ -234,7 +311,20 @@ app.put('/api/tasks/:id', requireAuth, async (req, res) => {
 app.patch('/api/tasks/:id/status', requireAuth, async (req, res) => {
     const id = Number(req.params.id);
     const { status } = req.body;
+
+    // Get current status for logging
+    const { data: currentTasks } = await supabase.from('tasks').select('status').eq('id', id).limit(1);
+    const current = currentTasks && currentTasks[0];
+
     const { data: updated } = await supabase.from('tasks').update({ status, updated_at: new Date().toISOString() }).eq('id', id).select();
+
+    // Log status change
+    if (current && current.status !== status) {
+        const oldLabel = statusLabels[current.status] || current.status;
+        const newLabel = statusLabels[status] || status;
+        await logTaskHistory(id, req.session.userId, req.session.userName, 'updated', 'Status', oldLabel, newLabel, null);
+    }
+
     const enriched = await enrichTasks(updated || []);
     res.json(enriched[0]);
 });
@@ -541,6 +631,23 @@ app.delete('/api/tasks/:taskId/checklist/:itemId', requireAuth, async (req, res)
         res.json({ ok: true });
     } catch (err) {
         res.status(500).json({ error: 'Erro ao deletar item' });
+    }
+});
+
+// ===== TASK HISTORY ROUTE =====
+app.get('/api/tasks/:id/history', requireAuth, async (req, res) => {
+    const taskId = Number(req.params.id);
+    try {
+        const { data: history, error } = await supabase
+            .from('task_history')
+            .select('*')
+            .eq('task_id', taskId)
+            .order('created_at', { ascending: false });
+
+        if (error) return res.status(500).json({ error: error.message });
+        res.json(history || []);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao buscar historico' });
     }
 });
 
