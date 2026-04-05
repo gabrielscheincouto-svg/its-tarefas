@@ -219,6 +219,30 @@
   .template-item-actions .t-edit{color:var(--accent);border-color:var(--accent);}
   .template-item-actions .t-del{color:var(--red);border-color:var(--red);}
 
+  /* History timeline */
+  .history-section{margin-top:16px;padding-top:16px;border-top:2px solid var(--border-lt);}
+  .history-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:700;color:var(--accent);padding:8px 12px;background:var(--accent-light);border-radius:8px;border:none;width:100%;font-family:inherit;}
+  .history-toggle:hover{background:#dbe4ff;}
+  .history-timeline{max-height:300px;overflow-y:auto;margin-top:12px;padding-left:16px;border-left:2px solid var(--border);}
+  .history-timeline::-webkit-scrollbar{width:4px;}
+  .history-timeline::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  .h-entry{position:relative;padding:8px 12px;margin-bottom:8px;background:var(--light);border:1px solid var(--border-lt);border-radius:8px;font-size:12px;}
+  .h-entry::before{content:'';position:absolute;left:-21px;top:14px;width:8px;height:8px;border-radius:50%;background:var(--accent);border:2px solid var(--white);}
+  .h-entry.h-create::before{background:var(--green);}
+  .h-entry.h-deadline::before{background:var(--red);}
+  .h-entry .h-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .h-entry .h-user{font-weight:700;color:var(--text);}
+  .h-entry .h-time{font-size:10px;color:var(--muted);}
+  .h-entry .h-desc{color:var(--text2);line-height:1.4;}
+  .h-entry .h-reason{margin-top:4px;padding:6px 10px;background:var(--yellow-bg);border:1px solid var(--yellow-bd);border-radius:6px;font-size:11px;color:var(--yellow);font-style:italic;}
+
+  /* Reason modal */
+  .reason-modal{background:var(--white);border-radius:16px;padding:24px;width:420px;max-width:90vw;box-shadow:0 8px 30px rgba(0,0,0,0.15);}
+  .reason-modal h3{font-size:16px;font-weight:800;margin-bottom:12px;color:var(--text);}
+  .reason-modal p{font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.5;}
+  .reason-modal textarea{width:100%;min-height:80px;padding:10px 13px;background:var(--light);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;font-family:inherit;outline:none;resize:vertical;}
+  .reason-modal textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,91,219,0.06);}
+
   @media(min-width:1920px){.summary{width:400px;}.s-title,.c-title{font-size:15px;}.logo-text{font-size:24px;}}
 </style>
 </head>
@@ -326,6 +350,12 @@
       </div>
     </div>
 
+    <!-- History Timeline -->
+    <div class="history-section" id="historySection" style="display:none;">
+      <button class="history-toggle" onclick="toggleHistory()">&#128337; Hist&oacute;rico de Altera&ccedil;&otilde;es <span id="historyCount" style="margin-left:auto;background:var(--accent);color:white;padding:2px 8px;border-radius:12px;font-size:10px;">0</span></button>
+      <div class="history-timeline" id="historyTimeline" style="display:none;"></div>
+    </div>
+
     <div class="f-actions">
       <button class="btn btn-d" id="btnDel" style="display:none;margin-right:auto;" onclick="delTask()">Excluir</button>
       <button class="btn btn-s" onclick="closeModal()">Cancelar</button>
@@ -366,6 +396,19 @@
     <div class="f-actions">
       <button class="btn btn-s" onclick="closeTemplates()">Cancelar</button>
       <button class="btn btn-p" onclick="saveNewTemplate()">Criar Modelo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reason Modal (for deadline changes) -->
+<div class="overlay" id="reasonModal">
+  <div class="reason-modal">
+    <h3>&#128221; Motivo da Altera&ccedil;&atilde;o de Prazo</h3>
+    <p>O prazo est&aacute; sendo alterado. Informe o motivo para manter o hist&oacute;rico:</p>
+    <textarea id="deadlineReason" placeholder="Ex: Cliente solicitou prazo adicional para reuni&atilde;o de documentos"></textarea>
+    <div class="f-actions" style="margin-top:14px;">
+      <button class="btn btn-s" onclick="cancelDeadlineReason()">Cancelar</button>
+      <button class="btn btn-p" onclick="confirmDeadlineReason()">Confirmar</button>
     </div>
   </div>
 </div>
@@ -417,6 +460,11 @@ let dragId = null;
 let pendingImport = [];
 let currentChecklist = [];
 let editingTemplateId = null;
+let taskHistory = [];
+let historyVisible = false;
+let pendingSaveData = null;
+let pendingDeadlineResolve = null;
+let originalDeadline = null;
 
 // ===== INIT =====
 async function init() {
@@ -543,6 +591,8 @@ async function openModal(s) {
   document.getElementById('iDeadline').value='';document.getElementById('iPriority').value='normal';
   document.getElementById('iValue').value='';document.getElementById('iContractLink').value='';
   currentChecklist=[];
+  taskHistory=[];historyVisible=false;originalDeadline=null;
+  document.getElementById('historySection').style.display='none';
   fillAssignees();
   renderChecklist();
   fillTemplateSelect();
@@ -552,6 +602,7 @@ async function openModal(s) {
 async function openEdit(id) {
   const t=tasks.find(x=>x.id===id);if(!t)return;
   editId=id;modalStatus=t.status;
+  originalDeadline=t.deadline;
   document.getElementById('mTitle').textContent='Editar Tarefa';
   document.getElementById('btnDel').style.display='block';
   document.getElementById('iClient').value=t.client;document.getElementById('iTask').value=t.title;
@@ -573,6 +624,20 @@ async function openEdit(id) {
     currentChecklist = [];
   }
   renderChecklist();
+
+  // Load history
+  taskHistory=[];historyVisible=false;
+  document.getElementById('historySection').style.display='block';
+  document.getElementById('historyTimeline').style.display='none';
+  try {
+    const histRes = await fetch(`/api/tasks/${id}/history`);
+    if (histRes.ok) {
+      taskHistory = await histRes.json();
+    }
+  } catch(e) {}
+  document.getElementById('historyCount').textContent = taskHistory.length;
+  renderHistory();
+
   document.getElementById('taskModal').classList.add('active');
 }
 
@@ -684,8 +749,31 @@ async function saveTask() {
 
   if(!data.client||!data.title||!data.deadline){alert('Preencha todos os campos.');return;}
 
+  // Check if deadline changed - need reason
+  if(editId && originalDeadline && data.deadline !== originalDeadline) {
+    pendingSaveData = data;
+    document.getElementById('deadlineReason').value = '';
+    document.getElementById('reasonModal').classList.add('active');
+    return;
+  }
+
+  await doSaveTask(data, null);
+}
+
+async function doSaveTask(data, deadlineReason) {
+  if (deadlineReason) {
+    data.deadline_reason = deadlineReason;
+  }
+
   if(editId){
-    await api(`/api/tasks/${editId}`,{method:'PUT',body:JSON.stringify(data)});
+    const res = await api(`/api/tasks/${editId}`,{method:'PUT',body:JSON.stringify(data)});
+    if (res && res.error && res.require_reason) {
+      // Server requires reason
+      pendingSaveData = data;
+      document.getElementById('deadlineReason').value = '';
+      document.getElementById('reasonModal').classList.add('active');
+      return;
+    }
   } else {
     await api('/api/tasks',{method:'POST',body:JSON.stringify(data)});
   }
@@ -699,6 +787,21 @@ async function saveTask() {
   }
 
   await loadData();closeModal();
+}
+
+function cancelDeadlineReason() {
+  document.getElementById('reasonModal').classList.remove('active');
+  pendingSaveData = null;
+}
+
+function confirmDeadlineReason() {
+  const reason = document.getElementById('deadlineReason').value.trim();
+  if (!reason) { alert('Informe o motivo da alteracao de prazo.'); return; }
+  document.getElementById('reasonModal').classList.remove('active');
+  if (pendingSaveData) {
+    doSaveTask(pendingSaveData, reason);
+    pendingSaveData = null;
+  }
 }
 
 async function delTask() {
@@ -907,6 +1010,55 @@ async function changePassword() {
   }
 }
 
+// ===== HISTORY =====
+function toggleHistory() {
+  historyVisible = !historyVisible;
+  document.getElementById('historyTimeline').style.display = historyVisible ? 'block' : 'none';
+}
+
+function renderHistory() {
+  if (!taskHistory || taskHistory.length === 0) {
+    document.getElementById('historyTimeline').innerHTML = '<p style="font-size:12px;color:var(--muted);padding:12px;">Nenhum historico ainda.</p>';
+    return;
+  }
+
+  const html = taskHistory.map(h => {
+    const date = new Date(h.created_at);
+    const timeStr = date.toLocaleDateString('pt-BR', {day:'2-digit',month:'short',year:'numeric'}) + ' ' + date.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+    let desc = '';
+    let entryClass = '';
+
+    if (h.action === 'created') {
+      desc = 'Criou esta tarefa';
+      entryClass = 'h-create';
+    } else if (h.action === 'updated' && h.field_changed) {
+      if (h.field_changed === 'Prazo') {
+        entryClass = 'h-deadline';
+        const oldDate = h.old_value ? new Date(h.old_value + 'T00:00:00').toLocaleDateString('pt-BR') : h.old_value;
+        const newDate = h.new_value ? new Date(h.new_value + 'T00:00:00').toLocaleDateString('pt-BR') : h.new_value;
+        desc = `Alterou <strong>${h.field_changed}</strong>: ${oldDate || 'vazio'} &rarr; ${newDate || 'vazio'}`;
+      } else {
+        desc = `Alterou <strong>${h.field_changed}</strong>: ${h.old_value || 'vazio'} &rarr; ${h.new_value || 'vazio'}`;
+      }
+    } else {
+      desc = h.action;
+    }
+
+    let reasonHTML = '';
+    if (h.reason) {
+      reasonHTML = `<div class="h-reason">Motivo: ${h.reason}</div>`;
+    }
+
+    return `<div class="h-entry ${entryClass}">
+      <div class="h-meta"><span class="h-user">${h.user_name || 'Sistema'}</span><span class="h-time">${timeStr}</span></div>
+      <div class="h-desc">${desc}</div>
+      ${reasonHTML}
+    </div>`;
+  }).join('');
+
+  document.getElementById('historyTimeline').innerHTML = html;
+}
+
 // ===== LOGOUT =====
 async function doLogout(){if(confirm('Sair do sistema?')){await fetch('/api/logout',{method:'POST'});window.location.href='/login.html';}}
 
@@ -920,7 +1072,8 @@ function updateClock(){const n=new Date();document.getElementById('clock').textC
 document.getElementById('taskModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 document.getElementById('importModal').addEventListener('click',function(e){if(e.target===this)closeImport();});
 document.getElementById('templatesModal').addEventListener('click',function(e){if(e.target===this)closeTemplates();});
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();closeImport();closeTemplates();document.getElementById('settingsPanel').classList.remove('active');}});
+document.getElementById('reasonModal').addEventListener('click',function(e){if(e.target===this)cancelDeadlineReason();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();closeImport();closeTemplates();cancelDeadlineReason();document.getElementById('settingsPanel').classList.remove('active');}});
 
 init();
 </script>
