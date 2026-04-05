@@ -1,0 +1,15 @@
+# ==========================================
+# MODELO DE IMPORTACAO DE TAREFAS - ITS
+# ==========================================
+# Formato: Cliente | Tarefa | Responsavel | Prazo (dd/mm/aaaa) | Prioridade
+# Prioridade: normal, alta, urgente (opcional, padrao = normal)
+# Linhas com # sao ignoradas
+#
+# DICA: Salve este arquivo e edite quando precisar incluir tarefas.
+# Depois importe no painel pelo botao "Importar .TXT"
+# ==========================================
+
+Empresa ABC Ltda | Alteracao contratual - inclusao de socio | Felipe | 15/04/2026 | urgente
+Grupo XYZ S.A. | Planejamento tributario anual | Socio 2 | 20/04/2026 | alta
+Comercial Delta ME | Abertura de empresa - CNPJ | Socio 3 | 25/04/2026 | normal
+Industria Omega | IRPJ declaracao trimestral | Socio 4 | 10/04/2026 | urgente
