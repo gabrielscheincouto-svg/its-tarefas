@@ -142,6 +142,10 @@
   .dl-w{background:var(--yellow-bg);color:var(--yellow);border:1.5px solid var(--yellow-bd);}
   .dl-u{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-bd);}
   .dl-o{background:var(--red);color:white;}
+  .c-value{font-size:10px;font-weight:600;color:var(--green);margin-top:6px;}
+  .c-checklist-progress{font-size:10px;color:var(--text2);margin-top:6px;display:flex;align-items:center;gap:4px;}
+  .c-checklist-progress-bar{width:40px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+  .c-checklist-progress-fill{height:100%;background:var(--accent);border-radius:2px;}
 
   .add-btn{margin:8px;padding:10px;background:var(--light);border:2px dashed var(--border);border-radius:10px;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;text-align:center;font-family:inherit;flex-shrink:0;}
   .add-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
@@ -149,14 +153,39 @@
   /* Modal */
   .overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;}
   .overlay.active{display:flex;}
-  .modal{background:var(--white);border-radius:20px;padding:28px;width:480px;max-width:90vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,0.1);}
+  .modal{background:var(--white);border-radius:20px;padding:28px;width:550px;max-width:90vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,0.1);}
   .modal h2{font-size:18px;font-weight:800;margin-bottom:20px;}
+  .modal h3{font-size:14px;font-weight:700;margin-top:20px;margin-bottom:10px;color:var(--text);}
   .fg{margin-bottom:14px;}
   .fg label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px;}
   .fg input,.fg select,.fg textarea{width:100%;padding:10px 13px;background:var(--light);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;font-family:inherit;outline:none;}
   .fg input:focus,.fg select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,91,219,0.06);}
   .fg select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555770' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;}
   .f-actions{display:flex;gap:8px;margin-top:22px;justify-content:flex-end;}
+
+  /* Checklist styles */
+  .checklist-section{background:var(--bg);border-radius:var(--radius-sm);padding:12px;margin-top:8px;}
+  .checklist-header{display:flex;gap:8px;margin-bottom:12px;}
+  .checklist-header select{flex:1;}
+  .checklist-progress{font-size:11px;color:var(--muted);margin-bottom:10px;padding:8px 12px;background:var(--white);border-radius:8px;border:1px solid var(--border-lt);display:flex;align-items:center;gap:8px;}
+  .checklist-progress-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+  .checklist-progress-fill{height:100%;background:var(--accent);border-radius:2px;}
+  .checklist-items{max-height:250px;overflow-y:auto;margin-bottom:8px;}
+  .checklist-items::-webkit-scrollbar{width:4px;}
+  .checklist-items::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  .checklist-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--white);border:1px solid var(--border-lt);border-radius:8px;margin-bottom:6px;}
+  .checklist-item input[type=checkbox]{width:18px;height:18px;cursor:pointer;flex-shrink:0;}
+  .checklist-item-content{flex:1;display:flex;flex-direction:column;gap:4px;}
+  .checklist-item-title{font-size:12px;color:var(--text);font-weight:500;}
+  .checklist-item input[type=text]{padding:6px 8px;background:var(--light);border:1px solid var(--border);border-radius:6px;font-size:12px;}
+  .checklist-item input[type=date]{padding:6px 8px;background:var(--light);border:1px solid var(--border);border-radius:6px;font-size:11px;}
+  .checklist-item-deadline{font-size:10px;color:var(--muted);}
+  .checklist-item-delete{background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;opacity:0.6;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .checklist-item-delete:hover{opacity:1;}
+  .checklist-item.done .checklist-item-title{text-decoration:line-through;color:var(--muted);}
+  .checklist-add{display:flex;gap:6px;padding:8px;background:var(--light);border-radius:8px;border:1px dashed var(--border);}
+  .checklist-add input{padding:6px 10px;background:var(--white);border:1px solid var(--border);border-radius:6px;font-size:12px;}
+  .checklist-add button{padding:6px 12px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;}
 
   /* Toast */
   .toast-box{position:fixed;top:74px;right:20px;z-index:2000;display:flex;flex-direction:column;gap:6px;}
@@ -173,12 +202,22 @@
   .settings{display:none;position:fixed;top:0;right:0;width:380px;height:100vh;background:var(--white);border-left:1px solid var(--border);z-index:500;padding:24px;overflow-y:auto;box-shadow:-4px 0 20px rgba(0,0,0,0.06);}
   .settings.active{display:block;}
   .settings h3{font-size:16px;font-weight:800;margin-bottom:14px;}
+  .settings-section{margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border-lt);}
+  .settings-section:last-child{border-bottom:none;}
   .m-item{display:flex;align-items:center;gap:8px;padding:8px;background:var(--light);border:1px solid var(--border-lt);border-radius:10px;margin-bottom:6px;}
   .m-item input[type=text]{flex:1;padding:6px 10px;background:var(--white);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;}
   .m-item input[type=text]:focus{border-color:var(--accent);}
   .m-item .cpick{width:28px;height:28px;border:2px solid var(--border);border-radius:50%;cursor:pointer;padding:0;}
   .m-item .rm{background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;opacity:0.5;}
   .m-item .rm:hover{opacity:1;}
+
+  /* Templates modal */
+  .template-item{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--light);border:1px solid var(--border-lt);border-radius:10px;margin-bottom:6px;}
+  .template-item-name{font-size:13px;font-weight:600;flex:1;}
+  .template-item-actions{display:flex;gap:6px;}
+  .template-item-actions button{padding:4px 10px;font-size:11px;border:1.5px solid var(--border);background:var(--white);border-radius:6px;cursor:pointer;}
+  .template-item-actions .t-edit{color:var(--accent);border-color:var(--accent);}
+  .template-item-actions .t-del{color:var(--red);border-color:var(--red);}
 
   @media(min-width:1920px){.summary{width:400px;}.s-title,.c-title{font-size:15px;}.logo-text{font-size:24px;}}
 </style>
@@ -266,6 +305,27 @@
     <div class="fg"><label>Respons&aacute;vel</label><select id="iAssignee"></select></div>
     <div class="fg"><label>Prazo</label><input type="date" id="iDeadline"></div>
     <div class="fg"><label>Prioridade</label><select id="iPriority"><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></div>
+    <div class="fg"><label>Valor (R$)</label><input type="number" id="iValue" placeholder="Ex: 5000.00" step="0.01" min="0"></div>
+    <div class="fg"><label>Link do Contrato</label><input type="text" id="iContractLink" placeholder="https://..."></div>
+
+    <h3>&#9745; Checklist</h3>
+    <div class="checklist-section">
+      <div class="checklist-header">
+        <select id="iTemplateSelect" onchange="applyTemplate()">
+          <option value="">Aplicar Modelo...</option>
+        </select>
+      </div>
+      <div class="checklist-progress">
+        <span id="checklistProgressText">0/0 - 0%</span>
+        <div class="checklist-progress-bar"><div class="checklist-progress-fill" id="checklistProgressFill" style="width:0%"></div></div>
+      </div>
+      <div class="checklist-items" id="checklistItems"></div>
+      <div class="checklist-add">
+        <input type="text" id="newChecklistItemText" placeholder="Item do checklist" style="flex:1;">
+        <button onclick="addChecklistItem()">+ Item</button>
+      </div>
+    </div>
+
     <div class="f-actions">
       <button class="btn btn-d" id="btnDel" style="display:none;margin-right:auto;" onclick="delTask()">Excluir</button>
       <button class="btn btn-s" onclick="closeModal()">Cancelar</button>
@@ -290,18 +350,56 @@
   </div>
 </div>
 
+<!-- Templates Modal -->
+<div class="overlay" id="templatesModal">
+  <div class="modal">
+    <h2>&#128196; Modelos de Checklist</h2>
+    <div id="templatesList" style="margin-bottom:20px;"></div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
+    <h3>Criar Novo Modelo</h3>
+    <div class="fg"><label>Nome do Modelo</label><input type="text" id="newTemplateName" placeholder="Ex: Due Diligence"></div>
+    <div class="fg">
+      <label>Itens</label>
+      <div id="newTemplateItems" style="margin-bottom:8px;"></div>
+      <button class="btn btn-s" onclick="addTemplateItemRow()" style="width:100%;">+ Adicionar Item</button>
+    </div>
+    <div class="f-actions">
+      <button class="btn btn-s" onclick="closeTemplates()">Cancelar</button>
+      <button class="btn btn-p" onclick="saveNewTemplate()">Criar Modelo</button>
+    </div>
+  </div>
+</div>
+
 <!-- Settings (admin only) -->
 <div class="settings" id="settingsPanel">
-  <h3>&#128101; Gerenciar Equipe</h3>
-  <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Adicione, edite ou remova membros. Cada membro recebe um login.</p>
-  <div id="membersList"></div>
-  <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
-  <h3>Adicionar Novo Membro</h3>
-  <div class="fg"><label>Nome</label><input type="text" id="newName" placeholder="Nome completo"></div>
-  <div class="fg"><label>Usu&aacute;rio (login)</label><input type="text" id="newUser" placeholder="ex: joao"></div>
-  <div class="fg"><label>Senha</label><input type="text" id="newPass" placeholder="Senha inicial"></div>
-  <div class="fg"><label>Cor</label><input type="color" id="newColor" value="#3b5bdb" style="height:40px;width:100%;border-radius:8px;cursor:pointer;"></div>
-  <button class="btn btn-p" style="width:100%;margin-top:8px;padding:12px;" onclick="addUser()">Criar Membro</button>
+  <div class="settings-section">
+    <h3>&#128101; Gerenciar Equipe</h3>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Adicione, edite ou remova membros. Cada membro recebe um login.</p>
+    <div id="membersList"></div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
+    <h3 style="margin-top:14px;">Adicionar Novo Membro</h3>
+    <div class="fg"><label>Nome</label><input type="text" id="newName" placeholder="Nome completo"></div>
+    <div class="fg"><label>Usu&aacute;rio (login)</label><input type="text" id="newUser" placeholder="ex: joao"></div>
+    <div class="fg"><label>Senha</label><input type="text" id="newPass" placeholder="Senha inicial"></div>
+    <div class="fg"><label>Cor</label><input type="color" id="newColor" value="#3b5bdb" style="height:40px;width:100%;border-radius:8px;cursor:pointer;"></div>
+    <button class="btn btn-p" style="width:100%;margin-top:8px;padding:12px;" onclick="addUser()">Criar Membro</button>
+  </div>
+
+  <div class="settings-section">
+    <h3>&#128210; Modelos de Checklist</h3>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Crie e gerencie seus modelos de checklist.</p>
+    <button class="btn btn-p" style="width:100%;padding:12px;" onclick="openTemplates()">Gerenciar Modelos</button>
+  </div>
+
+  <div class="settings-section">
+    <h3>&#128274; Alterar Senha</h3>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Altere sua senha de acesso.</p>
+    <div class="fg"><label>Senha Atual</label><input type="password" id="oldPassword" placeholder="Sua senha atual"></div>
+    <div class="fg"><label>Nova Senha</label><input type="password" id="newPassword" placeholder="Nova senha"></div>
+    <div class="fg"><label>Confirmar Senha</label><input type="password" id="confirmPassword" placeholder="Confirme a nova senha"></div>
+    <button class="btn btn-p" style="width:100%;padding:12px;" onclick="changePassword()">Alterar Senha</button>
+  </div>
+
   <button class="btn btn-s" style="width:100%;margin-top:8px;padding:12px;" onclick="toggleSettings()">Fechar</button>
 </div>
 
@@ -311,11 +409,14 @@
 let currentUser = null;
 let tasks = [];
 let users = [];
+let templates = [];
 let filter = null;
 let editId = null;
 let modalStatus = 'todo';
 let dragId = null;
 let pendingImport = [];
+let currentChecklist = [];
+let editingTemplateId = null;
 
 // ===== INIT =====
 async function init() {
@@ -334,9 +435,10 @@ async function init() {
 }
 
 async function loadData() {
-  const [tRes, uRes] = await Promise.all([fetch('/api/tasks'), fetch('/api/users')]);
+  const [tRes, uRes, tmRes] = await Promise.all([fetch('/api/tasks'), fetch('/api/users'), fetch('/api/checklist-templates')]);
   tasks = await tRes.json();
   users = await uRes.json();
+  templates = await tmRes.json();
   render();
 }
 
@@ -346,6 +448,7 @@ function fmtDate(d) { return new Date(d+'T00:00:00').toLocaleDateString('pt-BR',
 function ini(n) { return n.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2); }
 function parseBR(s) { s=s.trim();const m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);if(m)return`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;return null; }
 function defDeadline() { const d=new Date();d.setDate(d.getDate()+7);return d.toISOString().slice(0,10); }
+function fmtCurrency(n) { return n ? new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n) : ''; }
 
 // ===== RENDER =====
 function render() {
@@ -366,8 +469,23 @@ function renderCard(t) {
   let dl='dl-ok',dt=fmtDate(t.deadline),cls='';
   if(t.status!=='done'){if(d<0){dl='dl-o';dt=`-${Math.abs(d)}d`;cls='venc';}else if(d<=2){dl='dl-u';dt=d===0?'HOJE!':`${d}d`;cls=d===0?'urg':'urg';}else if(d<=5){dl='dl-w';dt=`${d}d`;cls='atn';}}
   else{dl='dl-ok';dt='\u2713';}
+
+  let checklistHTML = '';
+  if (t.checklist_total && t.checklist_total > 0) {
+    const perc = Math.round((t.checklist_done / t.checklist_total) * 100);
+    const fillWidth = perc;
+    checklistHTML = `<div class="c-checklist-progress">&#10003; ${t.checklist_done}/${t.checklist_total}<div class="c-checklist-progress-bar"><div class="c-checklist-progress-fill" style="width:${fillWidth}%"></div></div></div>`;
+  }
+
+  let valueHTML = '';
+  if (t.value && t.value > 0) {
+    valueHTML = `<div class="c-value">${fmtCurrency(t.value)}</div>`;
+  }
+
   return `<div class="card ${cls}" draggable="true" ondragstart="dStart(event,${t.id})" ondragend="dEnd(event)" ondblclick="openEdit(${t.id})">
     <div class="c-client">${t.client}</div><div class="c-title">${t.title}</div>
+    ${checklistHTML}
+    ${valueHTML}
     <div class="c-meta"><div class="c-assignee"><div class="avatar" style="background:${color}">${ini(name)}</div><span class="c-aname">${name}</span></div><span class="c-dl ${dl}">${dt}</span></div></div>`;
 }
 
@@ -417,24 +535,44 @@ async function api(url, opts={}) {
 }
 
 // ===== TASK MODAL =====
-function openModal(s) {
+async function openModal(s) {
   editId=null;modalStatus=s;
   document.getElementById('mTitle').textContent='Nova Tarefa';
   document.getElementById('btnDel').style.display='none';
   document.getElementById('iClient').value='';document.getElementById('iTask').value='';
   document.getElementById('iDeadline').value='';document.getElementById('iPriority').value='normal';
+  document.getElementById('iValue').value='';document.getElementById('iContractLink').value='';
+  currentChecklist=[];
   fillAssignees();
+  renderChecklist();
+  fillTemplateSelect();
   document.getElementById('taskModal').classList.add('active');
 }
 
-function openEdit(id) {
+async function openEdit(id) {
   const t=tasks.find(x=>x.id===id);if(!t)return;
   editId=id;modalStatus=t.status;
   document.getElementById('mTitle').textContent='Editar Tarefa';
   document.getElementById('btnDel').style.display='block';
   document.getElementById('iClient').value=t.client;document.getElementById('iTask').value=t.title;
   document.getElementById('iDeadline').value=t.deadline;document.getElementById('iPriority').value=t.priority;
+  document.getElementById('iValue').value=t.value||'';
+  document.getElementById('iContractLink').value=t.contract_link||'';
   fillAssignees(t.assignee_id);
+  fillTemplateSelect();
+
+  // Load checklist
+  try {
+    const checklistRes = await fetch(`/api/tasks/${id}/checklist`);
+    if (checklistRes.ok) {
+      currentChecklist = await checklistRes.json();
+    } else {
+      currentChecklist = [];
+    }
+  } catch (e) {
+    currentChecklist = [];
+  }
+  renderChecklist();
   document.getElementById('taskModal').classList.add('active');
 }
 
@@ -444,13 +582,122 @@ function fillAssignees(sel) {
   document.getElementById('iAssignee').innerHTML=users.map(u=>`<option value="${u.id}" ${u.id===sel?'selected':''}>${u.name}</option>`).join('');
 }
 
+function fillTemplateSelect() {
+  const opts = templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+  document.getElementById('iTemplateSelect').innerHTML = `<option value="">Aplicar Modelo...</option>${opts}`;
+}
+
+function applyTemplate() {
+  const templateId = Number(document.getElementById('iTemplateSelect').value);
+  if (!templateId) return;
+
+  const template = templates.find(t => t.id === templateId);
+  if (!template) return;
+
+  currentChecklist = (template.items || []).map((item, idx) => ({
+    title: item.title,
+    done: false,
+    deadline: null,
+    sort_order: idx
+  }));
+
+  renderChecklist();
+  document.getElementById('iTemplateSelect').value = '';
+}
+
+function renderChecklist() {
+  const itemsHtml = currentChecklist.map((item, idx) => {
+    const deadlineStr = item.deadline ? item.deadline : '';
+    return `<div class="checklist-item ${item.done ? 'done' : ''}">
+      <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleChecklistItem(${idx})">
+      <div class="checklist-item-content">
+        <input type="text" value="${item.title}" class="checklist-item-title" onchange="updateChecklistItemTitle(${idx}, this.value)" placeholder="Item do checklist">
+        <input type="date" value="${deadlineStr}" class="checklist-item-deadline" onchange="updateChecklistItemDeadline(${idx}, this.value)">
+      </div>
+      <button class="checklist-item-delete" onclick="deleteChecklistItem(${idx})">×</button>
+    </div>`;
+  }).join('');
+
+  document.getElementById('checklistItems').innerHTML = itemsHtml;
+  updateChecklistProgress();
+}
+
+function toggleChecklistItem(idx) {
+  if (currentChecklist[idx]) {
+    currentChecklist[idx].done = !currentChecklist[idx].done;
+    renderChecklist();
+  }
+}
+
+function updateChecklistItemTitle(idx, value) {
+  if (currentChecklist[idx]) {
+    currentChecklist[idx].title = value;
+  }
+}
+
+function updateChecklistItemDeadline(idx, value) {
+  if (currentChecklist[idx]) {
+    currentChecklist[idx].deadline = value || null;
+  }
+}
+
+function deleteChecklistItem(idx) {
+  currentChecklist.splice(idx, 1);
+  renderChecklist();
+}
+
+function addChecklistItem() {
+  const input = document.getElementById('newChecklistItemText');
+  if (!input.value.trim()) return;
+
+  currentChecklist.push({
+    title: input.value.trim(),
+    done: false,
+    deadline: null,
+    sort_order: currentChecklist.length
+  });
+
+  input.value = '';
+  renderChecklist();
+}
+
+function updateChecklistProgress() {
+  const total = currentChecklist.length;
+  const done = currentChecklist.filter(i => i.done).length;
+  const perc = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  document.getElementById('checklistProgressText').textContent = `${done}/${total} - ${perc}%`;
+  document.getElementById('checklistProgressFill').style.width = `${perc}%`;
+}
+
 async function saveTask() {
-  const data={client:document.getElementById('iClient').value.trim(),title:document.getElementById('iTask').value.trim(),
-    assignee_id:Number(document.getElementById('iAssignee').value),deadline:document.getElementById('iDeadline').value,
-    priority:document.getElementById('iPriority').value,status:modalStatus};
+  const data={
+    client:document.getElementById('iClient').value.trim(),
+    title:document.getElementById('iTask').value.trim(),
+    assignee_id:Number(document.getElementById('iAssignee').value),
+    deadline:document.getElementById('iDeadline').value,
+    priority:document.getElementById('iPriority').value,
+    status:modalStatus,
+    value: document.getElementById('iValue').value ? Number(document.getElementById('iValue').value) : null,
+    contract_link: document.getElementById('iContractLink').value.trim() || null
+  };
+
   if(!data.client||!data.title||!data.deadline){alert('Preencha todos os campos.');return;}
-  if(editId){await api(`/api/tasks/${editId}`,{method:'PUT',body:JSON.stringify(data)});}
-  else{await api('/api/tasks',{method:'POST',body:JSON.stringify(data)});}
+
+  if(editId){
+    await api(`/api/tasks/${editId}`,{method:'PUT',body:JSON.stringify(data)});
+  } else {
+    await api('/api/tasks',{method:'POST',body:JSON.stringify(data)});
+  }
+
+  // Save checklist
+  if (editId && currentChecklist.length > 0) {
+    await api(`/api/tasks/${editId}/checklist`, {
+      method: 'POST',
+      body: JSON.stringify({ items: currentChecklist })
+    });
+  }
+
   await loadData();closeModal();
 }
 
@@ -508,6 +755,96 @@ async function confirmImport(){
   pendingImport=[];closeImport();
 }
 
+// ===== TEMPLATES =====
+function openTemplates() {
+  renderTemplatesList();
+  document.getElementById('newTemplateName').value = '';
+  document.getElementById('newTemplateItems').innerHTML = '';
+  editingTemplateId = null;
+  document.getElementById('templatesModal').classList.add('active');
+}
+
+function closeTemplates() {
+  document.getElementById('templatesModal').classList.remove('active');
+}
+
+function renderTemplatesList() {
+  const html = templates.map(t => `<div class="template-item">
+    <div class="template-item-name">${t.name}</div>
+    <div class="template-item-actions">
+      <button class="t-edit" onclick="editTemplate(${t.id})">Editar</button>
+      <button class="t-del" onclick="deleteTemplate(${t.id})">Excluir</button>
+    </div>
+  </div>`).join('');
+
+  document.getElementById('templatesList').innerHTML = html || '<p style="font-size:12px;color:var(--muted);">Nenhum modelo criado.</p>';
+}
+
+function addTemplateItemRow() {
+  const container = document.getElementById('newTemplateItems');
+  const rowCount = container.children.length;
+  const html = `<div class="template-item-row" style="display:flex;gap:6px;margin-bottom:6px;">
+    <input type="text" placeholder="Item do modelo" style="flex:1;padding:8px 12px;background:var(--white);border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;" onkeypress="if(event.key==='Enter')addTemplateItemRow()">
+    <button onclick="this.parentElement.remove()" style="padding:8px 12px;background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-bd);border-radius:8px;cursor:pointer;font-weight:600;">−</button>
+  </div>`;
+  container.insertAdjacentHTML('beforeend', html);
+}
+
+async function saveNewTemplate() {
+  const name = document.getElementById('newTemplateName').value.trim();
+  if (!name) { alert('Digite o nome do modelo.'); return; }
+
+  const items = Array.from(document.getElementById('newTemplateItems').querySelectorAll('input[type=text]'))
+    .map((input, idx) => input.value.trim())
+    .filter(v => v)
+    .map((title, idx) => ({ title, sort_order: idx }));
+
+  if (items.length === 0) { alert('Adicione pelo menos um item.'); return; }
+
+  if (editingTemplateId) {
+    await api(`/api/checklist-templates/${editingTemplateId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name, items })
+    });
+  } else {
+    await api('/api/checklist-templates', {
+      method: 'POST',
+      body: JSON.stringify({ name, items })
+    });
+  }
+
+  await loadData();
+  closeTemplates();
+  toast(editingTemplateId ? 'Modelo atualizado!' : 'Modelo criado!', '', 'success');
+}
+
+function editTemplate(id) {
+  const template = templates.find(t => t.id === id);
+  if (!template) return;
+
+  editingTemplateId = id;
+  document.getElementById('newTemplateName').value = template.name;
+
+  const container = document.getElementById('newTemplateItems');
+  container.innerHTML = '';
+  template.items.forEach((item, idx) => {
+    const html = `<div class="template-item-row" style="display:flex;gap:6px;margin-bottom:6px;">
+      <input type="text" value="${item.title}" placeholder="Item do modelo" style="flex:1;padding:8px 12px;background:var(--white);border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;" onkeypress="if(event.key==='Enter')addTemplateItemRow()">
+      <button onclick="this.parentElement.remove()" style="padding:8px 12px;background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-bd);border-radius:8px;cursor:pointer;font-weight:600;">−</button>
+    </div>`;
+    container.insertAdjacentHTML('beforeend', html);
+  });
+}
+
+async function deleteTemplate(id) {
+  if (!confirm('Excluir este modelo?')) return;
+
+  await api(`/api/checklist-templates/${id}`, { method: 'DELETE' });
+  await loadData();
+  renderTemplatesList();
+  toast('Modelo excluído!', '', 'success');
+}
+
 // ===== SETTINGS (admin) =====
 function toggleSettings(){const p=document.getElementById('settingsPanel');p.classList.toggle('active');if(p.classList.contains('active'))renderMembers();}
 
@@ -534,6 +871,42 @@ async function removeUser(id,name){
   if(confirm(`Remover "${name}" da equipe?`)){await api(`/api/users/${id}`,{method:'DELETE'});await loadData();renderMembers();}
 }
 
+// ===== PASSWORD CHANGE =====
+async function changePassword() {
+  const old = document.getElementById('oldPassword').value;
+  const newP = document.getElementById('newPassword').value;
+  const conf = document.getElementById('confirmPassword').value;
+
+  if (!old || !newP || !conf) {
+    alert('Preencha todos os campos.');
+    return;
+  }
+
+  if (newP !== conf) {
+    alert('As senhas não coincidem.');
+    return;
+  }
+
+  if (newP.length < 4) {
+    alert('A nova senha deve ter pelo menos 4 caracteres.');
+    return;
+  }
+
+  const res = await api('/api/me/password', {
+    method: 'PUT',
+    body: JSON.stringify({ old_password: old, new_password: newP })
+  });
+
+  if (res && !res.error) {
+    document.getElementById('oldPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+    toast('Senha alterada com sucesso!', '', 'success');
+  } else {
+    alert(res?.error || 'Erro ao alterar senha.');
+  }
+}
+
 // ===== LOGOUT =====
 async function doLogout(){if(confirm('Sair do sistema?')){await fetch('/api/logout',{method:'POST'});window.location.href='/login.html';}}
 
@@ -546,7 +919,8 @@ function updateClock(){const n=new Date();document.getElementById('clock').textC
 // ===== EVENTS =====
 document.getElementById('taskModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 document.getElementById('importModal').addEventListener('click',function(e){if(e.target===this)closeImport();});
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();closeImport();document.getElementById('settingsPanel').classList.remove('active');}});
+document.getElementById('templatesModal').addEventListener('click',function(e){if(e.target===this)closeTemplates();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();closeImport();closeTemplates();document.getElementById('settingsPanel').classList.remove('active');}});
 
 init();
 </script>
