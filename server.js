@@ -28,13 +28,33 @@ function requireAdmin(req, res, next) {
     res.status(403).json({ error: 'Acesso restrito ao administrador' });
 }
 
-// Helper: enrich task with user data
+// Helper: enrich task with user data and checklist progress
 async function enrichTask(task, usersCache) {
     const user = usersCache.find(u => u.id === task.assignee_id);
+
+    // Fetch checklist items for this task
+    let checklist_total = 0;
+    let checklist_done = 0;
+    try {
+        const { data: checklistItems } = await supabase
+            .from('task_checklist_items')
+            .select('id, done')
+            .eq('task_id', task.id);
+
+        if (checklistItems) {
+            checklist_total = checklistItems.length;
+            checklist_done = checklistItems.filter(item => item.done).length;
+        }
+    } catch (err) {
+        // If checklist table doesn't exist yet, just continue
+    }
+
     return {
           ...task,
           assignee_name: user ? user.name : 'Desconhecido',
-          assignee_color: user ? user.color : '#868e96'
+          assignee_color: user ? user.color : '#868e96',
+          checklist_total,
+          checklist_done
     };
 }
 
@@ -89,6 +109,37 @@ app.get('/api/me', requireAuth, async (req, res) => {
     res.json({ id: user.id, name: user.name, username: user.username, role: user.role, color: user.color });
 });
 
+// ===== PASSWORD CHANGE ROUTE =====
+app.put('/api/me/password', requireAuth, async (req, res) => {
+    const { old_password, new_password } = req.body;
+    if (!old_password || !new_password) {
+        return res.status(400).json({ error: 'old_password e new_password sao obrigatorios' });
+    }
+
+    try {
+        const { data: users } = await supabase.from('users').select('*').eq('id', req.session.userId).limit(1);
+        const user = users && users[0];
+
+        if (!user) return res.status(401).json({ error: 'Usuario nao encontrado' });
+
+        // Validate old password
+        if (!bcrypt.compareSync(old_password, user.password)) {
+            return res.status(401).json({ error: 'Senha atual incorreta' });
+        }
+
+        // Hash new password
+        const newHash = bcrypt.hashSync(new_password, 10);
+
+        // Update password
+        const { error } = await supabase.from('users').update({ password: newHash }).eq('id', req.session.userId);
+        if (error) return res.status(500).json({ error: error.message });
+
+        res.json({ ok: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao alterar senha' });
+    }
+});
+
 // ===== USER ROUTES (admin) =====
 app.get('/api/users', requireAuth, async (req, res) => {
     const { data: users } = await supabase.from('users').select('id, name, username, role, color');
@@ -141,7 +192,7 @@ app.get('/api/tasks', requireAuth, async (req, res) => {
 });
 
 app.post('/api/tasks', requireAuth, async (req, res) => {
-    const { client, title, assignee_id, deadline, priority, status } = req.body;
+    const { client, title, assignee_id, deadline, priority, status, value, contract_link } = req.body;
     if (!client || !title || !deadline) return res.status(400).json({ error: 'Campos obrigatorios' });
 
            const { data: newTasks, error } = await supabase.from('tasks').insert({
@@ -151,6 +202,8 @@ app.post('/api/tasks', requireAuth, async (req, res) => {
                  deadline,
                  priority: priority || 'normal',
                  status: status || 'todo',
+                 value: value || null,
+                 contract_link: contract_link || null,
                  created_by: req.session.userId
            }).select();
 
@@ -161,7 +214,7 @@ app.post('/api/tasks', requireAuth, async (req, res) => {
 
 app.put('/api/tasks/:id', requireAuth, async (req, res) => {
     const id = Number(req.params.id);
-    const { client, title, assignee_id, deadline, priority, status } = req.body;
+    const { client, title, assignee_id, deadline, priority, status, value, contract_link } = req.body;
     const updates = { updated_at: new Date().toISOString() };
     if (client) updates.client = client;
     if (title) updates.title = title;
@@ -169,6 +222,8 @@ app.put('/api/tasks/:id', requireAuth, async (req, res) => {
     if (deadline) updates.deadline = deadline;
     if (priority) updates.priority = priority;
     if (status) updates.status = status;
+    if (value !== undefined) updates.value = value;
+    if (contract_link !== undefined) updates.contract_link = contract_link;
 
           const { data: updated, error } = await supabase.from('tasks').update(updates).eq('id', id).select();
     if (error) return res.status(500).json({ error: error.message });
@@ -213,6 +268,8 @@ app.post('/api/tasks/bulk', requireAuth, async (req, res) => {
               deadline: t.deadline || defaultDeadline(),
               priority: t.priority || 'normal',
               status: 'todo',
+              value: t.value || null,
+              contract_link: t.contract_link || null,
               created_by: req.session.userId
       }));
 
@@ -228,6 +285,264 @@ function defaultDeadline() {
     d.setDate(d.getDate() + 7);
     return d.toISOString().slice(0, 10);
 }
+
+// ===== CHECKLIST TEMPLATE ROUTES =====
+app.get('/api/checklist-templates', requireAuth, async (req, res) => {
+    try {
+        const { data: templates } = await supabase.from('checklist_templates').select('*').order('created_at', { ascending: false });
+
+        const result = await Promise.all((templates || []).map(async (template) => {
+            const { data: items } = await supabase
+                .from('checklist_template_items')
+                .select('id, title, sort_order')
+                .eq('template_id', template.id)
+                .order('sort_order', { ascending: true });
+
+            return {
+                ...template,
+                items: items || []
+            };
+        }));
+
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao buscar templates' });
+    }
+});
+
+app.post('/api/checklist-templates', requireAuth, async (req, res) => {
+    const { name, items } = req.body;
+    if (!name) return res.status(400).json({ error: 'name e obrigatorio' });
+
+    try {
+        const { data: newTemplate, error: templateError } = await supabase
+            .from('checklist_templates')
+            .insert({
+                name,
+                created_by: req.session.userId,
+                created_at: new Date().toISOString()
+            })
+            .select()
+            .limit(1);
+
+        if (templateError) return res.status(500).json({ error: templateError.message });
+        if (!newTemplate || newTemplate.length === 0) return res.status(500).json({ error: 'Erro ao criar template' });
+
+        const templateId = newTemplate[0].id;
+        let itemsCreated = [];
+
+        if (items && Array.isArray(items) && items.length > 0) {
+            const itemsToInsert = items.map((item, idx) => ({
+                template_id: templateId,
+                title: item.title,
+                sort_order: item.sort_order !== undefined ? item.sort_order : idx
+            }));
+
+            const { data: createdItems, error: itemsError } = await supabase
+                .from('checklist_template_items')
+                .insert(itemsToInsert)
+                .select();
+
+            if (itemsError) return res.status(500).json({ error: itemsError.message });
+            itemsCreated = createdItems || [];
+        }
+
+        res.json({
+            ...newTemplate[0],
+            items: itemsCreated
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao criar template' });
+    }
+});
+
+app.put('/api/checklist-templates/:id', requireAuth, async (req, res) => {
+    const templateId = Number(req.params.id);
+    const { name, items } = req.body;
+
+    try {
+        if (name) {
+            const { error: updateError } = await supabase
+                .from('checklist_templates')
+                .update({ name })
+                .eq('id', templateId);
+
+            if (updateError) return res.status(500).json({ error: updateError.message });
+        }
+
+        if (items && Array.isArray(items)) {
+            // Delete existing items
+            await supabase.from('checklist_template_items').delete().eq('template_id', templateId);
+
+            // Insert new items
+            if (items.length > 0) {
+                const itemsToInsert = items.map((item, idx) => ({
+                    template_id: templateId,
+                    title: item.title,
+                    sort_order: item.sort_order !== undefined ? item.sort_order : idx
+                }));
+
+                const { error: itemsError } = await supabase
+                    .from('checklist_template_items')
+                    .insert(itemsToInsert);
+
+                if (itemsError) return res.status(500).json({ error: itemsError.message });
+            }
+        }
+
+        // Fetch updated template with items
+        const { data: template } = await supabase
+            .from('checklist_templates')
+            .select('*')
+            .eq('id', templateId)
+            .limit(1);
+
+        if (!template || template.length === 0) return res.status(404).json({ error: 'Template nao encontrado' });
+
+        const { data: templateItems } = await supabase
+            .from('checklist_template_items')
+            .select('id, title, sort_order')
+            .eq('template_id', templateId)
+            .order('sort_order', { ascending: true });
+
+        res.json({
+            ...template[0],
+            items: templateItems || []
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao atualizar template' });
+    }
+});
+
+app.delete('/api/checklist-templates/:id', requireAuth, async (req, res) => {
+    const templateId = Number(req.params.id);
+
+    try {
+        // Delete items first
+        await supabase.from('checklist_template_items').delete().eq('template_id', templateId);
+
+        // Delete template
+        const { error } = await supabase.from('checklist_templates').delete().eq('id', templateId);
+        if (error) return res.status(500).json({ error: error.message });
+
+        res.json({ ok: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao deletar template' });
+    }
+});
+
+// ===== TASK CHECKLIST ROUTES =====
+app.get('/api/tasks/:id/checklist', requireAuth, async (req, res) => {
+    const taskId = Number(req.params.id);
+
+    try {
+        const { data: items } = await supabase
+            .from('task_checklist_items')
+            .select('id, task_id, title, done, deadline, sort_order')
+            .eq('task_id', taskId)
+            .order('sort_order', { ascending: true });
+
+        res.json(items || []);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao buscar checklist' });
+    }
+});
+
+app.post('/api/tasks/:id/checklist', requireAuth, async (req, res) => {
+    const taskId = Number(req.params.id);
+    const { items, template_id } = req.body;
+
+    try {
+        let itemsToInsert = [];
+
+        if (template_id) {
+            // Apply template
+            const { data: templateItems } = await supabase
+                .from('checklist_template_items')
+                .select('title, sort_order')
+                .eq('template_id', template_id);
+
+            if (templateItems) {
+                itemsToInsert = templateItems.map(item => ({
+                    task_id: taskId,
+                    title: item.title,
+                    done: false,
+                    deadline: null,
+                    sort_order: item.sort_order
+                }));
+            }
+        } else if (items && Array.isArray(items)) {
+            // Add individual items
+            itemsToInsert = items.map((item, idx) => ({
+                task_id: taskId,
+                title: item.title,
+                done: false,
+                deadline: item.deadline || null,
+                sort_order: item.sort_order !== undefined ? item.sort_order : idx
+            }));
+        }
+
+        if (itemsToInsert.length === 0) {
+            return res.status(400).json({ error: 'items ou template_id obrigatorio' });
+        }
+
+        const { data: created, error } = await supabase
+            .from('task_checklist_items')
+            .insert(itemsToInsert)
+            .select();
+
+        if (error) return res.status(500).json({ error: error.message });
+        res.json(created || []);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao adicionar items de checklist' });
+    }
+});
+
+app.put('/api/tasks/:taskId/checklist/:itemId', requireAuth, async (req, res) => {
+    const taskId = Number(req.params.taskId);
+    const itemId = Number(req.params.itemId);
+    const { title, done, deadline } = req.body;
+
+    try {
+        const updates = {};
+        if (title !== undefined) updates.title = title;
+        if (done !== undefined) updates.done = done;
+        if (deadline !== undefined) updates.deadline = deadline;
+
+        const { data: updated, error } = await supabase
+            .from('task_checklist_items')
+            .update(updates)
+            .eq('id', itemId)
+            .eq('task_id', taskId)
+            .select()
+            .limit(1);
+
+        if (error) return res.status(500).json({ error: error.message });
+        if (!updated || updated.length === 0) return res.status(404).json({ error: 'Item nao encontrado' });
+
+        res.json(updated[0]);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao atualizar item' });
+    }
+});
+
+app.delete('/api/tasks/:taskId/checklist/:itemId', requireAuth, async (req, res) => {
+    const taskId = Number(req.params.taskId);
+    const itemId = Number(req.params.itemId);
+
+    try {
+        const { error } = await supabase
+            .from('task_checklist_items')
+            .delete()
+            .eq('id', itemId)
+            .eq('task_id', taskId);
+
+        if (error) return res.status(500).json({ error: error.message });
+        res.json({ ok: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao deletar item' });
+    }
+});
 
 // ===== START =====
 async function start() {

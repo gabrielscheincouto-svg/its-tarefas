@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITS Tarefas</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  :root{--bg:#f0f2f5;--white:#ffffff;--light:#f8f9fb;--hover:#f0f4ff;--accent:#3b5bdb;--accent-light:#edf2ff;--green:#2b8a3e;--green-bg:#ebfbee;--green-bd:#b2f2bb;--yellow:#e67700;--yellow-bg:#fff9db;--yellow-bd:#ffe066;--red:#c92a2a;--red-bg:#fff5f5;--red-bd:#ffc9c9;--purple:#7048e8;--text:#1a1a2e;--text2:#555770;--muted:#8b8da3;--border:#e1e4ea;--border-lt:#eceef2;--radius:14px;--radius-sm:10px;--shadow:0 2px 12px rgba(0,0,0,0.08);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow:hidden;}
+
+  /* Header */
+  .header{background:var(--white);border-bottom:1px solid var(--border);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,0.04);z-index:100;position:relative;}
+  .header-left{display:flex;align-items:center;gap:16px;}
+  .logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:900;}
+  .logo-text{font-size:20px;font-weight:800;color:var(--text);}
+  .logo-sub{font-size:10px;color:var(--muted);font-weight:500;letter-spacing:1.5px;text-transform:uppercase;}
+  .header-stats{display:flex;gap:8px;}
+  .stat-chip{display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:24px;font-size:12px;font-weight:700;}
+  .stat-chip.red{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-bd);}
+  .stat-chip.yellow{background:var(--yellow-bg);color:var(--yellow);border:1.5px solid var(--yellow-bd);}
+  .stat-chip.green{background:var(--green-bg);color:var(--green);border:1.5px solid var(--green-bd);}
+  .stat-dot{width:7px;height:7px;border-radius:50%;}
+  .stat-chip.red .stat-dot{background:var(--red);animation:pulse 2s infinite;}
+  .stat-chip.yellow .stat-dot{background:var(--yellow);}
+  .stat-chip.green .stat-dot{background:var(--green);}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.4);opacity:0.5;}}
+  .header-right{display:flex;align-items:center;gap:10px;}
+  .clock{font-size:22px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;}
+  .date-disp{font-size:10px;color:var(--muted);text-align:right;}
+  .icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--white);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all 0.15s;}
+  .icon-btn:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
+  .user-pill{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;background:var(--light);border:1px solid var(--border);border-radius:24px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all 0.15s;}
+  .user-pill:hover{border-color:var(--accent);}
+  .user-pill .avatar{width:26px;height:26px;}
+
+  /* Alert */
+  .alert-banner{display:none;background:linear-gradient(90deg,var(--red-bg),#fff0f0);border-bottom:2px solid var(--red-bd);padding:9px 28px;font-size:13px;font-weight:700;color:var(--red);align-items:center;gap:10px;}
+  .alert-banner.active{display:flex;}
+
+  /* Main */
+  .main{display:flex;height:calc(100vh - 62px);}
+
+  /* Summary */
+  .summary{width:340px;min-width:310px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;}
+  .summary::-webkit-scrollbar{width:5px;}
+  .summary::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px;}
+  .sum-sec{padding:18px 20px;border-bottom:1px solid var(--border-lt);}
+  .sec-hdr{display:flex;align-items:center;gap:9px;margin-bottom:12px;}
+  .sec-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .sec-icon.red{background:var(--red-bg);}
+  .sec-icon.yellow{background:var(--yellow-bg);}
+  .sec-icon.blue{background:var(--accent-light);}
+  .sec-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;}
+  .sec-title.red{color:var(--red);}
+  .sec-title.yellow{color:var(--yellow);}
+  .sec-title.blue{color:var(--accent);}
+  .sec-count{margin-left:auto;background:var(--bg);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;color:var(--muted);}
+
+  .s-card{background:var(--light);border:1px solid var(--border-lt);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:7px;transition:all 0.15s;}
+  .s-card:hover{background:var(--hover);}
+  .s-card.over{border-left:5px solid var(--red);background:var(--red-bg);}
+  .s-card.soon{border-left:5px solid var(--yellow);background:var(--yellow-bg);}
+  .s-client{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--purple);margin-bottom:3px;}
+  .s-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:7px;line-height:1.3;}
+  .s-meta{display:flex;justify-content:space-between;align-items:center;}
+  .s-assignee{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text2);}
+  .avatar{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:white;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,0.1);}
+  .s-dl{font-size:10px;font-weight:800;padding:3px 9px;border-radius:16px;}
+  .s-dl.red{background:white;color:var(--red);border:1.5px solid var(--red-bd);}
+  .s-dl.yellow{background:white;color:var(--yellow);border:1.5px solid var(--yellow-bd);}
+  .sum-empty{text-align:center;padding:20px 14px;color:var(--muted);font-size:12px;}
+  .sum-empty-icon{font-size:24px;display:block;margin-bottom:4px;}
+
+  .team-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--light);border:1px solid var(--border-lt);border-radius:var(--radius-sm);margin-bottom:5px;}
+  .team-row:hover{background:var(--hover);}
+  .team-name{font-size:13px;font-weight:600;flex:1;}
+  .t-badge{font-size:10px;font-weight:800;padding:2px 9px;border-radius:16px;min-width:26px;text-align:center;}
+  .t-badge.pen{background:var(--accent-light);color:var(--accent);}
+  .t-badge.doing{background:var(--yellow-bg);color:var(--yellow);}
+  .t-badge.over{background:var(--red-bg);color:var(--red);}
+
+  /* Quick add */
+  .qa{padding:16px 20px;border-top:2px solid var(--border-lt);background:var(--accent-light);flex-shrink:0;}
+  .qa-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:var(--accent);margin-bottom:8px;}
+  .qa-text{width:100%;min-height:66px;padding:9px 12px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;font-family:inherit;resize:vertical;outline:none;line-height:1.5;}
+  .qa-text:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,91,219,0.08);}
+  .qa-text::placeholder{color:var(--muted);}
+  .qa-help{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.4;}
+  .qa-help strong{color:var(--text2);}
+  .qa-actions{display:flex;gap:6px;margin-top:8px;}
+
+  /* Buttons */
+  .btn{padding:8px 18px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all 0.15s;font-family:inherit;}
+  .btn-p{background:var(--accent);color:white;box-shadow:0 2px 8px rgba(59,91,219,0.2);}
+  .btn-p:hover{background:#2b4ac7;transform:translateY(-1px);}
+  .btn-s{background:var(--white);color:var(--text2);border:1.5px solid var(--border);}
+  .btn-s:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-d{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-bd);}
+
+  /* Kanban */
+  .kanban{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .filter-bar{display:flex;gap:5px;padding:10px 20px;align-items:center;flex-wrap:wrap;background:var(--white);border-bottom:1px solid var(--border-lt);flex-shrink:0;}
+  .f-label{font-size:11px;color:var(--muted);font-weight:600;margin-right:4px;}
+  .f-chip{padding:5px 14px;border-radius:18px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--text2);transition:all 0.15s;font-family:inherit;}
+  .f-chip:hover{border-color:var(--accent);color:var(--accent);}
+  .f-chip.active{background:var(--accent);border-color:var(--accent);color:white;box-shadow:0 2px 6px rgba(59,91,219,0.15);}
+
+  .board{display:flex;gap:16px;padding:16px 20px;flex:1;overflow-x:auto;}
+  .col{flex:1;min-width:280px;display:flex;flex-direction:column;background:var(--white);border-radius:var(--radius);border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;}
+  .col-hdr{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-lt);}
+  .col-tg{display:flex;align-items:center;gap:9px;}
+  .col-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .ct .col-ico{background:var(--accent-light);}
+  .cd .col-ico{background:var(--yellow-bg);}
+  .cc .col-ico{background:var(--green-bg);}
+  .col-t{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;}
+  .ct .col-t{color:var(--accent);}
+  .cd .col-t{color:var(--yellow);}
+  .cc .col-t{color:var(--green);}
+  .col-cnt{background:var(--bg);border-radius:20px;padding:3px 12px;font-size:13px;font-weight:800;color:var(--text2);}
+  .col-body{padding:8px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:7px;}
+  .col-body::-webkit-scrollbar{width:4px;}
+  .col-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  .col-body.drag-over{background:var(--accent-light);border:2px dashed var(--accent);border-radius:8px;}
+
+  .card{background:var(--white);border:1.5px solid var(--border-lt);border-radius:11px;padding:12px 14px;cursor:grab;transition:all 0.15s;position:relative;}
+  .card:hover{border-color:var(--border);box-shadow:var(--shadow);transform:translateY(-1px);}
+  .card.dragging{opacity:0.4;}
+  .card.venc{border-left:5px solid var(--red);background:var(--red-bg);animation:attn 3s infinite;}
+  .card.urg{border-left:5px solid var(--red);background:#fff8f8;}
+  .card.atn{border-left:5px solid var(--yellow);background:#fffcf0;}
+  @keyframes attn{0%,100%{box-shadow:0 0 0 0 rgba(201,42,42,0);}50%{box-shadow:0 0 0 4px rgba(201,42,42,0.08);}}
+  .c-client{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--purple);margin-bottom:4px;}
+  .c-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.3;}
+  .c-meta{display:flex;align-items:center;justify-content:space-between;}
+  .c-assignee{display:flex;align-items:center;gap:6px;}
+  .c-aname{font-size:11px;color:var(--text2);font-weight:600;}
+  .c-dl{font-size:10px;font-weight:800;padding:3px 9px;border-radius:16px;white-space:nowrap;}
+  .dl-ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
+  .dl-w{background:var(--yellow-bg);color:var(--yellow);border:1.5px solid var(--yellow-bd);}
+  .dl-u{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-bd);}
+  .dl-o{background:var(--red);color:white;}
+  .c-value{font-size:10px;font-weight:600;color:var(--green);margin-top:6px;}
+  .c-checklist-progress{font-size:10px;color:var(--text2);margin-top:6px;display:flex;align-items:center;gap:4px;}
+  .c-checklist-progress-bar{width:40px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+  .c-checklist-progress-fill{height:100%;background:var(--accent);border-radius:2px;}
+
+  .add-btn{margin:8px;padding:10px;background:var(--light);border:2px dashed var(--border);border-radius:10px;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;text-align:center;font-family:inherit;flex-shrink:0;}
+  .add-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+
+  /* Modal */
+  .overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;}
+  .overlay.active{display:flex;}
+  .modal{background:var(--white);border-radius:20px;padding:28px;width:550px;max-width:90vw;max-height:90vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,0.1);}
+  .modal h2{font-size:18px;font-weight:800;margin-bottom:20px;}
+  .modal h3{font-size:14px;font-weight:700;margin-top:20px;margin-bottom:10px;color:var(--text);}
+  .fg{margin-bottom:14px;}
+  .fg label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px;}
+  .fg input,.fg select,.fg textarea{width:100%;padding:10px 13px;background:var(--light);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;font-family:inherit;outline:none;}
+  .fg input:focus,.fg select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,91,219,0.06);}
+  .fg select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555770' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;}
+  .f-actions{display:flex;gap:8px;margin-top:22px;justify-content:flex-end;}
+
+  /* Checklist styles */
+  .checklist-section{background:var(--bg);border-radius:var(--radius-sm);padding:12px;margin-top:8px;}
+  .checklist-header{display:flex;gap:8px;margin-bottom:12px;}
+  .checklist-header select{flex:1;}
+  .checklist-progress{font-size:11px;color:var(--muted);margin-bottom:10px;padding:8px 12px;background:var(--white);border-radius:8px;border:1px solid var(--border-lt);display:flex;align-items:center;gap:8px;}
+  .checklist-progress-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+  .checklist-progress-fill{height:100%;background:var(--accent);border-radius:2px;}
+  .checklist-items{max-height:250px;overflow-y:auto;margin-bottom:8px;}
+  .checklist-items::-webkit-scrollbar{width:4px;}
+  .checklist-items::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  .checklist-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--white);border:1px solid var(--border-lt);border-radius:8px;margin-bottom:6px;}
+  .checklist-item input[type=checkbox]{width:18px;height:18px;cursor:pointer;flex-shrink:0;}
+  .checklist-item-content{flex:1;display:flex;flex-direction:column;gap:4px;}
+  .checklist-item-title{font-size:12px;color:var(--text);font-weight:500;}
+  .checklist-item input[type=text]{padding:6px 8px;background:var(--light);border:1px solid var(--border);border-radius:6px;font-size:12px;}
+  .checklist-item input[type=date]{padding:6px 8px;background:var(--light);border:1px solid var(--border);border-radius:6px;font-size:11px;}
+  .checklist-item-deadline{font-size:10px;color:var(--muted);}
+  .checklist-item-delete{background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;opacity:0.6;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .checklist-item-delete:hover{opacity:1;}
+  .checklist-item.done .checklist-item-title{text-decoration:line-through;color:var(--muted);}
+  .checklist-add{display:flex;gap:6px;padding:8px;background:var(--light);border-radius:8px;border:1px dashed var(--border);}
+  .checklist-add input{padding:6px 10px;background:var(--white);border:1px solid var(--border);border-radius:6px;font-size:12px;}
+  .checklist-add button{padding:6px 12px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;}
+
+  /* Toast */
+  .toast-box{position:fixed;top:74px;right:20px;z-index:2000;display:flex;flex-direction:column;gap:6px;}
+  .toast{background:var(--white);border:1.5px solid var(--red-bd);border-radius:12px;padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,0.08);animation:tIn .3s;max-width:320px;}
+  .toast.success{border-color:var(--green-bd);}
+  .toast.warning{border-color:var(--yellow-bd);}
+  .toast-t{font-size:12px;font-weight:800;color:var(--red);margin-bottom:2px;}
+  .toast.success .toast-t{color:var(--green);}
+  .toast.warning .toast-t{color:var(--yellow);}
+  .toast-m{font-size:11px;color:var(--text2);}
+  @keyframes tIn{from{transform:translateX(120%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+  /* Settings */
+  .settings{display:none;position:fixed;top:0;right:0;width:380px;height:100vh;background:var(--white);border-left:1px solid var(--border);z-index:500;padding:24px;overflow-y:auto;box-shadow:-4px 0 20px rgba(0,0,0,0.06);}
+  .settings.active{display:block;}
+  .settings h3{font-size:16px;font-weight:800;margin-bottom:14px;}
+  .settings-section{margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border-lt);}
+  .settings-section:last-child{border-bottom:none;}
+  .m-item{display:flex;align-items:center;gap:8px;padding:8px;background:var(--light);border:1px solid var(--border-lt);border-radius:10px;margin-bottom:6px;}
+  .m-item input[type=text]{flex:1;padding:6px 10px;background:var(--white);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;outline:none;}
+  .m-item input[type=text]:focus{border-color:var(--accent);}
+  .m-item .cpick{width:28px;height:28px;border:2px solid var(--border);border-radius:50%;cursor:pointer;padding:0;}
+  .m-item .rm{background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;opacity:0.5;}
+  .m-item .rm:hover{opacity:1;}
+
+  /* Templates modal */
+  .template-item{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--light);border:1px solid var(--border-lt);border-radius:10px;margin-bottom:6px;}
+  .template-item-name{font-size:13px;font-weight:600;flex:1;}
+  .template-item-actions{display:flex;gap:6px;}
+  .template-item-actions button{padding:4px 10px;font-size:11px;border:1.5px solid var(--border);background:var(--white);border-radius:6px;cursor:pointer;}
+  .template-item-actions .t-edit{color:var(--accent);border-color:var(--accent);}
+  .template-item-actions .t-del{color:var(--red);border-color:var(--red);}
+
+  @media(min-width:1920px){.summary{width:400px;}.s-title,.c-title{font-size:15px;}.logo-text{font-size:24px;}}
+</style>
+</head>
+<body>
+
+<div class="alert-banner" id="alertBanner"><span style="font-size:16px;">&#9888;&#65039;</span><span id="alertText"></span></div>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-icon">ITS</div>
+    <div><div class="logo-text">ITS Tarefas</div><div class="logo-sub">Intelig&ecirc;ncia Tribut&aacute;ria e Societ&aacute;ria</div></div>
+  </div>
+  <div class="header-stats">
+    <div class="stat-chip red"><span class="stat-dot"></span><span id="sU">0</span></div>
+    <div class="stat-chip yellow"><span class="stat-dot"></span><span id="sW">0</span></div>
+    <div class="stat-chip green"><span class="stat-dot"></span><span id="sD">0</span></div>
+  </div>
+  <div class="header-right">
+    <button class="icon-btn" onclick="toggleSettings()" title="Equipe" id="btnSettings" style="display:none;">&#9881;</button>
+    <div><div class="clock" id="clock">00:00</div><div class="date-disp" id="dateDisp"></div></div>
+    <div class="user-pill" onclick="doLogout()" title="Sair">
+      <div class="avatar" id="userAvatar" style="background:var(--accent);font-size:10px;"></div>
+      <span id="userName">...</span> &#x2192;
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="summary">
+    <div class="sum-sec">
+      <div class="sec-hdr"><div class="sec-icon red">&#128680;</div><span class="sec-title red">Vencidas</span><span class="sec-count" id="oC">0</span></div>
+      <div id="sOver"></div>
+    </div>
+    <div class="sum-sec">
+      <div class="sec-hdr"><div class="sec-icon yellow">&#9888;&#65039;</div><span class="sec-title yellow">Vencem em Breve</span><span class="sec-count" id="sC">0</span></div>
+      <div id="sSoon"></div>
+    </div>
+    <div class="sum-sec" style="flex:1;">
+      <div class="sec-hdr"><div class="sec-icon blue">&#128101;</div><span class="sec-title blue">Carga por S&oacute;cio</span></div>
+      <div id="teamSum"></div>
+    </div>
+    <div class="qa">
+      <div class="qa-title">&#128172; Colagem R&aacute;pida</div>
+      <textarea class="qa-text" id="qaText" placeholder="Cole do WhatsApp...&#10;Ex: Empresa ABC | Tarefa | Felipe | 15/04/2026"></textarea>
+      <div class="qa-help">Formato: <strong>Cliente | Tarefa | Respons&aacute;vel | dd/mm/aaaa</strong></div>
+      <div class="qa-actions">
+        <button class="btn btn-p" onclick="doQuickAdd()">Adicionar</button>
+        <button class="btn btn-s" onclick="openImport()">Importar .TXT</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="kanban">
+    <div class="filter-bar">
+      <span class="f-label">Filtrar:</span>
+      <button class="f-chip active" id="fAll" onclick="filterBy(null)">Todos</button>
+      <span id="fChips"></span>
+    </div>
+    <div class="board">
+      <div class="col ct">
+        <div class="col-hdr"><div class="col-tg"><div class="col-ico">&#128203;</div><span class="col-t">A Fazer</span></div><span class="col-cnt" id="cntT">0</span></div>
+        <div class="col-body" id="colT" data-s="todo" ondragover="dOver(event)" ondragleave="dLeave(event)" ondrop="dDrop(event)"></div>
+        <button class="add-btn" onclick="openModal('todo')">+ Nova Tarefa</button>
+      </div>
+      <div class="col cd">
+        <div class="col-hdr"><div class="col-tg"><div class="col-ico">&#9889;</div><span class="col-t">Em Andamento</span></div><span class="col-cnt" id="cntD">0</span></div>
+        <div class="col-body" id="colD" data-s="doing" ondragover="dOver(event)" ondragleave="dLeave(event)" ondrop="dDrop(event)"></div>
+        <button class="add-btn" onclick="openModal('doing')">+ Nova Tarefa</button>
+      </div>
+      <div class="col cc">
+        <div class="col-hdr"><div class="col-tg"><div class="col-ico">&#10004;&#65039;</div><span class="col-t">Conclu&iacute;do</span></div><span class="col-cnt" id="cntC">0</span></div>
+        <div class="col-body" id="colC" data-s="done" ondragover="dOver(event)" ondragleave="dLeave(event)" ondrop="dDrop(event)"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div class="overlay" id="taskModal">
+  <div class="modal">
+    <h2 id="mTitle">Nova Tarefa</h2>
+    <div class="fg"><label>Cliente / Empresa</label><input type="text" id="iClient" placeholder="Ex: Empresa ABC Ltda"></div>
+    <div class="fg"><label>Descri&ccedil;&atilde;o</label><input type="text" id="iTask" placeholder="Ex: Altera&ccedil;&atilde;o contratual"></div>
+    <div class="fg"><label>Respons&aacute;vel</label><select id="iAssignee"></select></div>
+    <div class="fg"><label>Prazo</label><input type="date" id="iDeadline"></div>
+    <div class="fg"><label>Prioridade</label><select id="iPriority"><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></div>
+    <div class="fg"><label>Valor (R$)</label><input type="number" id="iValue" placeholder="Ex: 5000.00" step="0.01" min="0"></div>
+    <div class="fg"><label>Link do Contrato</label><input type="text" id="iContractLink" placeholder="https://..."></div>
+
+    <h3>&#9745; Checklist</h3>
+    <div class="checklist-section">
+      <div class="checklist-header">
+        <select id="iTemplateSelect" onchange="applyTemplate()">
+          <option value="">Aplicar Modelo...</option>
+        </select>
+      </div>
+      <div class="checklist-progress">
+        <span id="checklistProgressText">0/0 - 0%</span>
+        <div class="checklist-progress-bar"><div class="checklist-progress-fill" id="checklistProgressFill" style="width:0%"></div></div>
+      </div>
+      <div class="checklist-items" id="checklistItems"></div>
+      <div class="checklist-add">
+        <input type="text" id="newChecklistItemText" placeholder="Item do checklist" style="flex:1;">
+        <button onclick="addChecklistItem()">+ Item</button>
+      </div>
+    </div>
+
+    <div class="f-actions">
+      <button class="btn btn-d" id="btnDel" style="display:none;margin-right:auto;" onclick="delTask()">Excluir</button>
+      <button class="btn btn-s" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-p" onclick="saveTask()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="overlay" id="importModal">
+  <div class="modal">
+    <h2>&#128196; Importar Tarefas (.txt)</h2>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5;">
+      Arquivo .txt: <code style="background:var(--bg);padding:3px 6px;border-radius:4px;font-size:11px;">Cliente | Tarefa | Respons&aacute;vel | dd/mm/aaaa | prioridade</code>
+    </p>
+    <div class="fg"><input type="file" id="impFile" accept=".txt,.csv" style="font-size:12px;"></div>
+    <div id="impPreview"></div>
+    <div class="f-actions">
+      <button class="btn btn-s" onclick="closeImport()">Cancelar</button>
+      <button class="btn btn-p" id="btnImp" style="display:none;" onclick="confirmImport()">Importar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Templates Modal -->
+<div class="overlay" id="templatesModal">
+  <div class="modal">
+    <h2>&#128196; Modelos de Checklist</h2>
+    <div id="templatesList" style="margin-bottom:20px;"></div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
+    <h3>Criar Novo Modelo</h3>
+    <div class="fg"><label>Nome do Modelo</label><input type="text" id="newTemplateName" placeholder="Ex: Due Diligence"></div>
+    <div class="fg">
+      <label>Itens</label>
+      <div id="newTemplateItems" style="margin-bottom:8px;"></div>
+      <button class="btn btn-s" onclick="addTemplateItemRow()" style="width:100%;">+ Adicionar Item</button>
+    </div>
+    <div class="f-actions">
+      <button class="btn btn-s" onclick="closeTemplates()">Cancelar</button>
+      <button class="btn btn-p" onclick="saveNewTemplate()">Criar Modelo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings (admin only) -->
+<div class="settings" id="settingsPanel">
+  <div class="settings-section">
+    <h3>&#128101; Gerenciar Equipe</h3>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Adicione, edite ou remova membros. Cada membro recebe um login.</p>
+    <div id="membersList"></div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
+    <h3 style="margin-top:14px;">Adicionar Novo Membro</h3>
+    <div class="fg"><label>Nome</label><input type="text" id="newName" placeholder="Nome completo"></div>
+    <div class="fg"><label>Usu&aacute;rio (login)</label><input type="text" id="newUser" placeholder="ex: joao"></div>
+    <div class="fg"><label>Senha</label><input type="text" id="newPass" placeholder="Senha inicial"></div>
+    <div class="fg"><label>Cor</label><input type="color" id="newColor" value="#3b5bdb" style="height:40px;width:100%;border-radius:8px;cursor:pointer;"></div>
+    <button class="btn btn-p" style="width:100%;margin-top:8px;padding:12px;" onclick="addUser()">Criar Membro</button>
+  </div>
+
+  <div class="settings-section">
+    <h3>&#128210; Modelos de Checklist</h3>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Crie e gerencie seus modelos de checklist.</p>
+    <button class="btn btn-p" style="width:100%;padding:12px;" onclick="openTemplates()">Gerenciar Modelos</button>
+  </div>
+
+  <div class="settings-section">
+    <h3>&#128274; Alterar Senha</h3>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Altere sua senha de acesso.</p>
+    <div class="fg"><label>Senha Atual</label><input type="password" id="oldPassword" placeholder="Sua senha atual"></div>
+    <div class="fg"><label>Nova Senha</label><input type="password" id="newPassword" placeholder="Nova senha"></div>
+    <div class="fg"><label>Confirmar Senha</label><input type="password" id="confirmPassword" placeholder="Confirme a nova senha"></div>
+    <button class="btn btn-p" style="width:100%;padding:12px;" onclick="changePassword()">Alterar Senha</button>
+  </div>
+
+  <button class="btn btn-s" style="width:100%;margin-top:8px;padding:12px;" onclick="toggleSettings()">Fechar</button>
+</div>
+
+<div class="toast-box" id="toasts"></div>
+
+<script>
+let currentUser = null;
+let tasks = [];
+let users = [];
+let templates = [];
+let filter = null;
+let editId = null;
+let modalStatus = 'todo';
+let dragId = null;
+let pendingImport = [];
+let currentChecklist = [];
+let editingTemplateId = null;
+
+// ===== INIT =====
+async function init() {
+  try {
+    const res = await fetch('/api/me');
+    if (!res.ok) { window.location.href = '/login.html'; return; }
+    currentUser = await res.json();
+    document.getElementById('userName').textContent = currentUser.name;
+    document.getElementById('userAvatar').textContent = ini(currentUser.name);
+    document.getElementById('userAvatar').style.background = currentUser.color;
+    if (currentUser.role === 'admin') document.getElementById('btnSettings').style.display = 'flex';
+    await loadData();
+    updateClock(); setInterval(updateClock, 30000);
+    setInterval(loadData, 60000); // auto-refresh
+  } catch (e) { window.location.href = '/login.html'; }
+}
+
+async function loadData() {
+  const [tRes, uRes, tmRes] = await Promise.all([fetch('/api/tasks'), fetch('/api/users'), fetch('/api/checklist-templates')]);
+  tasks = await tRes.json();
+  users = await uRes.json();
+  templates = await tmRes.json();
+  render();
+}
+
+// ===== HELPERS =====
+function daysUntil(d) { const t=new Date(d+'T00:00:00'),n=new Date();n.setHours(0,0,0,0);return Math.floor((t-n)/864e5); }
+function fmtDate(d) { return new Date(d+'T00:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}); }
+function ini(n) { return n.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2); }
+function parseBR(s) { s=s.trim();const m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);if(m)return`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;return null; }
+function defDeadline() { const d=new Date();d.setDate(d.getDate()+7);return d.toISOString().slice(0,10); }
+function fmtCurrency(n) { return n ? new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n) : ''; }
+
+// ===== RENDER =====
+function render() {
+  const filt = filter ? tasks.filter(t=>t.assignee_id===filter) : tasks;
+  ['todo','doing','done'].forEach(s => {
+    const col=document.getElementById(s==='todo'?'colT':s==='doing'?'colD':'colC');
+    const cnt=document.getElementById(s==='todo'?'cntT':s==='doing'?'cntD':'cntC');
+    const items=filt.filter(t=>t.status===s);
+    items.sort((a,b)=>{const p={urgente:0,alta:1,normal:2};return p[a.priority]!==p[b.priority]?p[a.priority]-p[b.priority]:new Date(a.deadline)-new Date(b.deadline);});
+    cnt.textContent=items.length;
+    col.innerHTML=items.map(renderCard).join('');
+  });
+  renderSummary(); renderTeam(); updateStats(); renderFilters();
+}
+
+function renderCard(t) {
+  const d=daysUntil(t.deadline),color=t.assignee_color||'#868e96',name=t.assignee_name||'?';
+  let dl='dl-ok',dt=fmtDate(t.deadline),cls='';
+  if(t.status!=='done'){if(d<0){dl='dl-o';dt=`-${Math.abs(d)}d`;cls='venc';}else if(d<=2){dl='dl-u';dt=d===0?'HOJE!':`${d}d`;cls=d===0?'urg':'urg';}else if(d<=5){dl='dl-w';dt=`${d}d`;cls='atn';}}
+  else{dl='dl-ok';dt='\u2713';}
+
+  let checklistHTML = '';
+  if (t.checklist_total && t.checklist_total > 0) {
+    const perc = Math.round((t.checklist_done / t.checklist_total) * 100);
+    const fillWidth = perc;
+    checklistHTML = `<div class="c-checklist-progress">&#10003; ${t.checklist_done}/${t.checklist_total}<div class="c-checklist-progress-bar"><div class="c-checklist-progress-fill" style="width:${fillWidth}%"></div></div></div>`;
+  }
+
+  let valueHTML = '';
+  if (t.value && t.value > 0) {
+    valueHTML = `<div class="c-value">${fmtCurrency(t.value)}</div>`;
+  }
+
+  return `<div class="card ${cls}" draggable="true" ondragstart="dStart(event,${t.id})" ondragend="dEnd(event)" ondblclick="openEdit(${t.id})">
+    <div class="c-client">${t.client}</div><div class="c-title">${t.title}</div>
+    ${checklistHTML}
+    ${valueHTML}
+    <div class="c-meta"><div class="c-assignee"><div class="avatar" style="background:${color}">${ini(name)}</div><span class="c-aname">${name}</span></div><span class="c-dl ${dl}">${dt}</span></div></div>`;
+}
+
+function renderSummary() {
+  const active=tasks.filter(t=>t.status!=='done');
+  const over=active.filter(t=>daysUntil(t.deadline)<0).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+  const soon=active.filter(t=>{const d=daysUntil(t.deadline);return d>=0&&d<=5;}).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+  document.getElementById('oC').textContent=over.length;
+  document.getElementById('sC').textContent=soon.length;
+  document.getElementById('sOver').innerHTML=over.length?over.map(t=>{const c=t.assignee_color||'#868e96',n=t.assignee_name||'?';return`<div class="s-card over"><div class="s-client">${t.client}</div><div class="s-title">${t.title}</div><div class="s-meta"><div class="s-assignee"><div class="avatar" style="background:${c};width:22px;height:22px;font-size:8px;">${ini(n)}</div>${n}</div><span class="s-dl red">${Math.abs(daysUntil(t.deadline))}d atr\u00e1s</span></div></div>`;}).join(''):'<div class="sum-empty"><span class="sum-empty-icon">&#127881;</span>Nenhuma vencida!</div>';
+  document.getElementById('sSoon').innerHTML=soon.length?soon.map(t=>{const c=t.assignee_color||'#868e96',n=t.assignee_name||'?',d=daysUntil(t.deadline);return`<div class="s-card soon"><div class="s-client">${t.client}</div><div class="s-title">${t.title}</div><div class="s-meta"><div class="s-assignee"><div class="avatar" style="background:${c};width:22px;height:22px;font-size:8px;">${ini(n)}</div>${n}</div><span class="s-dl yellow">${d===0?'HOJE!':d+'d'}</span></div></div>`;}).join(''):'<div class="sum-empty"><span class="sum-empty-icon">&#128077;</span>Tranquilo nos pr\u00f3ximos 5 dias</div>';
+}
+
+function renderTeam() {
+  document.getElementById('teamSum').innerHTML=users.map(u=>{
+    const my=tasks.filter(t=>t.assignee_id===u.id&&t.status!=='done');
+    const p=my.filter(t=>t.status==='todo').length,d=my.filter(t=>t.status==='doing').length,o=my.filter(t=>daysUntil(t.deadline)<0).length;
+    return`<div class="team-row"><div class="avatar" style="background:${u.color}">${ini(u.name)}</div><div class="team-name">${u.name}</div><div style="display:flex;gap:4px;">${o?`<span class="t-badge over">${o}</span>`:''}<span class="t-badge doing">${d}</span><span class="t-badge pen">${p}</span></div></div>`;
+  }).join('');
+}
+
+function updateStats() {
+  const a=tasks.filter(t=>t.status!=='done');
+  const o=a.filter(t=>daysUntil(t.deadline)<0).length;
+  const n=a.filter(t=>{const d=daysUntil(t.deadline);return d>=0&&d<=3;}).length;
+  document.getElementById('sU').textContent=`${o} vencida(s)`;
+  document.getElementById('sW').textContent=`${n} pr\u00f3xima(s)`;
+  document.getElementById('sD').textContent=`${tasks.filter(t=>t.status==='done').length} feita(s)`;
+  const b=document.getElementById('alertBanner');
+  if(o>0){b.classList.add('active');document.getElementById('alertText').textContent=`ATEN\u00c7\u00c3O: ${o} tarefa(s) vencidas!`;}
+  else b.classList.remove('active');
+}
+
+function renderFilters() {
+  document.getElementById('fChips').innerHTML=users.map(u=>
+    `<button class="f-chip ${filter===u.id?'active':''}" onclick="filterBy(${u.id})" style="${filter===u.id?'background:'+u.color+';border-color:'+u.color:''}">${u.name}</button>`).join('');
+  document.getElementById('fAll').className=`f-chip ${filter===null?'active':''}`;
+}
+
+function filterBy(id) { filter=id; render(); }
+
+// ===== API CALLS =====
+async function api(url, opts={}) {
+  const res = await fetch(url, { headers:{'Content-Type':'application/json'}, ...opts });
+  if (res.status === 401) { window.location.href='/login.html'; return null; }
+  return res.json();
+}
+
+// ===== TASK MODAL =====
+async function openModal(s) {
+  editId=null;modalStatus=s;
+  document.getElementById('mTitle').textContent='Nova Tarefa';
+  document.getElementById('btnDel').style.display='none';
+  document.getElementById('iClient').value='';document.getElementById('iTask').value='';
+  document.getElementById('iDeadline').value='';document.getElementById('iPriority').value='normal';
+  document.getElementById('iValue').value='';document.getElementById('iContractLink').value='';
+  currentChecklist=[];
+  fillAssignees();
+  renderChecklist();
+  fillTemplateSelect();
+  document.getElementById('taskModal').classList.add('active');
+}
+
+async function openEdit(id) {
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  editId=id;modalStatus=t.status;
+  document.getElementById('mTitle').textContent='Editar Tarefa';
+  document.getElementById('btnDel').style.display='block';
+  document.getElementById('iClient').value=t.client;document.getElementById('iTask').value=t.title;
+  document.getElementById('iDeadline').value=t.deadline;document.getElementById('iPriority').value=t.priority;
+  document.getElementById('iValue').value=t.value||'';
+  document.getElementById('iContractLink').value=t.contract_link||'';
+  fillAssignees(t.assignee_id);
+  fillTemplateSelect();
+
+  // Load checklist
+  try {
+    const checklistRes = await fetch(`/api/tasks/${id}/checklist`);
+    if (checklistRes.ok) {
+      currentChecklist = await checklistRes.json();
+    } else {
+      currentChecklist = [];
+    }
+  } catch (e) {
+    currentChecklist = [];
+  }
+  renderChecklist();
+  document.getElementById('taskModal').classList.add('active');
+}
+
+function closeModal() { document.getElementById('taskModal').classList.remove('active'); }
+
+function fillAssignees(sel) {
+  document.getElementById('iAssignee').innerHTML=users.map(u=>`<option value="${u.id}" ${u.id===sel?'selected':''}>${u.name}</option>`).join('');
+}
+
+function fillTemplateSelect() {
+  const opts = templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+  document.getElementById('iTemplateSelect').innerHTML = `<option value="">Aplicar Modelo...</option>${opts}`;
+}
+
+function applyTemplate() {
+  const templateId = Number(document.getElementById('iTemplateSelect').value);
+  if (!templateId) return;
+
+  const template = templates.find(t => t.id === templateId);
+  if (!template) return;
+
+  currentChecklist = (template.items || []).map((item, idx) => ({
+    title: item.title,
+    done: false,
+    deadline: null,
+    sort_order: idx
+  }));
+
+  renderChecklist();
+  document.getElementById('iTemplateSelect').value = '';
+}
+
+function renderChecklist() {
+  const itemsHtml = currentChecklist.map((item, idx) => {
+    const deadlineStr = item.deadline ? item.deadline : '';
+    return `<div class="checklist-item ${item.done ? 'done' : ''}">
+      <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleChecklistItem(${idx})">
+      <div class="checklist-item-content">
+        <input type="text" value="${item.title}" class="checklist-item-title" onchange="updateChecklistItemTitle(${idx}, this.value)" placeholder="Item do checklist">
+        <input type="date" value="${deadlineStr}" class="checklist-item-deadline" onchange="updateChecklistItemDeadline(${idx}, this.value)">
+      </div>
+      <button class="checklist-item-delete" onclick="deleteChecklistItem(${idx})">×</button>
+    </div>`;
+  }).join('');
+
+  document.getElementById('checklistItems').innerHTML = itemsHtml;
+  updateChecklistProgress();
+}
+
+function toggleChecklistItem(idx) {
+  if (currentChecklist[idx]) {
+    currentChecklist[idx].done = !currentChecklist[idx].done;
+    renderChecklist();
+  }
+}
+
+function updateChecklistItemTitle(idx, value) {
+  if (currentChecklist[idx]) {
+    currentChecklist[idx].title = value;
+  }
+}
+
+function updateChecklistItemDeadline(idx, value) {
+  if (currentChecklist[idx]) {
+    currentChecklist[idx].deadline = value || null;
+  }
+}
+
+function deleteChecklistItem(idx) {
+  currentChecklist.splice(idx, 1);
+  renderChecklist();
+}
+
+function addChecklistItem() {
+  const input = document.getElementById('newChecklistItemText');
+  if (!input.value.trim()) return;
+
+  currentChecklist.push({
+    title: input.value.trim(),
+    done: false,
+    deadline: null,
+    sort_order: currentChecklist.length
+  });
+
+  input.value = '';
+  renderChecklist();
+}
+
+function updateChecklistProgress() {
+  const total = currentChecklist.length;
+  const done = currentChecklist.filter(i => i.done).length;
+  const perc = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  document.getElementById('checklistProgressText').textContent = `${done}/${total} - ${perc}%`;
+  document.getElementById('checklistProgressFill').style.width = `${perc}%`;
+}
+
+async function saveTask() {
+  const data={
+    client:document.getElementById('iClient').value.trim(),
+    title:document.getElementById('iTask').value.trim(),
+    assignee_id:Number(document.getElementById('iAssignee').value),
+    deadline:document.getElementById('iDeadline').value,
+    priority:document.getElementById('iPriority').value,
+    status:modalStatus,
+    value: document.getElementById('iValue').value ? Number(document.getElementById('iValue').value) : null,
+    contract_link: document.getElementById('iContractLink').value.trim() || null
+  };
+
+  if(!data.client||!data.title||!data.deadline){alert('Preencha todos os campos.');return;}
+
+  if(editId){
+    await api(`/api/tasks/${editId}`,{method:'PUT',body:JSON.stringify(data)});
+  } else {
+    await api('/api/tasks',{method:'POST',body:JSON.stringify(data)});
+  }
+
+  // Save checklist
+  if (editId && currentChecklist.length > 0) {
+    await api(`/api/tasks/${editId}/checklist`, {
+      method: 'POST',
+      body: JSON.stringify({ items: currentChecklist })
+    });
+  }
+
+  await loadData();closeModal();
+}
+
+async function delTask() {
+  if(editId&&confirm('Excluir esta tarefa?')){await api(`/api/tasks/${editId}`,{method:'DELETE'});await loadData();closeModal();}
+}
+
+// ===== DRAG & DROP =====
+function dStart(e,id){dragId=id;e.target.classList.add('dragging');e.dataTransfer.effectAllowed='move';}
+function dEnd(e){e.target.classList.remove('dragging');document.querySelectorAll('.col-body').forEach(c=>c.classList.remove('drag-over'));}
+function dOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
+function dLeave(e){e.currentTarget.classList.remove('drag-over');}
+async function dDrop(e){
+  e.preventDefault();e.currentTarget.classList.remove('drag-over');
+  const ns=e.currentTarget.dataset.s;const t=tasks.find(x=>x.id===dragId);
+  if(t&&t.status!==ns){await api(`/api/tasks/${dragId}/status`,{method:'PATCH',body:JSON.stringify({status:ns})});await loadData();
+    if(ns==='done')toast(`"${t.title}" conclu\u00edda!`,t.client,'success');}
+  dragId=null;
+}
+
+// ===== QUICK ADD =====
+async function doQuickAdd() {
+  const text=document.getElementById('qaText').value.trim();if(!text)return;
+  const lines=text.split('\n').filter(l=>l.trim());
+  const toImport=[];
+  for(const line of lines){
+    const p=line.split('|').map(s=>s.trim());
+    if(p.length>=3) toImport.push({client:p[0],title:p[1],assignee_name:p[2],deadline:p[3]?parseBR(p[3]):defDeadline(),priority:p[4]||'normal'});
+  }
+  if(toImport.length){
+    await api('/api/tasks/bulk',{method:'POST',body:JSON.stringify({tasks:toImport})});
+    await loadData();document.getElementById('qaText').value='';
+    toast(`${toImport.length} tarefa(s) adicionada(s)!`,'Via colagem r\u00e1pida','success');
+  } else toast('Formato inv\u00e1lido','Use: Cliente | Tarefa | Respons\u00e1vel | Prazo','warning');
+}
+
+// ===== IMPORT TXT =====
+function openImport(){document.getElementById('importModal').classList.add('active');document.getElementById('impPreview').innerHTML='';document.getElementById('btnImp').style.display='none';document.getElementById('impFile').value='';pendingImport=[];}
+function closeImport(){document.getElementById('importModal').classList.remove('active');}
+
+document.getElementById('impFile')?.addEventListener('change',function(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=function(ev){
+    const lines=ev.target.result.split('\n').filter(l=>l.trim()&&!l.trim().startsWith('#'));pendingImport=[];
+    for(const l of lines){const p=l.split('|').map(s=>s.trim());if(p.length>=3)pendingImport.push({client:p[0],title:p[1],assignee_name:p[2],deadline:p[3]?parseBR(p[3]):defDeadline(),priority:p[4]||'normal'});}
+    const prev=document.getElementById('impPreview');
+    if(!pendingImport.length){prev.innerHTML='<p style="color:var(--red);font-size:12px;">Nenhuma tarefa encontrada.</p>';document.getElementById('btnImp').style.display='none';}
+    else{prev.innerHTML=`<p style="font-size:12px;color:var(--green);font-weight:700;margin:8px 0;">${pendingImport.length} encontrada(s):</p><div style="max-height:250px;overflow-y:auto;">${pendingImport.map(t=>`<div style="background:var(--light);border:1px solid var(--border-lt);border-radius:8px;padding:8px 12px;margin-bottom:4px;font-size:12px;"><strong style="color:var(--purple);">${t.client}</strong> &mdash; ${t.title}<div style="color:var(--muted);font-size:10px;margin-top:3px;">${t.assignee_name} &bull; ${t.deadline} &bull; ${t.priority}</div></div>`).join('')}</div>`;document.getElementById('btnImp').style.display='block';}
+  };r.readAsText(f);
+});
+
+async function confirmImport(){
+  await api('/api/tasks/bulk',{method:'POST',body:JSON.stringify({tasks:pendingImport})});
+  await loadData();toast(`${pendingImport.length} tarefa(s) importadas!`,'Via arquivo .txt','success');
+  pendingImport=[];closeImport();
+}
+
+// ===== TEMPLATES =====
+function openTemplates() {
+  renderTemplatesList();
+  document.getElementById('newTemplateName').value = '';
+  document.getElementById('newTemplateItems').innerHTML = '';
+  editingTemplateId = null;
+  document.getElementById('templatesModal').classList.add('active');
+}
+
+function closeTemplates() {
+  document.getElementById('templatesModal').classList.remove('active');
+}
+
+function renderTemplatesList() {
+  const html = templates.map(t => `<div class="template-item">
+    <div class="template-item-name">${t.name}</div>
+    <div class="template-item-actions">
+      <button class="t-edit" onclick="editTemplate(${t.id})">Editar</button>
+      <button class="t-del" onclick="deleteTemplate(${t.id})">Excluir</button>
+    </div>
+  </div>`).join('');
+
+  document.getElementById('templatesList').innerHTML = html || '<p style="font-size:12px;color:var(--muted);">Nenhum modelo criado.</p>';
+}
+
+function addTemplateItemRow() {
+  const container = document.getElementById('newTemplateItems');
+  const rowCount = container.children.length;
+  const html = `<div class="template-item-row" style="display:flex;gap:6px;margin-bottom:6px;">
+    <input type="text" placeholder="Item do modelo" style="flex:1;padding:8px 12px;background:var(--white);border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;" onkeypress="if(event.key==='Enter')addTemplateItemRow()">
+    <button onclick="this.parentElement.remove()" style="padding:8px 12px;background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-bd);border-radius:8px;cursor:pointer;font-weight:600;">−</button>
+  </div>`;
+  container.insertAdjacentHTML('beforeend', html);
+}
+
+async function saveNewTemplate() {
+  const name = document.getElementById('newTemplateName').value.trim();
+  if (!name) { alert('Digite o nome do modelo.'); return; }
+
+  const items = Array.from(document.getElementById('newTemplateItems').querySelectorAll('input[type=text]'))
+    .map((input, idx) => input.value.trim())
+    .filter(v => v)
+    .map((title, idx) => ({ title, sort_order: idx }));
+
+  if (items.length === 0) { alert('Adicione pelo menos um item.'); return; }
+
+  if (editingTemplateId) {
+    await api(`/api/checklist-templates/${editingTemplateId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name, items })
+    });
+  } else {
+    await api('/api/checklist-templates', {
+      method: 'POST',
+      body: JSON.stringify({ name, items })
+    });
+  }
+
+  await loadData();
+  closeTemplates();
+  toast(editingTemplateId ? 'Modelo atualizado!' : 'Modelo criado!', '', 'success');
+}
+
+function editTemplate(id) {
+  const template = templates.find(t => t.id === id);
+  if (!template) return;
+
+  editingTemplateId = id;
+  document.getElementById('newTemplateName').value = template.name;
+
+  const container = document.getElementById('newTemplateItems');
+  container.innerHTML = '';
+  template.items.forEach((item, idx) => {
+    const html = `<div class="template-item-row" style="display:flex;gap:6px;margin-bottom:6px;">
+      <input type="text" value="${item.title}" placeholder="Item do modelo" style="flex:1;padding:8px 12px;background:var(--white);border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:inherit;" onkeypress="if(event.key==='Enter')addTemplateItemRow()">
+      <button onclick="this.parentElement.remove()" style="padding:8px 12px;background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-bd);border-radius:8px;cursor:pointer;font-weight:600;">−</button>
+    </div>`;
+    container.insertAdjacentHTML('beforeend', html);
+  });
+}
+
+async function deleteTemplate(id) {
+  if (!confirm('Excluir este modelo?')) return;
+
+  await api(`/api/checklist-templates/${id}`, { method: 'DELETE' });
+  await loadData();
+  renderTemplatesList();
+  toast('Modelo excluído!', '', 'success');
+}
+
+// ===== SETTINGS (admin) =====
+function toggleSettings(){const p=document.getElementById('settingsPanel');p.classList.toggle('active');if(p.classList.contains('active'))renderMembers();}
+
+function renderMembers(){
+  document.getElementById('membersList').innerHTML=users.map(u=>`<div class="m-item">
+    <div class="avatar" style="background:${u.color};width:30px;height:30px;font-size:10px;">${ini(u.name)}</div>
+    <span style="flex:1;font-size:13px;font-weight:600;">${u.name}</span>
+    <span style="font-size:10px;color:var(--muted);">${u.role==='admin'?'Admin':'Membro'}</span>
+    ${u.id!==currentUser.id?`<button class="rm" onclick="removeUser(${u.id},'${u.name}')">&times;</button>`:''}
+  </div>`).join('');
+}
+
+async function addUser(){
+  const name=document.getElementById('newName').value.trim(),username=document.getElementById('newUser').value.trim(),
+    password=document.getElementById('newPass').value,color=document.getElementById('newColor').value;
+  if(!name||!username||!password){alert('Preencha todos os campos.');return;}
+  const res=await api('/api/users',{method:'POST',body:JSON.stringify({name,username,password,role:'user',color})});
+  if(res&&!res.error){await loadData();renderMembers();document.getElementById('newName').value='';document.getElementById('newUser').value='';document.getElementById('newPass').value='';
+    toast(`${name} adicionado!`,'Login: '+username,'success');
+  } else alert(res?.error||'Erro ao criar usuario');
+}
+
+async function removeUser(id,name){
+  if(confirm(`Remover "${name}" da equipe?`)){await api(`/api/users/${id}`,{method:'DELETE'});await loadData();renderMembers();}
+}
+
+// ===== PASSWORD CHANGE =====
+async function changePassword() {
+  const old = document.getElementById('oldPassword').value;
+  const newP = document.getElementById('newPassword').value;
+  const conf = document.getElementById('confirmPassword').value;
+
+  if (!old || !newP || !conf) {
+    alert('Preencha todos os campos.');
+    return;
+  }
+
+  if (newP !== conf) {
+    alert('As senhas não coincidem.');
+    return;
+  }
+
+  if (newP.length < 4) {
+    alert('A nova senha deve ter pelo menos 4 caracteres.');
+    return;
+  }
+
+  const res = await api('/api/me/password', {
+    method: 'PUT',
+    body: JSON.stringify({ old_password: old, new_password: newP })
+  });
+
+  if (res && !res.error) {
+    document.getElementById('oldPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+    toast('Senha alterada com sucesso!', '', 'success');
+  } else {
+    alert(res?.error || 'Erro ao alterar senha.');
+  }
+}
+
+// ===== LOGOUT =====
+async function doLogout(){if(confirm('Sair do sistema?')){await fetch('/api/logout',{method:'POST'});window.location.href='/login.html';}}
+
+// ===== TOAST =====
+function toast(t,m,type){const el=document.createElement('div');el.className=`toast ${type||''}`;el.innerHTML=`<div class="toast-t">${t}</div><div class="toast-m">${m}</div>`;document.getElementById('toasts').appendChild(el);setTimeout(()=>el.remove(),5000);}
+
+// ===== CLOCK =====
+function updateClock(){const n=new Date();document.getElementById('clock').textContent=n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});document.getElementById('dateDisp').textContent=n.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});}
+
+// ===== EVENTS =====
+document.getElementById('taskModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('importModal').addEventListener('click',function(e){if(e.target===this)closeImport();});
+document.getElementById('templatesModal').addEventListener('click',function(e){if(e.target===this)closeTemplates();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();closeImport();closeTemplates();document.getElementById('settingsPanel').classList.remove('active');}});
+
+init();
+</script>
+</body>
+</html>
