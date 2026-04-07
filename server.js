@@ -29,7 +29,7 @@ function requireAdmin(req, res, next) {
 }
 
 // Helper: enrich task with user data and checklist progress
-async function enrichTask(task, usersCache) {
+async function enrichTask(task, usersCache, lastHistoryByTask) {
     const user = usersCache.find(u => u.id === task.assignee_id);
 
     // Fetch checklist items for this task
@@ -49,18 +49,49 @@ async function enrichTask(task, usersCache) {
         // If checklist table doesn't exist yet, just continue
     }
 
+    let last_history = lastHistoryByTask ? (lastHistoryByTask[task.id] || null) : null;
+    if (!lastHistoryByTask) {
+        try {
+            const { data: hist } = await supabase
+                .from('task_history')
+                .select('*')
+                .eq('task_id', task.id)
+                .order('created_at', { ascending: false })
+                .limit(1);
+            if (hist && hist[0]) last_history = hist[0];
+        } catch (err) {}
+    }
+
     return {
           ...task,
           assignee_name: user ? user.name : 'Desconhecido',
           assignee_color: user ? user.color : '#868e96',
           checklist_total,
-          checklist_done
+          checklist_done,
+          last_history
     };
 }
 
 async function enrichTasks(tasks) {
     const { data: users } = await supabase.from('users').select('id, name, color');
-    return Promise.all(tasks.map(t => enrichTask(t, users || [])));
+    // Bulk fetch latest history per task
+    const lastHistoryByTask = {};
+    try {
+        const ids = tasks.map(t => t.id);
+        if (ids.length > 0) {
+            const { data: hist } = await supabase
+                .from('task_history')
+                .select('*')
+                .in('task_id', ids)
+                .order('created_at', { ascending: false });
+            if (hist) {
+                for (const h of hist) {
+                    if (!lastHistoryByTask[h.task_id]) lastHistoryByTask[h.task_id] = h;
+                }
+            }
+        }
+    } catch (err) {}
+    return Promise.all(tasks.map(t => enrichTask(t, users || [], lastHistoryByTask)));
 }
 
 // ===== STATIC FILES =====
