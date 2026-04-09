@@ -4,15 +4,17 @@
     "description": "Sistema de controle de tarefas - ITS",
     "main": "server.js",
     "scripts": {
-          "start": "node server.js"
+        "start": "node server.js"
     },
     "dependencies": {
-          "@supabase/supabase-js": "^2.49.0",
-          "bcryptjs": "^2.4.3",
-          "express": "^4.21.0",
-          "express-session": "^1.18.0"
+        "@supabase/supabase-js": "^2.101.1",
+        "bcryptjs": "^2.4.3",
+        "express": "^4.21.0",
+        "express-rate-limit": "^7.4.0",
+        "express-session": "^1.18.0",
+        "helmet": "^8.0.0"
     },
     "engines": {
-          "node": ">=18.0.0"
+        "node": ">=18.0.0"
     }
 }

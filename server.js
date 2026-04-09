@@ -2,20 +2,99 @@ const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { supabase, seedDatabase } = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const IS_PROD = process.env.NODE_ENV === 'production';
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Refuse to start in production without a strong session secret
+if (IS_PROD && (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32)) {
+    console.error('ERRO: SESSION_SECRET obrigatorio em producao (minimo 32 caracteres).');
+    process.exit(1);
+}
+
+// Trust proxy (necessario no Render/Heroku para detectar HTTPS)
+app.set('trust proxy', 1);
+
+// Security headers
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'"],
+            frameAncestors: ["'none'"]
+        }
+    },
+    crossOriginEmbedderPolicy: false
+}));
+
+// Forcar HTTPS em producao
+if (IS_PROD) {
+    app.use((req, res, next) => {
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+            return res.redirect(301, 'https://' + req.headers.host + req.url);
+        }
+        next();
+    });
+}
+
+// Limites de tamanho
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// Sessao com cookies seguros em producao
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'its-tarefas-secret-2026-mudar-em-producao',
+    name: 'its.sid',
+    secret: process.env.SESSION_SECRET || 'dev-only-secret-troque-em-producao-32chars',
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'lax' }
+    rolling: true,
+    cookie: {
+        maxAge: 8 * 60 * 60 * 1000, // 8 horas (era 30 dias)
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: IS_PROD
+    }
 }));
+
+// Rate limit para login (anti brute force): 8 tentativas por IP a cada 15 min
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 8,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Muitas tentativas. Tente novamente em 15 minutos.' },
+    skipSuccessfulRequests: true
+});
+
+// Rate limit geral da API: 300 reqs por minuto por IP
+const apiLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 300,
+    standardHeaders: true,
+    legacyHeaders: false
+});
+app.use('/api/', apiLimiter);
+
+// Helper: validar forca de senha
+function isStrongPassword(pw) {
+    if (!pw || typeof pw !== 'string') return false;
+    if (pw.length < 8) return false;
+    // pelo menos 1 letra e 1 numero
+    return /[a-zA-Z]/.test(pw) && /[0-9]/.test(pw);
+}
+
+// Helper: delay constante para evitar timing attacks em login
+async function constantTimeDelay() {
+    return new Promise(r => setTimeout(r, 200));
+}
 
 // ===== AUTH MIDDLEWARE =====
 function requireAuth(req, res, next) {
@@ -115,22 +194,38 @@ app.get('/api/tv/tasks', async (req, res) => {
 });
 
 // ===== AUTH ROUTES =====
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', loginLimiter, async (req, res) => {
+    await constantTimeDelay();
     const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'Credenciais invalidas' });
+
     const { data: users } = await supabase.from('users').select('*').eq('username', username).limit(1);
     const user = users && users[0];
-    if (!user || !bcrypt.compareSync(password, user.password)) {
-          return res.status(401).json({ error: 'Usuario ou senha incorretos' });
+    // Sempre roda bcrypt mesmo se user nao existe (timing attack defense)
+    const fakeHash = '$2a$10$CwTycUXWue0Thq9StjUM0uJ8gMhKlG7AYj5LwY7V5cfQGT7Ul3dHG';
+    const valid = user ? bcrypt.compareSync(password, user.password) : bcrypt.compareSync(password, fakeHash);
+
+    if (!user || !valid) {
+        return res.status(401).json({ error: 'Credenciais invalidas' });
     }
-    req.session.userId = user.id;
-    req.session.role = user.role;
-    req.session.userName = user.name;
-    res.json({ id: user.id, name: user.name, role: user.role, color: user.color });
+
+    // Regenera sessao para prevenir session fixation
+    req.session.regenerate((err) => {
+        if (err) return res.status(500).json({ error: 'Erro de sessao' });
+        req.session.userId = user.id;
+        req.session.role = user.role;
+        req.session.userName = user.name;
+        req.session.save(() => {
+            res.json({ id: user.id, name: user.name, role: user.role, color: user.color });
+        });
+    });
 });
 
 app.post('/api/logout', (req, res) => {
-    req.session.destroy();
-    res.json({ ok: true });
+    req.session.destroy(() => {
+        res.clearCookie('its.sid');
+        res.json({ ok: true });
+    });
 });
 
 app.get('/api/me', requireAuth, async (req, res) => {
@@ -145,6 +240,9 @@ app.put('/api/me/password', requireAuth, async (req, res) => {
     const { old_password, new_password } = req.body;
     if (!old_password || !new_password) {
         return res.status(400).json({ error: 'old_password e new_password sao obrigatorios' });
+    }
+    if (!isStrongPassword(new_password)) {
+        return res.status(400).json({ error: 'Senha fraca: minimo 8 caracteres com letras e numeros' });
     }
 
     try {
@@ -180,6 +278,7 @@ app.get('/api/users', requireAuth, async (req, res) => {
 app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
     const { name, username, password, role, color } = req.body;
     if (!name || !username || !password) return res.status(400).json({ error: 'Campos obrigatorios: name, username, password' });
+    if (!isStrongPassword(password)) return res.status(400).json({ error: 'Senha fraca: minimo 8 caracteres com letras e numeros' });
 
            const { data: existing } = await supabase.from('users').select('id').eq('username', username).limit(1);
     if (existing && existing.length > 0) return res.status(400).json({ error: 'Username ja existe' });
@@ -201,7 +300,10 @@ app.put('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
     if (username) updates.username = username;
     if (role) updates.role = role;
     if (color) updates.color = color;
-    if (password) updates.password = bcrypt.hashSync(password, 10);
+    if (password) {
+        if (!isStrongPassword(password)) return res.status(400).json({ error: 'Senha fraca: minimo 8 caracteres com letras e numeros' });
+        updates.password = bcrypt.hashSync(password, 10);
+    }
 
           const { error } = await supabase.from('users').update(updates).eq('id', id);
     if (error) return res.status(500).json({ error: error.message });
@@ -681,6 +783,233 @@ app.get('/api/tasks/:id/history', requireAuth, async (req, res) => {
         res.status(500).json({ error: 'Erro ao buscar historico' });
     }
 });
+
+// ===== CLIENT AUTH (portal do cliente) =====
+function requireClient(req, res, next) {
+    if (req.session && req.session.clientId) return next();
+    res.status(401).json({ error: 'Nao autenticado' });
+}
+
+app.post('/api/client/login', loginLimiter, async (req, res) => {
+    await constantTimeDelay();
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'Credenciais invalidas' });
+
+    const { data: clients } = await supabase.from('clients').select('*').eq('username', username).eq('active', true).limit(1);
+    const client = clients && clients[0];
+    const fakeHash = '$2a$10$CwTycUXWue0Thq9StjUM0uJ8gMhKlG7AYj5LwY7V5cfQGT7Ul3dHG';
+    const valid = client ? bcrypt.compareSync(password, client.password) : bcrypt.compareSync(password, fakeHash);
+
+    if (!client || !valid) {
+        return res.status(401).json({ error: 'Credenciais invalidas' });
+    }
+
+    req.session.regenerate((err) => {
+        if (err) return res.status(500).json({ error: 'Erro de sessao' });
+        req.session.clientId = client.id;
+        req.session.clientName = client.name;
+        req.session.save(() => {
+            res.json({ id: client.id, name: client.name, company: client.company });
+        });
+    });
+});
+
+app.post('/api/client/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.clearCookie('its.sid');
+        res.json({ ok: true });
+    });
+});
+
+app.get('/api/client/me', requireClient, async (req, res) => {
+    const { data: clients } = await supabase.from('clients').select('id, name, company, email').eq('id', req.session.clientId).limit(1);
+    if (!clients || !clients[0]) return res.status(401).json({ error: 'Sessao invalida' });
+    res.json(clients[0]);
+});
+
+// Client creates a ticket
+app.post('/api/client/tickets', requireClient, async (req, res) => {
+    const { subject, description, priority } = req.body;
+    if (!subject || !description) return res.status(400).json({ error: 'Assunto e descricao obrigatorios' });
+    const { data, error } = await supabase.from('tickets').insert({
+        client_id: req.session.clientId,
+        subject, description,
+        priority: priority || 'normal',
+        status: 'aberto'
+    }).select();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data[0]);
+});
+
+// Client lists their own tickets
+app.get('/api/client/tickets', requireClient, async (req, res) => {
+    const { data } = await supabase.from('tickets').select('*').eq('client_id', req.session.clientId).order('created_at', { ascending: false });
+    res.json(data || []);
+});
+
+// ===== ADMIN: manage clients =====
+app.get('/api/clients', requireAuth, requireAdmin, async (req, res) => {
+    const { data } = await supabase.from('clients').select('id, name, company, email, username, active, created_at').order('name');
+    res.json(data || []);
+});
+
+app.post('/api/clients', requireAuth, requireAdmin, async (req, res) => {
+    const { name, company, email, username, password } = req.body;
+    if (!name || !username || !password) return res.status(400).json({ error: 'name, username, password obrigatorios' });
+    if (!isStrongPassword(password)) return res.status(400).json({ error: 'Senha fraca: minimo 8 caracteres com letras e numeros' });
+    const { data: ex } = await supabase.from('clients').select('id').eq('username', username).limit(1);
+    if (ex && ex.length > 0) return res.status(400).json({ error: 'Username ja existe' });
+    const hash = bcrypt.hashSync(password, 10);
+    const { data, error } = await supabase.from('clients').insert({ name, company, email, username, password: hash, active: true }).select('id, name, company, email, username, active');
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data[0]);
+});
+
+app.put('/api/clients/:id', requireAuth, requireAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    const { name, company, email, username, password, active } = req.body;
+    const upd = {};
+    if (name !== undefined) upd.name = name;
+    if (company !== undefined) upd.company = company;
+    if (email !== undefined) upd.email = email;
+    if (username !== undefined) upd.username = username;
+    if (active !== undefined) upd.active = active;
+    if (password) {
+        if (!isStrongPassword(password)) return res.status(400).json({ error: 'Senha fraca: minimo 8 caracteres com letras e numeros' });
+        upd.password = bcrypt.hashSync(password, 10);
+    }
+    const { error } = await supabase.from('clients').update(upd).eq('id', id);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ ok: true });
+});
+
+app.delete('/api/clients/:id', requireAuth, requireAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    await supabase.from('clients').delete().eq('id', id);
+    res.json({ ok: true });
+});
+
+// ===== ADMIN: tickets =====
+app.get('/api/tickets', requireAuth, async (req, res) => {
+    const { data: tickets } = await supabase.from('tickets').select('*').order('created_at', { ascending: false });
+    const { data: clients } = await supabase.from('clients').select('id, name, company');
+    const { data: allUsers } = await supabase.from('users').select('id, name, color');
+    const enriched = (tickets || []).map(t => {
+        const c = (clients || []).find(x => x.id === t.client_id);
+        const u = (allUsers || []).find(x => x.id === t.assigned_to);
+        return { ...t, client_name: c ? c.name : 'Cliente removido', client_company: c ? c.company : '', assigned_name: u ? u.name : null, assigned_color: u ? u.color : null };
+    });
+    res.json(enriched);
+});
+
+app.put('/api/tickets/:id', requireAuth, async (req, res) => {
+    const id = Number(req.params.id);
+    const { status, assigned_to, response, priority } = req.body;
+    const upd = { updated_at: new Date().toISOString() };
+    if (status !== undefined) upd.status = status;
+    if (assigned_to !== undefined) upd.assigned_to = assigned_to;
+    if (response !== undefined) upd.response = response;
+    if (priority !== undefined) upd.priority = priority;
+    const { error } = await supabase.from('tickets').update(upd).eq('id', id);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ ok: true });
+});
+
+// Convert ticket to task
+app.post('/api/tickets/:id/to-task', requireAuth, async (req, res) => {
+    const id = Number(req.params.id);
+    const { deadline, assignee_id, priority } = req.body;
+    const { data: tickets } = await supabase.from('tickets').select('*').eq('id', id).limit(1);
+    const ticket = tickets && tickets[0];
+    if (!ticket) return res.status(404).json({ error: 'Chamado nao encontrado' });
+    const { data: clientRows } = await supabase.from('clients').select('name, company').eq('id', ticket.client_id).limit(1);
+    const c = clientRows && clientRows[0];
+    const clientName = c ? (c.company || c.name) : 'Cliente';
+    const { data: newTasks, error } = await supabase.from('tasks').insert({
+        client: clientName,
+        title: ticket.subject + ' - ' + ticket.description.slice(0, 100),
+        assignee_id: assignee_id || req.session.userId,
+        deadline: deadline || defaultDeadline(),
+        priority: priority || ticket.priority || 'normal',
+        status: 'todo',
+        created_by: req.session.userId
+    }).select();
+    if (error) return res.status(500).json({ error: error.message });
+    await supabase.from('tickets').update({ status: 'em_andamento', task_id: newTasks[0].id, assigned_to: assignee_id || req.session.userId, updated_at: new Date().toISOString() }).eq('id', id);
+    await logTaskHistory(newTasks[0].id, req.session.userId, req.session.userName, 'created', null, null, null, 'Criada a partir do chamado #' + id);
+    res.json(newTasks[0]);
+});
+
+// ===== REPORTS =====
+// Monthly report: stats per user for a given month (YYYY-MM)
+app.get('/api/reports/monthly', requireAuth, async (req, res) => {
+    const { month, user_id } = req.query; // month format: '2026-04'
+    if (!month) return res.status(400).json({ error: 'month obrigatorio (YYYY-MM)' });
+    const [y, m] = month.split('-').map(Number);
+    const start = new Date(Date.UTC(y, m - 1, 1)).toISOString();
+    const end = new Date(Date.UTC(y, m, 1)).toISOString();
+
+    try {
+        const { data: allUsers } = await supabase.from('users').select('id, name, color');
+        let usersToReport = allUsers || [];
+        if (user_id) usersToReport = usersToReport.filter(u => u.id === Number(user_id));
+
+        // Fetch tasks updated/created in range + history
+        const { data: allTasks } = await supabase.from('tasks').select('*');
+        const { data: historyInMonth } = await supabase
+            .from('task_history')
+            .select('*')
+            .gte('created_at', start)
+            .lt('created_at', end);
+
+        const result = usersToReport.map(u => {
+            const userTasks = (allTasks || []).filter(t => t.assignee_id === u.id);
+            const userHist = (historyInMonth || []).filter(h => h.user_id === u.id);
+
+            // Completed in month: status changed to done in this month
+            const completedHist = userHist.filter(h => h.field_changed === 'Status' && h.new_value === 'Concluido');
+            const completedTaskIds = new Set(completedHist.map(h => h.task_id));
+            const completedTasks = (allTasks || []).filter(t => completedTaskIds.has(t.id));
+
+            // Pending open: tasks assigned to user not done
+            const pending = userTasks.filter(t => t.status !== 'done');
+
+            // Deadline extensions in month
+            const deadlineChanges = userHist.filter(h => h.field_changed === 'Prazo');
+
+            // Avg completion time (days) for tasks completed this month
+            let avgDays = null;
+            if (completedTasks.length > 0) {
+                const totalMs = completedTasks.reduce((acc, t) => {
+                    const created = new Date(t.created_at || t.updated_at);
+                    const done = new Date(t.updated_at);
+                    return acc + Math.max(0, done - created);
+                }, 0);
+                avgDays = Math.round((totalMs / completedTasks.length) / 86400000 * 10) / 10;
+            }
+
+            return {
+                user: { id: u.id, name: u.name, color: u.color },
+                completed: completedTasks.map(t => ({ id: t.id, client: t.client, title: t.title, deadline: t.deadline })),
+                completed_count: completedTasks.length,
+                pending: pending.map(t => ({ id: t.id, client: t.client, title: t.title, deadline: t.deadline, status: t.status, priority: t.priority })),
+                pending_count: pending.length,
+                deadline_extensions: deadlineChanges.map(h => ({ task_id: h.task_id, old: h.old_value, new: h.new_value, reason: h.reason, at: h.created_at })),
+                deadline_extensions_count: deadlineChanges.length,
+                avg_days_to_complete: avgDays
+            };
+        });
+
+        res.json({ month, start, end, data: result });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao gerar relatorio: ' + err.message });
+    }
+});
+
+// Client portal page routes
+app.get('/cliente', (req, res) => res.sendFile(path.join(__dirname, 'public', 'cliente.html')));
+app.get('/cliente/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'cliente-login.html')));
+app.get('/relatorio', (req, res) => res.sendFile(path.join(__dirname, 'public', 'relatorio.html')));
 
 // ===== START =====
 async function start() {
