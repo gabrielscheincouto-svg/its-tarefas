@@ -5,7 +5,7 @@ import Link from "next/link";
 export default async function GestaoPage() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login?area=gestao");
+  if (!user) redirect("/login");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -13,12 +13,19 @@ export default async function GestaoPage() {
     .eq("id", user.id)
     .maybeSingle();
 
-  // Só equipe ITS pode entrar aqui
   if (!profile || !["admin", "internal"].includes(profile.role)) {
     redirect("/cliente");
   }
 
   const sistemas = [
+    {
+      title: "Clientes & Empresas",
+      desc: "Cadastrar novos clientes com login, vincular empresas e checklist de documentos.",
+      href: "/gestao/clientes",
+      icon: "🏢",
+      badge: "ATIVO",
+      external: false,
+    },
     {
       title: "Controle de Tarefas",
       desc: "Sistema de tarefas da equipe ITS com checklist, clientes, histórico e modo TV.",
@@ -32,14 +39,6 @@ export default async function GestaoPage() {
       desc: "Processo mensal, auditorias, diffs e publicação do relatório ao cliente.",
       href: "/admin",
       icon: "📊",
-      badge: "ATIVO",
-      external: false,
-    },
-    {
-      title: "Empresas & Contadores",
-      desc: "Cadastro de empresas-cliente, escritórios contábeis e vínculos.",
-      href: "/admin",
-      icon: "🏢",
       badge: "ATIVO",
       external: false,
     },
@@ -91,15 +90,12 @@ export default async function GestaoPage() {
 
 function SistemaCard({ title, desc, href, icon, badge, external }: any) {
   const disabled = badge === "EM BREVE";
-  const Tag: any = disabled ? "div" : "a";
+  const Tag: any = disabled ? "div" : external ? "a" : Link;
   const props = disabled
     ? { className: "card p-6 block opacity-50 cursor-not-allowed" }
-    : {
-        href,
-        target: external ? "_blank" : undefined,
-        rel: external ? "noopener noreferrer" : undefined,
-        className: "card p-6 block hover:border-its-green transition group",
-      };
+    : external
+    ? { href, target: "_blank", rel: "noopener noreferrer", className: "card p-6 block hover:border-its-green transition group" }
+    : { href, className: "card p-6 block hover:border-its-green transition group" };
 
   return (
     <Tag {...props}>
