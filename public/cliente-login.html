@@ -5,34 +5,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ITS - Portal do Cliente</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
-body{background:linear-gradient(135deg,#3b5bdb,#7048e8);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
-.box{background:#fff;border-radius:18px;padding:36px 30px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
-.logo{width:60px;height:60px;background:linear-gradient(135deg,#3b5bdb,#7048e8);border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:22px;margin:0 auto 16px;}
-h1{text-align:center;font-size:22px;margin-bottom:6px;}
-.sub{text-align:center;color:#8b8da3;font-size:12px;margin-bottom:26px;}
-.fg{margin-bottom:14px;}
-label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:6px;}
-input{width:100%;padding:12px;border:1.5px solid #e1e4ea;border-radius:10px;font-size:14px;}
-input:focus{outline:none;border-color:#3b5bdb;}
-button{width:100%;padding:13px;background:linear-gradient(135deg,#3b5bdb,#7048e8);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;}
-.err{background:#fff5f5;color:#c92a2a;padding:10px;border-radius:8px;font-size:12px;margin-bottom:14px;display:none;}
+body{background:#0d0d0d;color:#F7F7F7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden;}
+body::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(37,234,180,0.08),transparent 50%),radial-gradient(ellipse at bottom left,rgba(37,234,180,0.05),transparent 50%);pointer-events:none;}
+.box{background:#181818;border:1px solid #2b2b2b;border-radius:20px;padding:40px 32px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.6);position:relative;z-index:1;}
+.logo{width:60px;height:60px;background:#25EAB4;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#0d0d0d;font-weight:900;font-size:20px;margin:0 auto 18px;}
+h1{text-align:center;font-size:22px;margin-bottom:4px;font-weight:800;letter-spacing:-0.5px;}
+.sub{text-align:center;color:#777;font-size:11px;margin-bottom:28px;text-transform:uppercase;letter-spacing:2px;font-weight:600;}
+.fg{margin-bottom:16px;}
+label{display:block;font-size:11px;font-weight:700;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:1.5px;}
+input{width:100%;padding:13px;background:#1f1f1f;border:1.5px solid #2b2b2b;border-radius:11px;font-size:14px;color:#F7F7F7;font-family:inherit;}
+input:focus{outline:none;border-color:#25EAB4;box-shadow:0 0 0 4px rgba(37,234,180,0.12);}
+button{width:100%;padding:14px;background:#25EAB4;color:#0d0d0d;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;margin-top:10px;text-transform:lowercase;letter-spacing:0.3px;}
+button:hover{background:#2df4c0;}
+.err{background:rgba(255,92,108,0.1);border:1.5px solid rgba(255,92,108,0.3);color:#FF5C6C;padding:11px;border-radius:10px;font-size:12px;margin-bottom:14px;display:none;font-weight:600;}
 .err.show{display:block;}
-.foot{text-align:center;font-size:11px;color:#8b8da3;margin-top:18px;}
-.foot a{color:#3b5bdb;text-decoration:none;}
+.foot{text-align:center;font-size:11px;color:#777;margin-top:18px;}
+.foot a{color:#25EAB4;text-decoration:none;font-weight:600;}
 </style>
 </head>
 <body>
 <div class="box">
   <div class="logo">ITS</div>
   <h1>Portal do Cliente</h1>
-  <div class="sub">Acesse para abrir chamados</div>
+  <div class="sub">Chamados e Solicita&ccedil;&otilde;es</div>
   <div class="err" id="err"></div>
   <form onsubmit="doLogin(event)">
     <div class="fg"><label>Usu&aacute;rio</label><input type="text" id="u" required autofocus></div>
     <div class="fg"><label>Senha</label><input type="password" id="p" required></div>
-    <button type="submit">Entrar</button>
+    <button type="submit">entrar</button>
   </form>
   <div class="foot"><a href="/login.html">Acesso da equipe ITS &rarr;</a></div>
 </div>

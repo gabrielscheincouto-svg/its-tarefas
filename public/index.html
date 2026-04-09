@@ -6,7 +6,19 @@
 <title>ITS Tarefas</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-  :root{--bg:#f0f2f5;--white:#ffffff;--light:#f8f9fb;--hover:#f0f4ff;--accent:#3b5bdb;--accent-light:#edf2ff;--green:#2b8a3e;--green-bg:#ebfbee;--green-bd:#b2f2bb;--yellow:#e67700;--yellow-bg:#fff9db;--yellow-bd:#ffe066;--red:#c92a2a;--red-bg:#fff5f5;--red-bd:#ffc9c9;--purple:#7048e8;--text:#1a1a2e;--text2:#555770;--muted:#8b8da3;--border:#e1e4ea;--border-lt:#eceef2;--radius:14px;--radius-sm:10px;--shadow:0 2px 12px rgba(0,0,0,0.08);}
+  :root{--bg:#0d0d0d;--white:#181818;--light:#1f1f1f;--hover:#252525;--accent:#25EAB4;--accent-light:rgba(37,234,180,0.14);--accent-lt:rgba(37,234,180,0.14);--green:#25EAB4;--green-bg:rgba(37,234,180,0.12);--green-bd:rgba(37,234,180,0.35);--yellow:#FFB347;--yellow-bg:rgba(255,179,71,0.12);--yellow-bd:rgba(255,179,71,0.35);--red:#FF5C6C;--red-bg:rgba(255,92,108,0.12);--red-bd:rgba(255,92,108,0.35);--purple:#25EAB4;--text:#F7F7F7;--text2:#BBBBBB;--muted:#777777;--border:#2b2b2b;--border-lt:#242424;--radius:14px;--radius-sm:10px;--shadow:0 2px 12px rgba(0,0,0,0.5);}
+  body{background:var(--bg);color:var(--text);}
+  input,textarea,select{background:var(--light)!important;color:var(--text)!important;border-color:var(--border)!important;}
+  input::placeholder,textarea::placeholder{color:var(--muted)!important;}
+  .card,.col,.summary-col,.sum-section,.modal,.settings,.hdr,.kanban-col,.s-card,.m-item,.team-row,.tr,.pcard,.phdr,.ti,.titem,.rep,.toolbar,.userblock,.kpi{background:var(--white);color:var(--text);}
+  .s-card.over,.sc.over,.ti.venc,.card.venc{background:rgba(255,92,108,0.08)!important;}
+  .s-card.soon,.sc.soon,.card.atn,.ti.atn{background:rgba(255,179,71,0.08)!important;}
+  .card.urg,.ti.urg{background:rgba(255,92,108,0.05)!important;}
+  .ti.ok{background:rgba(37,234,180,0.08)!important;}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:#333;border-radius:4px;}
+  ::-webkit-scrollbar-thumb:hover{background:#444;}
   *{margin:0;padding:0;box-sizing:border-box;}
   body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow:hidden;}
 
