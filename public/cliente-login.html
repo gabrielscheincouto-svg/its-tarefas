@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITS - Portal do Cliente</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+body{background:linear-gradient(135deg,#3b5bdb,#7048e8);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.box{background:#fff;border-radius:18px;padding:36px 30px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.logo{width:60px;height:60px;background:linear-gradient(135deg,#3b5bdb,#7048e8);border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:22px;margin:0 auto 16px;}
+h1{text-align:center;font-size:22px;margin-bottom:6px;}
+.sub{text-align:center;color:#8b8da3;font-size:12px;margin-bottom:26px;}
+.fg{margin-bottom:14px;}
+label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:6px;}
+input{width:100%;padding:12px;border:1.5px solid #e1e4ea;border-radius:10px;font-size:14px;}
+input:focus{outline:none;border-color:#3b5bdb;}
+button{width:100%;padding:13px;background:linear-gradient(135deg,#3b5bdb,#7048e8);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;}
+.err{background:#fff5f5;color:#c92a2a;padding:10px;border-radius:8px;font-size:12px;margin-bottom:14px;display:none;}
+.err.show{display:block;}
+.foot{text-align:center;font-size:11px;color:#8b8da3;margin-top:18px;}
+.foot a{color:#3b5bdb;text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">ITS</div>
+  <h1>Portal do Cliente</h1>
+  <div class="sub">Acesse para abrir chamados</div>
+  <div class="err" id="err"></div>
+  <form onsubmit="doLogin(event)">
+    <div class="fg"><label>Usu&aacute;rio</label><input type="text" id="u" required autofocus></div>
+    <div class="fg"><label>Senha</label><input type="password" id="p" required></div>
+    <button type="submit">Entrar</button>
+  </form>
+  <div class="foot"><a href="/login.html">Acesso da equipe ITS &rarr;</a></div>
+</div>
+<script>
+async function doLogin(e){
+  e.preventDefault();
+  const u=document.getElementById('u').value,p=document.getElementById('p').value;
+  const err=document.getElementById('err');err.classList.remove('show');
+  const r=await fetch('/api/client/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+  if(r.ok){window.location.href='/cliente';}
+  else{const d=await r.json();err.textContent=d.error||'Erro ao entrar';err.classList.add('show');}
+}
+</script>
+</body>
+</html>
