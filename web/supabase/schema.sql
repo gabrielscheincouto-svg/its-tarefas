@@ -177,8 +177,8 @@ alter table indicadores enable row level security;
 alter table solicitacoes enable row level security;
 
 -- Função helper: role do usuário
-create or replace function current_role() returns user_role
-language sql stable as $$
+create or replace function get_user_role() returns user_role
+language sql stable security definer as $$
   select role from profiles where id = auth.uid()
 $$;
 
@@ -193,59 +193,59 @@ language sql stable as $$
     join contadores c on e.contador_id = c.id
     where c.responsavel_user_id = auth.uid()
   union
-  select id from empresas where current_role() in ('admin','internal')
+  select id from empresas where get_user_role() in ('admin','internal')
 $$;
 
 -- Profiles: cada um lê o seu; admin lê todos
 create policy profiles_self_read on profiles for select
-  using (id = auth.uid() or current_role() in ('admin','internal'));
+  using (id = auth.uid() or get_user_role() in ('admin','internal'));
 create policy profiles_self_update on profiles for update
   using (id = auth.uid());
 create policy profiles_admin_all on profiles for all
-  using (current_role() = 'admin');
+  using (get_user_role() = 'admin');
 
 -- Empresas
 create policy empresas_read on empresas for select
   using (id in (select user_empresas()));
 create policy empresas_admin_write on empresas for all
-  using (current_role() in ('admin','internal'));
+  using (get_user_role() in ('admin','internal'));
 
 -- Tabelas vinculadas à empresa (padrão genérico)
 create policy docs_read on documentos for select
   using (empresa_id in (select user_empresas()));
 create policy docs_insert on documentos for insert
   with check (empresa_id in (select user_empresas())
-              and current_role() in ('contador','internal','admin'));
+              and get_user_role() in ('contador','internal','admin'));
 
 create policy processos_read on processos_mensais for select
   using (empresa_id in (select user_empresas()));
 create policy processos_write on processos_mensais for all
-  using (current_role() in ('admin','internal'));
+  using (get_user_role() in ('admin','internal'));
 
 create policy etapas_read on processo_etapas for select
   using (processo_id in (select id from processos_mensais where empresa_id in (select user_empresas())));
 create policy etapas_write on processo_etapas for all
-  using (current_role() in ('admin','internal'));
+  using (get_user_role() in ('admin','internal'));
 
 create policy balancete_read on balancete_linhas for select
   using (processo_id in (select id from processos_mensais where empresa_id in (select user_empresas())));
 create policy balancete_write on balancete_linhas for all
-  using (current_role() in ('contador','admin','internal'));
+  using (get_user_role() in ('contador','admin','internal'));
 
 create policy auditoria_read on auditoria_diffs for select
   using (processo_id in (select id from processos_mensais where empresa_id in (select user_empresas())));
 create policy auditoria_write on auditoria_diffs for all
-  using (current_role() in ('admin','internal'));
+  using (get_user_role() in ('admin','internal'));
 
 create policy plan_read on planejamentos for select
   using (processo_id in (select id from processos_mensais where empresa_id in (select user_empresas())));
 create policy plan_write on planejamentos for all
-  using (current_role() in ('admin','internal'));
+  using (get_user_role() in ('admin','internal'));
 
 create policy ind_read on indicadores for select
   using (processo_id in (select id from processos_mensais where empresa_id in (select user_empresas())));
 create policy ind_write on indicadores for all
-  using (current_role() in ('admin','internal'));
+  using (get_user_role() in ('admin','internal'));
 
 create policy sol_read on solicitacoes for select
   using (empresa_id in (select user_empresas()));
