@@ -73,10 +73,10 @@ export default function LoginPage() {
 
         <div className="mt-6 pt-6 border-t border-its-gray text-center">
           <div className="text-xs text-gray-500">É da equipe ITS?</div>
-          <a href="https://its-tarefas-7xlm.onrender.com/"
+          <Link href="/gestao"
             className="text-sm text-its-green font-bold hover:underline">
             Acessar espaço do escritório →
-          </a>
+          </Link>
         </div>
       </div>
     </main>
