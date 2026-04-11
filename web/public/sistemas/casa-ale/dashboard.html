@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Casa Ale</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Inter, system-ui, sans-serif; background: #0A0A0A; color: #fff; padding: 24px; min-height: 100vh; }
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .header h1 { font-size: 1.5rem; font-weight: 700; }
+    .header .badge { background: #00E676; color: #000; font-size: 10px; font-weight: 700; padding: 4px 12px; border-radius: 999px; letter-spacing: 0.05em; }
+    .card { background: #141414; border: 1px solid #1f1f1f; border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+    .card-highlight { background: linear-gradient(135deg, #1f1f1f, #141414); border-color: #00E676; }
+    .label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
+    .big-number { font-size: 2.5rem; font-weight: 700; color: #00E676; margin-top: 4px; }
+    .small-text { font-size: 12px; color: #666; margin-top: 4px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; }
+    .indicator .value { font-size: 1.75rem; font-weight: 700; color: #00E676; }
+    .indicator .label { margin-bottom: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead { color: #888; font-size: 11px; text-transform: uppercase; }
+    th { text-align: left; padding: 8px 0; border-bottom: 1px solid #1f1f1f; }
+    th:last-child { text-align: right; }
+    td { padding: 10px 0; border-bottom: 1px solid #1f1f1f; }
+    td:last-child { text-align: right; color: #00E676; font-weight: 700; }
+    .section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; }
+    .empty { color: #666; text-align: center; padding: 40px 0; }
+    @media (max-width: 600px) { body { padding: 16px; } .big-number { font-size: 2rem; } .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Dashboard Financeiro</h1>
+    <span class="badge">CASA ALE</span>
+  </div>
+  <div class="card card-highlight" id="economia-card">
+    <div class="label">Economia gerada pela ITS</div>
+    <div class="big-number" id="economia-valor">R$ 0,00</div>
+    <div class="small-text" id="economia-comp">—</div>
+  </div>
+  <div class="card" id="indicadores-card">
+    <div class="section-title">Indicadores</div>
+    <div class="grid-4">
+      <div class="indicator"><div class="label">Margem bruta</div><div class="value" id="margem-bruta">—</div></div>
+      <div class="indicator"><div class="label">Margem líquida</div><div class="value" id="margem-liquida">—</div></div>
+      <div class="indicator"><div class="label">Liquidez corrente</div><div class="value" id="liquidez">—</div></div>
+      <div class="indicator"><div class="label">Health Score</div><div class="value" id="health-score">—</div></div>
+    </div>
+  </div>
+  <div class="card" id="auditoria-card">
+    <div class="section-title">Ajustes da Auditoria ITS</div>
+    <table>
+      <thead><tr><th>Item</th><th>Contador</th><th>ITS</th><th>Impacto</th></tr></thead>
+      <tbody id="auditoria-body"><tr><td colspan="4" class="empty">Nenhuma auditoria registrada</td></tr></tbody>
+    </table>
+  </div>
+  <script>
+    const DATA = {
+      economia: { valor: 15420.50, competencia: "2026-03-01" },
+      indicadores: { margem_bruta: 32.5, margem_liquida: 12.8, liquidez_corrente: 1.45, health_score: 78 },
+      auditoria: [
+        { item: "PIS/COFINS — Créditos", valor_contador: 4200, valor_its: 5850, impacto: 1650 },
+        { item: "ICMS — Base de cálculo", valor_contador: 18500, valor_its: 16200, impacto: 2300 },
+        { item: "IRPJ — Adicional", valor_contador: 8900, valor_its: 7500, impacto: 1400 }
+      ]
+    };
+    function formatBRL(n) { return "R$ " + Number(n).toLocaleString("pt-BR", { minimumFractionDigits: 2 }); }
+    function formatDate(d) { return new Date(d).toLocaleDateString("pt-BR"); }
+    if (DATA.economia) {
+      document.getElementById("economia-valor").textContent = formatBRL(DATA.economia.valor);
+      document.getElementById("economia-comp").textContent = "Competência " + formatDate(DATA.economia.competencia);
+    }
+    if (DATA.indicadores) {
+      const ind = DATA.indicadores;
+      document.getElementById("margem-bruta").textContent = ind.margem_bruta + "%";
+      document.getElementById("margem-liquida").textContent = ind.margem_liquida + "%";
+      document.getElementById("liquidez").textContent = ind.liquidez_corrente;
+      document.getElementById("health-score").textContent = ind.health_score + "/100";
+    }
+    if (DATA.auditoria && DATA.auditoria.length > 0) {
+      document.getElementById("auditoria-body").innerHTML = DATA.auditoria.map(d =>
+        '<tr><td>'+d.item+'</td><td>'+formatBRL(d.valor_contador)+'</td><td>'+formatBRL(d.valor_its)+'</td><td>'+formatBRL(d.impacto)+'</td></tr>'
+      ).join("");
+    }
+    window.addEventListener("message", (e) => {
+      if (e.data && e.data.type === "its-data" && e.data.economia) {
+        document.getElementById("economia-valor").textContent = formatBRL(e.data.economia.valor);
+        document.getElementById("economia-comp").textContent = "Competência " + formatDate(e.data.economia.competencia);
+      }
+    });
+  </script>
+</body>
+</html>
