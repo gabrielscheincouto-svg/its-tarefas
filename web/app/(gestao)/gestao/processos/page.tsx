@@ -24,7 +24,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   pendente: { label: "Pendente", color: "bg-gray-600" },
   em_andamento: { label: "Em andamento", color: "bg-yellow-600" },
   concluido: { label: "Concluido", color: "bg-blue-600" },
-  publicado: { label: "Publicado", color: "bg-[#00E676] text-black" },
+  publicado: { label: "Publicado", color: 'bg-[#00E676] text-black' },
 };
 
 export default function ProcessosPage() {
@@ -119,7 +119,7 @@ export default function ProcessosPage() {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/gestao" className="text-xs text-gray-400 hover:text-[#00E676]">
-              <- Gestao
+              {"\u2190"} Gestao
             </Link>
             <div className="h-4 w-px bg-[#1f1f1f]" />
             <div>
@@ -195,7 +195,7 @@ export default function ProcessosPage() {
 
         {processos.length === 0 ? (
           <div className="bg-[#141414] border border-[#1f1f1f] rounded-xl p-12 text-center text-gray-500">
-            Nenhum processo criado ainda. Clique em "Novo processo" para comecar.
+            Nenhum processo criado ainda. Clique em &quot;Novo processo&quot; para comecar.
           </div>
         ) : (
           <div className="space-y-3">
@@ -245,4 +245,4 @@ export default function ProcessosPage() {
       </section>
     </main>
   );
-      }
+}
