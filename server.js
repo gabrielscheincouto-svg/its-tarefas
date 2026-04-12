@@ -1042,6 +1042,18 @@ app.get('/cliente', (req, res) => res.sendFile(path.join(__dirname, 'public', 'c
 app.get('/cliente/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'cliente-login.html')));
 app.get('/relatorio', (req, res) => res.sendFile(path.join(__dirname, 'public', 'relatorio.html')));
 
+// ===== WEATHER PROXY =====
+app.get('/api/weather', async (req, res) => {
+    try {
+        const url = 'https://api.open-meteo.com/v1/forecast?latitude=-30.0346&longitude=-51.2177&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=America/Sao_Paulo&forecast_days=5&hourly=relativehumidity_2m';
+        const r = await fetch(url);
+        const data = await r.json();
+        res.json(data);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // ===== START =====
 async function start() {
     await seedDatabase();
