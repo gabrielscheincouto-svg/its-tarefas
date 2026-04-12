@@ -832,7 +832,7 @@ async function openEdit(id) {
   document.getElementById('iDeadline').value=t.deadline;document.getElementById('iPriority').value=t.priority;
   document.getElementById('iValue').value=t.value||'';
   document.getElementById('iContractLink').value=t.contract_link||'';
-  fillAssignees(t.assignee_id);
+  fillAssignees(t.assignee_id, t);
   fillTemplateSelect();
 
   // Load checklist
@@ -868,12 +868,12 @@ function closeModal() { document.getElementById('taskModal').classList.remove('a
 
 function byId(id){return document.getElementById(id);}
 
-function fillAssignees(sel) {
+function fillAssignees(sel, taskObj) {
   document.getElementById('iAssignee').innerHTML=users.map(u=>`<option value="${u.id}" ${u.id===sel?'selected':''}>${u.name}</option>`).join('');
     byId('iTeam').innerHTML=byId('iAssignee').innerHTML;
     // Set team selections from additional_assignees
-    if(task.additional_assignees_parsed){
-      const teamIds=task.additional_assignees_parsed.map(u=>String(u.id));
+    if(taskObj && taskObj.additional_assignees_parsed){
+      const teamIds=taskObj.additional_assignees_parsed.map(u=>String(u.id));
       [...byId('iTeam').options].forEach(o=>o.selected=teamIds.includes(o.value));
     }
 }
