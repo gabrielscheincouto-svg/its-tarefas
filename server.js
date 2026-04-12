@@ -1045,7 +1045,7 @@ app.get('/relatorio', (req, res) => res.sendFile(path.join(__dirname, 'public', 
 // ===== WEATHER PROXY =====
 app.get('/api/weather', async (req, res) => {
     try {
-        const url = 'https://api.open-meteo.com/v1/forecast?latitude=-30.0346&longitude=-51.2177&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=America/Sao_Paulo&forecast_days=5&hourly=relativehumidity_2m';
+        const url = 'https://api.open-meteo.com/v1/forecast?latitude=-30.0346&longitude=-51.2177&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=America/Sao_Paulo&forecast_days=5';
         const r = await fetch(url);
         const data = await r.json();
         res.json(data);
