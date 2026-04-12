@@ -48,6 +48,8 @@
   .user-pill{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;background:var(--light);border:1px solid var(--border);border-radius:24px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all 0.15s;}
   .user-pill:hover{border-color:var(--accent);}
   .user-pill .avatar{width:26px;height:26px;}
+  .team-avatar{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;margin-left:-4px;border:2px solid #fff;}
+  .c-assignee{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 
   /* Alert */
   .alert-banner{display:none;background:linear-gradient(90deg,var(--red-bg),rgba(239,68,68,0.04));border-bottom:2px solid var(--red-bd);padding:9px 28px;font-size:13px;font-weight:700;color:var(--red);align-items:center;gap:10px;}
@@ -181,9 +183,12 @@
   .fg input,.fg select,.fg textarea{width:100%;padding:10px 13px;background:var(--light);border:1.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;font-family:inherit;outline:none;}
   .fg input:focus,.fg select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,91,219,0.06);}
   .fg select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555770' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;}
-  #iAssignee{min-height:80px;appearance:none;padding:10px 13px;}
+  #iAssignee{padding:10px 13px;}
+  #iTeam{min-height:70px;appearance:none;padding:10px 13px;}
   #iAssignee option{padding:8px 12px;border-radius:6px;margin-bottom:2px;}
   #iAssignee option:checked{background:var(--accent-light);color:var(--accent);}
+  #iTeam option{padding:8px 12px;border-radius:6px;margin-bottom:2px;}
+  #iTeam option:checked{background:var(--accent-light);color:var(--accent);}
   .f-actions{display:flex;gap:8px;margin-top:22px;justify-content:flex-end;}
 
   /* Checklist styles */
@@ -379,7 +384,7 @@
 </head>
 <body>
 
-<div class="alert-banner" id="alertBanner"><span style="font-size:16px;">&#9888;&#65039;</span><span id="alertText"></span></div>
+<div class="alert-banner" id="alertBanner"><span style="font-size:16px;"></span><span id="alertText"></span></div>
 
 <div class="header">
   <div class="header-left">
@@ -392,8 +397,8 @@
     <div class="stat-chip green"><span class="stat-dot"></span><span id="sD">0</span></div>
   </div>
   <div class="header-right">
-    <button class="icon-btn" onclick="openTickets()" title="Chamados" id="btnTickets" style="display:none;position:relative;">&#128236;<span id="ticketBadge" style="display:none;position:absolute;top:-2px;right:-2px;background:#c92a2a;color:#fff;border-radius:50%;min-width:16px;height:16px;font-size:9px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;">0</span></button>
-    <button class="icon-btn" onclick="toggleSettings()" title="Equipe" id="btnSettings" style="display:none;">&#9881;</button>
+    <button class="icon-btn" onclick="openTickets()" title="Chamados" id="btnTickets" style="display:none;position:relative;"><span id="ticketBadge" style="display:none;position:absolute;top:-2px;right:-2px;background:#c92a2a;color:#fff;border-radius:50%;min-width:16px;height:16px;font-size:9px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;">0</span></button>
+    <a href="/tv.html" target="_blank" class="icon-btn" title="Modo TV" style="text-decoration:none;color:var(--text);font-size:13px;font-weight:600;padding:6px 12px;border-radius:8px;background:var(--light);border:1px solid var(--border);cursor:pointer;display:inline-flex;align-items:center;gap:4px;">TV</a><button class="icon-btn" onclick="toggleSettings()" title="Equipe" id="btnSettings" style="display:none;"></button>
     <div><div class="clock" id="clock">00:00</div><div class="date-disp" id="dateDisp"></div></div>
     <div class="user-pill" onclick="doLogout()" title="Sair">
       <div class="avatar" id="userAvatar" style="background:var(--accent);font-size:10px;"></div>
@@ -405,23 +410,23 @@
 <div class="main">
   <div class="summary">
     <div class="sum-sec">
-      <div class="sec-hdr"><div class="sec-icon red">&#128680;</div><span class="sec-title red">Vencidas</span><span class="sec-count" id="oC">0</span></div>
+      <div class="sec-hdr"><div class="sec-icon red"></div><span class="sec-title red">Vencidas</span><span class="sec-count" id="oC">0</span></div>
       <div id="sOver"></div>
     </div>
     <div class="sum-sec">
-      <div class="sec-hdr"><div class="sec-icon yellow">&#9888;&#65039;</div><span class="sec-title yellow">Vencem em Breve</span><span class="sec-count" id="sC">0</span></div>
+      <div class="sec-hdr"><div class="sec-icon yellow"></div><span class="sec-title yellow">Vencem em Breve</span><span class="sec-count" id="sC">0</span></div>
       <div id="sSoon"></div>
     </div>
     <div class="sum-sec" style="flex:1;">
-      <div class="sec-hdr"><div class="sec-icon blue">&#128101;</div><span class="sec-title blue">Carga por S&oacute;cio</span></div>
+      <div class="sec-hdr"><div class="sec-icon blue"></div><span class="sec-title blue">Carga por S&oacute;cio</span></div>
       <div id="teamSum"></div>
     
     <div class="sum-sec">
-      <div class="sec-hdr"><div class="sec-icon" style="background:rgba(99,102,241,0.10);"><span style="font-size:16px;">📅</span></div><span class="sec-title" style="color:#6366F1;">Calendário</span></div>
+      <div class="sec-hdr"><div class="sec-icon" style="background:rgba(99,102,241,0.10);"><span style="font-size:16px;"></span></div><span class="sec-title" style="color:#6366F1;">Calendário</span></div>
       <div id="calendarWidget" class="calendar-widget"></div>
     </div>
     <div class="qa">
-      <div class="qa-title">&#128172; Colagem R&aacute;pida</div>
+      <div class="qa-title"> Colagem R&aacute;pida</div>
       <textarea class="qa-text" id="qaText" placeholder="Cole do WhatsApp...&#10;Ex: Empresa ABC | Tarefa | Felipe | 15/04/2026"></textarea>
       <div class="qa-help">Formato: <strong>Cliente | Tarefa | Respons&aacute;vel | dd/mm/aaaa</strong></div>
       <div class="qa-actions">
@@ -440,17 +445,17 @@
     </div>
     <div class="board">
       <div class="col ct">
-        <div class="col-hdr"><div class="col-tg"><div class="col-ico">&#128203;</div><span class="col-t">A Fazer</span></div><span class="col-cnt" id="cntT">0</span></div>
+        <div class="col-hdr"><div class="col-tg"><div class="col-ico">AF</div><span class="col-t">A Fazer</span></div><span class="col-cnt" id="cntT">0</span></div>
         <div class="col-body" id="colT" data-s="todo" ondragover="dOver(event)" ondragleave="dLeave(event)" ondrop="dDrop(event)"></div>
         <button class="add-btn" onclick="openModal('todo')">+ Nova Tarefa</button>
       </div>
       <div class="col cd">
-        <div class="col-hdr"><div class="col-tg"><div class="col-ico">&#9889;</div><span class="col-t">Em Andamento</span></div><span class="col-cnt" id="cntD">0</span></div>
+        <div class="col-hdr"><div class="col-tg"><div class="col-ico">EA</div><span class="col-t">Em Andamento</span></div><span class="col-cnt" id="cntD">0</span></div>
         <div class="col-body" id="colD" data-s="doing" ondragover="dOver(event)" ondragleave="dLeave(event)" ondrop="dDrop(event)"></div>
         <button class="add-btn" onclick="openModal('doing')">+ Nova Tarefa</button>
       </div>
       <div class="col cc">
-        <div class="col-hdr"><div class="col-tg"><div class="col-ico">&#10004;&#65039;</div><span class="col-t">Conclu&iacute;do</span></div><span class="col-cnt" id="cntC">0</span></div>
+        <div class="col-hdr"><div class="col-tg"><div class="col-ico">OK</div><span class="col-t">Conclu&iacute;do</span></div><span class="col-cnt" id="cntC">0</span></div>
         <div class="col-body" id="colC" data-s="done" ondragover="dOver(event)" ondragleave="dLeave(event)" ondrop="dDrop(event)"></div>
       </div>
     </div>
@@ -462,13 +467,15 @@
     <h2 id="mTitle">Nova Tarefa</h2>
     <div class="fg"><label>Cliente / Empresa</label><input type="text" id="iClient" placeholder="Ex: Empresa ABC Ltda"></div>
     <div class="fg"><label>Descri&ccedil;&atilde;o</label><input type="text" id="iTask" placeholder="Ex: Altera&ccedil;&atilde;o contratual"></div>
-    <div class="fg"><label>Respons&aacute;vel</label><select id="iAssignee" multiple></select></div>
+    <div class="fg"><label>Respons&aacute;vel</label><select id="iAssignee"></select>
+        <label>Equipe</label>
+        <select id="iTeam" multiple style="min-height:70px;"></select></div>
     <div class="fg"><label>Prazo</label><input type="date" id="iDeadline"></div>
     <div class="fg"><label>Prioridade</label><select id="iPriority"><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></div>
     <div class="fg"><label>Valor (R$)</label><input type="number" id="iValue" placeholder="Ex: 5000.00" step="0.01" min="0"></div>
     <div class="fg"><label>Link do Contrato</label><input type="text" id="iContractLink" placeholder="https://..."></div>
 
-    <h3>&#9745; Checklist</h3>
+    <h3> Checklist</h3>
     <div class="checklist-section">
       <div class="checklist-header">
         <select id="iTemplateSelect" onchange="applyTemplate()">
@@ -488,7 +495,7 @@
 
     <!-- History Timeline -->
     <div class="history-section" id="historySection" style="display:none;">
-      <button class="history-toggle" onclick="toggleHistory()">&#128337; Hist&oacute;rico de Altera&ccedil;&otilde;es <span id="historyCount" style="margin-left:auto;background:var(--accent);color:white;padding:2px 8px;border-radius:12px;font-size:10px;">0</span></button>
+      <button class="history-toggle" onclick="toggleHistory()"> Hist&oacute;rico de Altera&ccedil;&otilde;es <span id="historyCount" style="margin-left:auto;background:var(--accent);color:white;padding:2px 8px;border-radius:12px;font-size:10px;">0</span></button>
       <div class="history-timeline" id="historyTimeline" style="display:none;"></div>
     </div>
 
@@ -503,7 +510,7 @@
 <!-- Import Modal -->
 <div class="overlay" id="importModal">
   <div class="modal">
-    <h2>&#128196; Importar Tarefas (.txt)</h2>
+    <h2> Importar Tarefas (.txt)</h2>
     <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5;">
       Arquivo .txt: <code style="background:var(--bg);padding:3px 6px;border-radius:4px;font-size:11px;">Cliente | Tarefa | Respons&aacute;vel | dd/mm/aaaa | prioridade</code>
     </p>
@@ -519,7 +526,7 @@
 <!-- Templates Modal -->
 <div class="overlay" id="templatesModal">
   <div class="modal">
-    <h2>&#128196; Modelos de Checklist</h2>
+    <h2> Modelos de Checklist</h2>
     <div id="templatesList" style="margin-bottom:20px;"></div>
     <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
     <h3>Criar Novo Modelo</h3>
@@ -539,7 +546,7 @@
 <!-- Reason Modal (for deadline changes) -->
 <div class="overlay" id="reasonModal">
   <div class="reason-modal">
-    <h3>&#128221; Motivo da Altera&ccedil;&atilde;o de Prazo</h3>
+    <h3> Motivo da Altera&ccedil;&atilde;o de Prazo</h3>
     <p>O prazo est&aacute; sendo alterado. Informe o motivo para manter o hist&oacute;rico:</p>
     <textarea id="deadlineReason" placeholder="Ex: Cliente solicitou prazo adicional para reuni&atilde;o de documentos"></textarea>
     <div class="f-actions" style="margin-top:14px;">
@@ -552,7 +559,7 @@
 <!-- Settings (admin only) -->
 <div class="settings" id="settingsPanel">
   <div class="settings-section">
-    <h3>&#128101; Gerenciar Equipe</h3>
+    <h3> Gerenciar Equipe</h3>
     <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Adicione, edite ou remova membros. Cada membro recebe um login.</p>
     <div id="membersList"></div>
     <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
@@ -565,25 +572,25 @@
   </div>
 
   <div class="settings-section">
-    <h3>&#128210; Modelos de Checklist</h3>
+    <h3> Modelos de Checklist</h3>
     <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Crie e gerencie seus modelos de checklist.</p>
     <button class="btn btn-p" style="width:100%;padding:12px;" onclick="openTemplates()">Gerenciar Modelos</button>
   </div>
 
   <div class="settings-section">
-    <h3>&#128250; Modo TV</h3>
+    <h3> Modo TV</h3>
     <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Abra o painel em tela cheia para exibir em uma TV (sem login).</p>
     <a href="/tv" target="_blank" class="btn btn-p" style="display:block;width:100%;padding:12px;text-align:center;text-decoration:none;">Abrir Modo TV</a>
   </div>
 
   <div class="settings-section">
-    <h3>&#128202; Relat&oacute;rio Mensal</h3>
+    <h3> Relat&oacute;rio Mensal</h3>
     <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Relat&oacute;rio de tarefas conclu&iacute;das, pend&ecirc;ncias e prorroga&ccedil;&otilde;es por membro.</p>
     <a href="/relatorio" target="_blank" class="btn btn-p" style="display:block;width:100%;padding:12px;text-align:center;text-decoration:none;">Abrir Relat&oacute;rio</a>
   </div>
 
   <div class="settings-section">
-    <h3>&#128100; Clientes (Portal)</h3>
+    <h3> Clientes (Portal)</h3>
     <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Clientes cadastrados aqui podem acessar /cliente para abrir chamados.</p>
     <div id="clientsList"></div>
     <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
@@ -597,7 +604,7 @@
   </div>
 
   <div class="settings-section">
-    <h3>&#128274; Alterar Senha</h3>
+    <h3> Alterar Senha</h3>
     <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Altere sua senha de acesso.</p>
     <div class="fg"><label>Senha Atual</label><input type="password" id="oldPassword" placeholder="Sua senha atual"></div>
     <div class="fg"><label>Nova Senha</label><input type="password" id="newPassword" placeholder="Nova senha"></div>
@@ -611,10 +618,10 @@
 <!-- Mobile Bottom Navigation -->
 <nav class="mobile-nav" id="mobileNav">
   <div class="mobile-nav-inner">
-    <button class="mob-tab active" onclick="mobTab('kanban')" id="mobTabKanban"><span class="mob-tab-icon">&#128203;</span>Tarefas</button>
-    <button class="mob-tab" onclick="mobTab('resumo')" id="mobTabResumo"><span class="mob-tab-icon">&#128200;</span>Resumo</button>
-    <button class="mob-tab" onclick="mobTab('equipe')" id="mobTabEquipe"><span class="mob-tab-icon">&#128101;</span>Equipe</button>
-    <button class="mob-tab" onclick="toggleSettings()" id="mobTabConfig"><span class="mob-tab-icon">&#9881;</span>Config</button>
+    <button class="mob-tab active" onclick="mobTab('kanban')" id="mobTabKanban"><span class="mob-tab-icon"></span>Tarefas</button>
+    <button class="mob-tab" onclick="mobTab('resumo')" id="mobTabResumo"><span class="mob-tab-icon"></span>Resumo</button>
+    <button class="mob-tab" onclick="mobTab('equipe')" id="mobTabEquipe"><span class="mob-tab-icon"></span>Equipe</button>
+    <button class="mob-tab" onclick="toggleSettings()" id="mobTabConfig"><span class="mob-tab-icon"></span>Config</button>
   </div>
 </nav>
 
@@ -624,7 +631,7 @@
 <!-- Tickets Modal -->
 <div class="overlay" id="ticketsOv" onclick="if(event.target===this)closeTickets()">
   <div class="modal" style="max-width:720px;">
-    <div class="modal-h"><h3>&#128236; Chamados dos Clientes</h3><button class="x" onclick="closeTickets()">&times;</button></div>
+    <div class="modal-h"><h3> Chamados dos Clientes</h3><button class="x" onclick="closeTickets()">&times;</button></div>
     <div style="padding:16px;max-height:70vh;overflow-y:auto;" id="ticketsBody"></div>
   </div>
 </div>
@@ -709,7 +716,7 @@ function renderCard(t) {
   if (t.checklist_total && t.checklist_total > 0) {
     const perc = Math.round((t.checklist_done / t.checklist_total) * 100);
     const fillWidth = perc;
-    checklistHTML = `<div class="c-checklist-progress">&#10003; ${t.checklist_done}/${t.checklist_total}<div class="c-checklist-progress-bar"><div class="c-checklist-progress-fill" style="width:${fillWidth}%"></div></div></div>`;
+    checklistHTML = `<div class="c-checklist-progress"> ${t.checklist_done}/${t.checklist_total}<div class="c-checklist-progress-bar"><div class="c-checklist-progress-fill" style="width:${fillWidth}%"></div></div></div>`;
   }
 
   let valueHTML = '';
@@ -727,15 +734,24 @@ function renderCard(t) {
     } else txt = 'Atualizada';
     if (txt.length > 60) txt = txt.slice(0, 57) + '...';
     const ago = timeAgo(h.created_at);
-    lastHistHTML = `<div class="c-last-hist" title="${(h.user_name||'')} ${ago}">&#128338; ${txt} <span style="opacity:.7;">\u2022 ${ago}</span></div>`;
+    lastHistHTML = `<div class="c-last-hist" title="${(h.user_name||'')} ${ago}"> ${txt} <span style="opacity:.7;">\u2022 ${ago}</span></div>`;
   }
 
-  return `<div class="card ${cls}" draggable="true" ondragstart="dStart(event,${t.id})" ondragend="dEnd(event)" ondblclick="openEdit(${t.id})">
-    <div class="c-client">${t.client}</div><div class="c-priority ${t.priority||'normal'}">${t.priority==='urgente'?'🔴 Urgente':t.priority==='alta'?'🟡 Alta':'⚪ Normal'}</div><div class="c-title">${t.title}</div>
+  
+  // Team members avatars
+  let teamAvatarsHTML = '';
+  if (t.additional_assignees_parsed && t.additional_assignees_parsed.length > 0) {
+    teamAvatarsHTML = t.additional_assignees_parsed.map(u => 
+      '<div class="team-avatar" style="background:' + (u.color||'#868e96') + '">' + ini(u.name||'?') + '</div>'
+    ).join('');
+  }
+
+  return `<div class="card ${cls}" draggable="true" ondragstart="dStart(event,${t.id})" ondragend="dEnd(event)" onclick="openEdit(${t.id})">
+    <div class="c-client">${t.client}</div><div class="c-priority ${t.priority||'normal'}">${t.priority==='urgente'?'Urgente':t.priority==='alta'?'Alta':'Normal'}</div><div class="c-title">${t.title}</div>
     ${checklistHTML}
     ${valueHTML}
     ${lastHistHTML}
-    <div class="c-meta"><div class="c-assignee"><div class="avatar" style="background:${color}">${ini(name)}</div><span class="c-aname">${name}</span></div><span class="c-dl ${dl}">${dt}</span></div></div>`;
+    <div class="c-meta"><div class="c-assignee"><div class="avatar" style="background:${color}">${ini(name)}</div><span class="c-aname">${name}</span>${teamAvatarsHTML}</div><span class="c-dl ${dl}">${dt}</span></div></div>`;
 }
 
 function renderSummary() {
@@ -744,8 +760,8 @@ function renderSummary() {
   const soon=active.filter(t=>{const d=daysUntil(t.deadline);return d>=0&&d<=5;}).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
   document.getElementById('oC').textContent=over.length;
   document.getElementById('sC').textContent=soon.length;
-  document.getElementById('sOver').innerHTML=over.length?over.map(t=>{const c=t.assignee_color||'#868e96',n=t.assignee_name||'?';return`<div class="s-card over"><div class="s-client">${t.client}</div><div class="s-title">${t.title}</div><div class="s-meta"><div class="s-assignee"><div class="avatar" style="background:${c};width:22px;height:22px;font-size:8px;">${ini(n)}</div>${n}</div><span class="s-dl red">${Math.abs(daysUntil(t.deadline))}d atr\u00e1s</span></div></div>`;}).join(''):'<div class="sum-empty"><span class="sum-empty-icon">&#127881;</span>Nenhuma vencida!</div>';
-  document.getElementById('sSoon').innerHTML=soon.length?soon.map(t=>{const c=t.assignee_color||'#868e96',n=t.assignee_name||'?',d=daysUntil(t.deadline);return`<div class="s-card soon"><div class="s-client">${t.client}</div><div class="s-title">${t.title}</div><div class="s-meta"><div class="s-assignee"><div class="avatar" style="background:${c};width:22px;height:22px;font-size:8px;">${ini(n)}</div>${n}</div><span class="s-dl yellow">${d===0?'HOJE!':d+'d'}</span></div></div>`;}).join(''):'<div class="sum-empty"><span class="sum-empty-icon">&#128077;</span>Tranquilo nos pr\u00f3ximos 5 dias</div>';
+  document.getElementById('sOver').innerHTML=over.length?over.map(t=>{const c=t.assignee_color||'#868e96',n=t.assignee_name||'?';return`<div class="s-card over"><div class="s-client">${t.client}</div><div class="s-title">${t.title}</div><div class="s-meta"><div class="s-assignee"><div class="avatar" style="background:${c};width:22px;height:22px;font-size:8px;">${ini(n)}</div>${n}</div><span class="s-dl red">${Math.abs(daysUntil(t.deadline))}d atr\u00e1s</span></div></div>`;}).join(''):'<div class="sum-empty"><span class="sum-empty-icon"></span>Nenhuma vencida!</div>';
+  document.getElementById('sSoon').innerHTML=soon.length?soon.map(t=>{const c=t.assignee_color||'#868e96',n=t.assignee_name||'?',d=daysUntil(t.deadline);return`<div class="s-card soon"><div class="s-client">${t.client}</div><div class="s-title">${t.title}</div><div class="s-meta"><div class="s-assignee"><div class="avatar" style="background:${c};width:22px;height:22px;font-size:8px;">${ini(n)}</div>${n}</div><span class="s-dl yellow">${d===0?'HOJE!':d+'d'}</span></div></div>`;}).join(''):'<div class="sum-empty"><span class="sum-empty-icon"></span>Tranquilo nos pr\u00f3ximos 5 dias</div>';
 }
 
 function renderTeam() {
@@ -846,6 +862,12 @@ function closeModal() { document.getElementById('taskModal').classList.remove('a
 
 function fillAssignees(sel) {
   document.getElementById('iAssignee').innerHTML=users.map(u=>`<option value="${u.id}" ${u.id===sel?'selected':''}>${u.name}</option>`).join('');
+    byId('iTeam').innerHTML=byId('iAssignee').innerHTML;
+    // Set team selections from additional_assignees
+    if(task.additional_assignees_parsed){
+      const teamIds=task.additional_assignees_parsed.map(u=>String(u.id));
+      [...byId('iTeam').options].forEach(o=>o.selected=teamIds.includes(o.value));
+    }
 }
 
 function fillTemplateSelect() {
@@ -946,7 +968,8 @@ async function saveTask() {
     status:modalStatus,
     value: document.getElementById('iValue').value ? Number(document.getElementById('iValue').value) : null,
     contract_link: document.getElementById('iContractLink').value.trim() || null
-  };
+  ,
+      additional_assignees: JSON.stringify([...byId("iTeam").selectedOptions].map(o=>o.value))};
 
   if(!data.client||!data.title||!data.deadline){alert('Preencha todos os campos.');return;}
 
@@ -1157,7 +1180,7 @@ function renderMembers(){
     <div class="avatar" style="background:${u.color};width:30px;height:30px;font-size:10px;">${ini(u.name)}</div>
     <span style="flex:1;font-size:13px;font-weight:600;">${u.name}</span>
     <span style="font-size:10px;color:var(--muted);">${u.role==='admin'?'Admin':'Membro'}</span>
-    <button class="rm" style="background:#e7f5ff;color:#1971c2;margin-right:4px;" onclick="editUser(${u.id})" title="Editar">&#9998;</button>
+    <button class="rm" style="background:#e7f5ff;color:#1971c2;margin-right:4px;" onclick="editUser(${u.id})" title="Editar"></button>
     ${u.id!==currentUser.id?`<button class="rm" onclick="removeUser(${u.id},'${u.name.replace(/'/g,"\\'")}')">&times;</button>`:''}
   </div>`).join('');
 }
@@ -1393,7 +1416,7 @@ function renderTickets(){
         <span style="font-size:10px;font-weight:800;padding:4px 10px;border-radius:14px;background:#edf2ff;color:#3b5bdb;white-space:nowrap;height:fit-content;">#${t.id} &bull; ${stLabels[t.status]}</span>
       </div>
       <div style="font-size:12px;color:var(--text2);margin-bottom:10px;white-space:pre-wrap;">${escH(t.description)}</div>
-      ${t.department?`<div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:6px;">📌 Setor: ${{fiscal:'Fiscal',contabil:'Contábil',societario:'Societário',rh:'RH / Dept. Pessoal',financeiro:'Financeiro',geral:'Geral'}[t.department]||t.department}</div>`:''}
+      ${t.department?`<div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:6px;"> Setor: ${{fiscal:'Fiscal',contabil:'Contábil',societario:'Societário',rh:'RH / Dept. Pessoal',financeiro:'Financeiro',geral:'Geral'}[t.department]||t.department}</div>`:''}
       <div style="font-size:10px;color:var(--muted);margin-bottom:10px;">Prioridade: ${t.priority} &bull; Criado: ${new Date(t.created_at).toLocaleString('pt-BR')}</div>
       <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
         <select id="tk_st_${t.id}" style="padding:7px;border:1px solid var(--border);border-radius:6px;font-size:11px;">
@@ -1446,7 +1469,7 @@ function renderClientsList(){
   el.innerHTML = allClients.map(c => `<div class="m-item">
     <div class="avatar" style="background:#7048e8;width:30px;height:30px;font-size:10px;">${ini(c.name)}</div>
     <div style="flex:1;min-width:0;"><div style="font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escH(c.name)}</div><div style="font-size:10px;color:var(--muted);">${escH(c.company||'')} &bull; ${escH(c.username)}</div></div>
-    <button class="rm" style="background:#e7f5ff;color:#1971c2;margin-right:4px;" onclick="resetClientPass(${c.id},'${escH(c.name).replace(/'/g,"\\\\'")}')">&#128273;</button>
+    <button class="rm" style="background:#e7f5ff;color:#1971c2;margin-right:4px;" onclick="resetClientPass(${c.id},'${escH(c.name).replace(/'/g,"\\\\'")}')"></button>
     <button class="rm" onclick="removeClient(${c.id},'${escH(c.name).replace(/'/g,"\\\\'")}')">&times;</button>
   </div>`).join('');
 }
