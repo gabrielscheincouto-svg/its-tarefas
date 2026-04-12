@@ -142,6 +142,21 @@ async function enrichTask(task, usersCache, lastHistoryByTask) {
         } catch (err) {}
     }
 
+    // Get original deadline from first deadline change in history
+    let original_deadline = null;
+    try {
+        const { data: dlHist } = await supabase
+            .from('task_history')
+            .select('old_value')
+            .eq('task_id', task.id)
+            .eq('field_changed', 'deadline')
+            .order('created_at', { ascending: true })
+            .limit(1);
+        if (dlHist && dlHist[0] && dlHist[0].old_value) {
+            original_deadline = dlHist[0].old_value;
+        }
+    } catch (err) {}
+
     return {
           ...task,
           assignee_name: user ? user.name : 'Desconhecido',
@@ -149,6 +164,7 @@ async function enrichTask(task, usersCache, lastHistoryByTask) {
           checklist_total,
           checklist_done,
           last_history,
+          original_deadline,
           additional_assignees_parsed: task.additional_assignees ? (() => {
               try {
                   const ids = JSON.parse(task.additional_assignees);
