@@ -46,7 +46,7 @@ interface Documento {
 
 const DOC_TIPOS = [
   { codigo: "SPED_FISCAL", nome: "SPED Fiscal" },
-  { codigo: "SPED_CONTRIB", nome: "SPED Contribui\u00e7\u00f5es" },
+  { codigo: "SPED_CONTRIB", nome: "SPED Contribuições" },
   { codigo: "BALANCETE", nome: "Balancete" },
   { codigo: "DCTFWEB", nome: "DCTFWeb" },
   { codigo: "EFD_REINF", nome: "EFD-Reinf" },
@@ -99,7 +99,7 @@ export default function ContadorPage() {
         }
         setProfile(p);
 
-        // Buscar empresas acess\u00edveis
+        // Buscar empresas acessíveis
         const { data: emps } = await supabase
           .from("empresas")
           .select("id, razao_social, nome_fantasia, cnpj, regime")
@@ -154,7 +154,7 @@ export default function ContadorPage() {
         }
       } catch (error) {
         console.error("Error loading entregas:", error);
-        setErrorMessage("Erro ao carregar obriga\u00e7\u00f5es");
+        setErrorMessage("Erro ao carregar obrigações");
       }
     };
 
@@ -231,7 +231,7 @@ export default function ContadorPage() {
 
       if (error) throw error;
 
-      setSuccessMessage("Observa\u00e7\u00e3o salva com sucesso!");
+      setSuccessMessage("Observação salva com sucesso!");
       setTimeout(() => setSuccessMessage(""), 3000);
 
       // Refresh entregas
@@ -247,7 +247,7 @@ export default function ContadorPage() {
       }
     } catch (error) {
       console.error("Error saving observacao:", error);
-      setErrorMessage("Erro ao salvar observa\u00e7\u00e3o");
+      setErrorMessage("Erro ao salvar observação");
     }
   };
 
@@ -279,7 +279,7 @@ export default function ContadorPage() {
         loadDocumentos();
       }
     } catch {
-      setUploadMsg("Erro de conex\u00e3o");
+      setUploadMsg("Erro de conexão");
     }
     setUploading(false);
   };
@@ -287,15 +287,15 @@ export default function ContadorPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "concluido":
-        return "\u2713"; // checkmark
+        return "✓"; // checkmark
       case "pendente":
-        return "\u26a0"; // warning
+        return "⚠"; // warning
       case "em_andamento":
-        return "\u23f3"; // hourglass
+        return "⏳"; // hourglass
       case "atrasado":
-        return "\u26a0"; // alert
+        return "⚠"; // alert
       default:
-        return "\u2022"; // bullet
+        return "•"; // bullet
     }
   };
 
@@ -317,7 +317,7 @@ export default function ContadorPage() {
   const getStatusLabel = (status: string): string => {
     switch (status) {
       case "concluido":
-        return "Conclu\u00eddo";
+        return "Concluído";
       case "pendente":
         return "Pendente";
       case "em_andamento":
@@ -390,7 +390,7 @@ export default function ContadorPage() {
               style={{ clipPath: "polygon(0 50%, 50% 0, 100% 50%, 50% 100%)" }}
             />
             <div>
-              <div className="text-[10px] text-[#00E676]">\u00c1rea do Contador</div>
+              <div className="text-[10px] text-[#00E676]">Área do Contador</div>
               <div className="font-bold">{profile?.nome || "Contador"}</div>
             </div>
           </div>
@@ -423,7 +423,7 @@ export default function ContadorPage() {
                 : "border-transparent text-gray-500 hover:text-gray-400"
             }`}
           >
-            Obriga\u00e7\u00f5es
+            Obrigações
           </button>
           <button
             onClick={() => setActiveTab("documentos")}
@@ -453,7 +453,7 @@ export default function ContadorPage() {
                 <div className="text-3xl font-bold text-blue-400">{stats.em_andamento}</div>
               </div>
               <div className="bg-[#141414] border border-[#1f1f1f] p-6 rounded-lg">
-                <div className="text-xs text-gray-400 mb-2">Conclu\u00eddas</div>
+                <div className="text-xs text-gray-400 mb-2">Concluídas</div>
                 <div className="text-3xl font-bold text-[#00E676]">{stats.concluidas}</div>
               </div>
               <div className="bg-[#141414] border border-[#1f1f1f] p-6 rounded-lg">
@@ -473,13 +473,13 @@ export default function ContadorPage() {
                 >
                   {empresas.map((emp) => (
                     <option key={emp.id} value={emp.id}>
-                      {emp.nome_fantasia || emp.razao_social} \u2014 CNPJ: {emp.cnpj}
+                      {emp.nome_fantasia || emp.razao_social} — CNPJ: {emp.cnpj}
                     </option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-2">Comp\u00e9tencia (M\u00eas)</label>
+                <label className="block text-xs text-gray-400 mb-2">Compétencia (Mês)</label>
                 <input
                   type="month"
                   value={selectedCompetencia}
@@ -509,7 +509,7 @@ export default function ContadorPage() {
             <div className="space-y-4">
               {entregas.length === 0 ? (
                 <div className="bg-[#141414] border border-[#1f1f1f] p-8 rounded-lg text-center text-gray-500">
-                  Nenhuma obriga\u00e7\u00e3o para este per\u00edodo
+                  Nenhuma obrigação para este período
                 </div>
               ) : (
                 entregas.map((entrega) => (
@@ -543,7 +543,7 @@ export default function ContadorPage() {
                         </span>
                         {entrega.arquivo_nome && (
                           <span className="text-xs text-[#00E676] flex items-center gap-1">
-                            \u2713 {entrega.arquivo_nome}
+                            ✓ {entrega.arquivo_nome}
                           </span>
                         )}
                       </div>
@@ -552,7 +552,7 @@ export default function ContadorPage() {
                       <div className="mb-4">
                         <input
                           type="text"
-                          placeholder="Observa\u00e7\u00e3o..."
+                          placeholder="Observação..."
                           value={editingObservacoes[entrega.id] || ""}
                           onChange={(e) =>
                             setEditingObservacoes({
@@ -578,7 +578,7 @@ export default function ContadorPage() {
                         >
                           <option value="pendente">Pendente</option>
                           <option value="em_andamento">Em andamento</option>
-                          <option value="concluido">Conclu\u00eddo</option>
+                          <option value="concluido">Concluído</option>
                         </select>
                       </div>
                     </div>
@@ -618,10 +618,10 @@ export default function ContadorPage() {
           <div>
             <h1 className="text-3xl font-bold mb-2">Envio de Documentos</h1>
             <p className="text-gray-400 mb-8">
-              Selecione a empresa e envie os documentos cont\u00e1beis para an\u00e1lise da ITS.
+              Selecione a empresa e envie os documentos contábeis para análise da ITS.
             </p>
 
-            {/* Formul\u00e1rio de upload */}
+            {/* Formulário de upload */}
             <div className="bg-[#141414] border border-[#1f1f1f] rounded-xl p-6 mb-8">
               <h2 className="text-lg font-bold mb-4">Novo envio</h2>
               <form onSubmit={handleUpload} className="space-y-4">
@@ -685,18 +685,18 @@ export default function ContadorPage() {
                       <div className="flex items-center gap-3">
                         <span className="text-lg">
                           {doc.nome_arquivo.endsWith(".pdf")
-                            ? "\ud83d\udcc4"
+                            ? "📄"
                             : doc.nome_arquivo.endsWith(".xlsx") || doc.nome_arquivo.endsWith(".xls")
-                            ? "\ud83d\udcc8"
+                            ? "📈"
                             : doc.nome_arquivo.endsWith(".xml")
-                            ? "\ud83d\udccb"
-                            : "\ud83d\udcc7"}
+                            ? "📋"
+                            : "📇"}
                         </span>
                         <div>
                           <div className="font-medium text-sm">{doc.nome_arquivo}</div>
                           <div className="text-xs text-gray-500">
                             {DOC_TIPOS.find((t) => t.codigo === doc.codigo)?.nome || doc.codigo}
-                            {" \u00b7 "}
+                            {" · "}
                             {formatSize(doc.tamanho || 0)}
                           </div>
                         </div>
@@ -714,7 +714,7 @@ export default function ContadorPage() {
       </section>
 
       <footer className="border-t border-[#1f1f1f] p-6 text-xs text-gray-500 text-center mt-12">
-        ITS Tax and Corporate \u00b7 \u00c1rea do Contador
+        ITS Tax and Corporate · Área do Contador
       </footer>
     </main>
   );
