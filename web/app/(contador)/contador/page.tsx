@@ -348,10 +348,14 @@ export default function ContadorPage() {
         stats.concluidas++;
       } else if (e.status === "em_andamento") {
         stats.em_andamento++;
-      } else if (e.data_vencimento < now && e.status !== "concluido") {
+      } else if (e.status === "atrasado") {
         stats.atrasadas++;
       } else if (e.status === "pendente") {
-        stats.pendentes++;
+        if (e.data_vencimento < now) {
+          stats.atrasadas++;
+        } else {
+          stats.pendentes++;
+        }
       }
     });
 
