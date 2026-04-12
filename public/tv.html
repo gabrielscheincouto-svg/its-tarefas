@@ -67,6 +67,27 @@
   .empty-i{font-size:32px;display:block;margin-bottom:8px;}
 
   .refresh-bar{position:fixed;bottom:10px;right:16px;background:rgba(0,0,0,.6);color:#fff;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;}
+
+  .ti-team{display:flex;align-items:center;gap:3px;margin-top:4px;}
+  .ti-av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;}
+  .ti-av.main{border:2px solid var(--accent);width:22px;height:22px;font-size:10px;}
+  .ti-av-more{font-size:9px;color:var(--muted);margin-left:2px;}
+  .widgets{display:flex;gap:16px;padding:16px 36px;background:var(--white);border-top:1px solid var(--border);}
+  .widget{flex:1;background:var(--bg);border-radius:12px;padding:16px;min-height:120px;}
+  .widget-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:10px;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-size:11px;}
+  .cal-hdr{font-weight:700;color:var(--muted);font-size:9px;padding:2px 0;}
+  .cal-day{padding:3px 0;border-radius:4px;}
+  .cal-day.today{background:var(--accent);color:#fff;font-weight:700;}
+  .cal-day.other{color:#ccc;}
+  .cal-day.has-task{background:rgba(255,92,108,0.15);font-weight:600;}
+  .weather-now{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+  .weather-temp{font-size:32px;font-weight:800;color:var(--text);}
+  .weather-desc{font-size:12px;color:var(--muted);text-transform:capitalize;}
+  .weather-details{display:flex;gap:16px;font-size:11px;color:var(--muted);}
+  .weather-forecast{display:flex;gap:8px;margin-top:10px;}
+  .weather-day{text-align:center;flex:1;font-size:10px;}
+  .weather-day-temp{font-weight:700;font-size:12px;}
 </style>
 </head>
 <body>
@@ -90,6 +111,17 @@
   <div class="grid" id="grid"></div>
 </div>
 
+
+<div class="widgets">
+  <div class="widget" id="calWidget">
+    <div class="widget-title">Calendario</div>
+    <div id="calGrid"></div>
+  </div>
+  <div class="widget" id="weatherWidget">
+    <div class="widget-title">Porto Alegre</div>
+    <div id="weatherContent">Carregando...</div>
+  </div>
+</div>
 <div class="refresh-bar" id="refr">Atualizando...</div>
 
 <script>
@@ -99,7 +131,7 @@ async function load(){
   try{
     const r=await fetch('/api/tv/tasks');
     const d=await r.json();
-    tasks=d.tasks||[];members=d.members||[];render();
+    tasks=d.tasks||[];members=d.members||[];render();renderCalendar();loadWeather();
     document.getElementById('refr').textContent='Atualizado \u00e0s '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   }catch(e){document.getElementById('refr').textContent='Erro ao atualizar';}
 }
@@ -128,7 +160,18 @@ function render(){
         else if(d<=5){dl='w';dt=d+'d';cls='atn';}
         let origHtml='';
         if(t.original_deadline&&t.original_deadline!==t.deadline){origHtml='<span class="ti-orig">'+fD(t.original_deadline)+' &rarr; </span>';}
-        return `<div class="ti ${cls}"><div class="ti-body"><div class="ti-cl">${t.client}</div><div class="ti-tt">${t.title}</div></div><div style="display:flex;align-items:center;gap:2px;">${origHtml}<span class="ti-dl ${dl}">${dt}</span></div></div>`;
+        // Build team avatars
+        let teamHtml='';
+        const assignee=members.find(x=>x.id===t.assignee_id);
+        if(assignee){teamHtml+='<div class="ti-av main" style="background:'+assignee.color+'" title="'+assignee.name+'">'+ini(assignee.name)+'</div>';}
+        if(t.additional_assignees_parsed&&t.additional_assignees_parsed.length>0){
+          t.additional_assignees_parsed.slice(0,3).forEach(function(a){
+            const u=members.find(x=>x.id===a);
+            if(u){teamHtml+='<div class="ti-av" style="background:'+u.color+'" title="'+u.name+'">'+ini(u.name)+'</div>';}
+          });
+          if(t.additional_assignees_parsed.length>3){teamHtml+='<span class="ti-av-more">+'+String(t.additional_assignees_parsed.length-3)+'</span>';}
+        }
+        return `<div class="ti ${cls}"><div class="ti-body"><div class="ti-cl">${t.client}</div><div class="ti-tt">${t.title}</div></div><div style="display:flex;align-items:center;justify-content:space-between;"><div class="ti-team">${teamHtml}</div><div style="display:flex;align-items:center;gap:2px;">${origHtml}<span class="ti-dl ${dl}">${dt}</span></div></div></div>`;
       }).join('');
       if(my.length>20) listHTML+=`<div class="empty" style="padding:10px;">+${my.length-20} mais...</div>`;
     }
@@ -150,6 +193,69 @@ function updateClock(){const n=new Date();document.getElementById('clock').textC
 
 updateClock();setInterval(updateClock,30000);
 load();setInterval(load,60000);
+
+
+// Calendar widget
+function renderCalendar(){
+  const now=new Date();
+  const y=now.getFullYear(),mo=now.getMonth();
+  const first=new Date(y,mo,1);
+  const last=new Date(y,mo+1,0);
+  const startDay=first.getDay();
+  const daysInMonth=last.getDate();
+  const today=now.getDate();
+  const days=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+  // Get task deadlines for this month
+  const taskDays=new Set();
+  tasks.forEach(function(t){
+    if(t.deadline){
+      const dd=new Date(t.deadline+'T00:00:00');
+      if(dd.getMonth()===mo&&dd.getFullYear()===y) taskDays.add(dd.getDate());
+    }
+  });
+  let html='<div class="cal-grid">';
+  days.forEach(function(d){html+='<div class="cal-hdr">'+d+'</div>';});
+  // Previous month padding
+  const prevLast=new Date(y,mo,0).getDate();
+  for(let i=startDay-1;i>=0;i--){html+='<div class="cal-day other">'+(prevLast-i)+'</div>';}
+  // Current month
+  for(let d=1;d<=daysInMonth;d++){
+    let cls='cal-day';
+    if(d===today) cls+=' today';
+    else if(taskDays.has(d)) cls+=' has-task';
+    html+='<div class="'+cls+'">'+d+'</div>';
+  }
+  // Next month padding
+  const totalCells=startDay+daysInMonth;
+  const remaining=7-(totalCells%7);
+  if(remaining<7){for(let i=1;i<=remaining;i++){html+='<div class="cal-day other">'+i+'</div>';}}
+  html+='</div>';
+  document.getElementById('calGrid').innerHTML=html;
+}
+
+// Weather widget - OpenMeteo free API (no key needed)
+async function loadWeather(){
+  try{
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-30.0346&longitude=-51.2177&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=America/Sao_Paulo&forecast_days=5');
+    const d=await r.json();
+    const cur=d.current;
+    const daily=d.daily;
+    const wDesc=weatherDesc(cur.weather_code);
+    const wIcon=weatherIcon(cur.weather_code);
+    let forecastHtml='';
+    const dayNames=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+    for(let i=1;i<daily.time.length;i++){
+      const dt=new Date(daily.time[i]+'T00:00:00');
+      forecastHtml+='<div class="weather-day"><div>'+dayNames[dt.getDay()]+'</div><div>'+weatherIcon(daily.weather_code[i])+'</div><div class="weather-day-temp">'+Math.round(daily.temperature_2m_max[i])+'/'+Math.round(daily.temperature_2m_min[i])+'</div></div>';
+    }
+    document.getElementById('weatherContent').innerHTML=
+      '<div class="weather-now"><div class="weather-temp">'+wIcon+' '+Math.round(cur.temperature_2m)+'\u00b0</div><div><div class="weather-desc">'+wDesc+'</div></div></div>'+
+      '<div class="weather-details"><span>Umidade: '+cur.relative_humidity_2m+'%</span><span>Vento: '+Math.round(cur.wind_speed_10m)+' km/h</span></div>'+
+      '<div class="weather-forecast">'+forecastHtml+'</div>';
+  }catch(e){document.getElementById('weatherContent').textContent='Erro ao carregar';}
+}
+function weatherDesc(c){if(c===0)return'Ceu limpo';if(c<=3)return'Parcialmente nublado';if(c<=48)return'Nublado';if(c<=57)return'Garoa';if(c<=67)return'Chuva';if(c<=77)return'Neve';if(c<=82)return'Pancadas';if(c<=86)return'Neve forte';if(c<=99)return'Tempestade';return'--';}
+function weatherIcon(c){if(c===0)return'\u2600';if(c<=3)return'\u26c5';if(c<=48)return'\u2601';if(c<=67)return'\ud83c\udf27';if(c<=82)return'\ud83c\udf27';if(c<=99)return'\u26a1';return'\u2601';}
 </script>
 </body>
 </html>
