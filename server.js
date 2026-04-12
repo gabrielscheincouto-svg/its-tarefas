@@ -830,14 +830,17 @@ app.get('/api/client/me', requireClient, async (req, res) => {
 
 // Client creates a ticket
 app.post('/api/client/tickets', requireClient, async (req, res) => {
-    const { subject, description, priority } = req.body;
+    const { subject, description, priority, department } = req.body;
     if (!subject || !description) return res.status(400).json({ error: 'Assunto e descricao obrigatorios' });
-    const { data, error } = await supabase.from('tickets').insert({
+    const validDepts = ['fiscal', 'contabil', 'societario', 'rh', 'financeiro', 'geral'];
+    const insertObj = {
         client_id: req.session.clientId,
         subject, description,
         priority: priority || 'normal',
         status: 'aberto'
-    }).select();
+    };
+    if (department && validDepts.includes(department)) insertObj.department = department;
+    const { data, error } = await supabase.from('tickets').insert(insertObj).select();
     if (error) return res.status(500).json({ error: error.message });
     res.json(data[0]);
 });
