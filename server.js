@@ -148,7 +148,16 @@ async function enrichTask(task, usersCache, lastHistoryByTask) {
           assignee_color: user ? user.color : '#868e96',
           checklist_total,
           checklist_done,
-          last_history
+          last_history,
+          additional_assignees_parsed: task.additional_assignees ? (() => {
+              try {
+                  const ids = JSON.parse(task.additional_assignees);
+                  return ids.map(id => {
+                      const u = usersCache.find(x => x.id === id);
+                      return u ? { id: u.id, name: u.name, color: u.color } : null;
+                  }).filter(Boolean);
+              } catch(e) { return []; }
+          })() : [],
     };
 }
 
@@ -360,7 +369,7 @@ app.get('/api/tasks', requireAuth, async (req, res) => {
 });
 
 app.post('/api/tasks', requireAuth, async (req, res) => {
-    const { client, title, assignee_id, deadline, priority, status, value, contract_link } = req.body;
+    const { client, title, assignee_id, deadline, priority, status, value, contract_link, additional_assignees } = req.body;
     if (!client || !title || !deadline) return res.status(400).json({ error: 'Campos obrigatorios' });
 
            const { data: newTasks, error } = await supabase.from('tasks').insert({
@@ -372,6 +381,7 @@ app.post('/api/tasks', requireAuth, async (req, res) => {
                  status: status || 'todo',
                  value: value || null,
                  contract_link: contract_link || null,
+                 additional_assignees: additional_assignees ? JSON.stringify(additional_assignees) : null,
                  created_by: req.session.userId
            }).select();
 
@@ -388,7 +398,7 @@ app.post('/api/tasks', requireAuth, async (req, res) => {
 
 app.put('/api/tasks/:id', requireAuth, async (req, res) => {
     const id = Number(req.params.id);
-    const { client, title, assignee_id, deadline, priority, status, value, contract_link, deadline_reason } = req.body;
+    const { client, title, assignee_id, deadline, priority, status, value, contract_link, deadline_reason, additional_assignees } = req.body;
 
     // Fetch current task to compare changes
     const { data: currentTasks } = await supabase.from('tasks').select('*').eq('id', id).limit(1);
@@ -409,6 +419,7 @@ app.put('/api/tasks/:id', requireAuth, async (req, res) => {
     if (status) updates.status = status;
     if (value !== undefined) updates.value = value;
     if (contract_link !== undefined) updates.contract_link = contract_link;
+    if (additional_assignees !== undefined) updates.additional_assignees = JSON.stringify(additional_assignees);
 
     const { data: updated, error } = await supabase.from('tasks').update(updates).eq('id', id).select();
     if (error) return res.status(500).json({ error: error.message });
