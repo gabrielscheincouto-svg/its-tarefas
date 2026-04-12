@@ -236,7 +236,7 @@ function renderCalendar(){
 // Weather widget - OpenMeteo free API (no key needed)
 async function loadWeather(){
   try{
-    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-30.0346&longitude=-51.2177&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=America/Sao_Paulo&forecast_days=5');
+    const r=await fetch('/api/weather');
     const d=await r.json();
     const cur=d.current;
     const daily=d.daily;
