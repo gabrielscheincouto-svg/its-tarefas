@@ -32,6 +32,8 @@ export default function LoginPage() {
         .maybeSingle();
       if (profile && ["admin", "internal"].includes(profile.role)) {
         router.push("/gestao");
+      } else if (profile && profile.role === "contador") {
+        router.push("/contador");
       } else {
         router.push("/cliente");
       }
