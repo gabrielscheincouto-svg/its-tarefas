@@ -58,7 +58,8 @@
   .ti-cl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--purple);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .ti-tt{font-size:12px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
   .ti-dl{font-size:10px;font-weight:800;padding:3px 9px;border-radius:14px;white-space:nowrap;}
-  .ti-dl.ov{background:var(--red);color:#fff;}
+  .ti-orig{font-size:10px;color:var(--muted);text-decoration:line-through;margin-right:4px;}
+.ti-dl.ov{background:var(--red);color:#fff;}
   .ti-dl.u{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd);}
   .ti-dl.w{background:var(--yellow-bg);color:var(--yellow);border:1px solid var(--yellow-bd);}
   .ti-dl.ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd);}
@@ -125,7 +126,9 @@ function render(){
         else if(d===0){dl='u';dt='HOJE';cls='urg';}
         else if(d<=2){dl='u';dt=d+'d';cls='urg';}
         else if(d<=5){dl='w';dt=d+'d';cls='atn';}
-        return `<div class="ti ${cls}"><div class="ti-body"><div class="ti-cl">${t.client}</div><div class="ti-tt">${t.title}</div></div><span class="ti-dl ${dl}">${dt}</span></div>`;
+        let origHtml='';
+        if(t.original_deadline&&t.original_deadline!==t.deadline){origHtml='<span class="ti-orig">'+fD(t.original_deadline)+' &rarr; </span>';}
+        return `<div class="ti ${cls}"><div class="ti-body"><div class="ti-cl">${t.client}</div><div class="ti-tt">${t.title}</div></div><div style="display:flex;align-items:center;gap:2px;">${origHtml}<span class="ti-dl ${dl}">${dt}</span></div></div>`;
       }).join('');
       if(my.length>20) listHTML+=`<div class="empty" style="padding:10px;">+${my.length-20} mais...</div>`;
     }
