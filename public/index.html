@@ -48,7 +48,8 @@
   .user-pill{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;background:var(--light);border:1px solid var(--border);border-radius:24px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all 0.15s;}
   .user-pill:hover{border-color:var(--accent);}
   .user-pill .avatar{width:26px;height:26px;}
-  .team-avatar{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;margin-left:-4px;border:2px solid #fff;}
+  .c-orig-dl{font-size:10px;color:var(--muted);text-decoration:line-through;margin-right:4px;}
+.team-avatar{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;margin-left:-4px;border:2px solid #fff;}
   .c-assignee{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 
   /* Alert */
@@ -746,12 +747,17 @@ function renderCard(t) {
     ).join('');
   }
 
+  let origDlHTML = '';
+  if (t.original_deadline && t.original_deadline !== t.deadline) {
+    origDlHTML = '<span class="c-orig-dl" title="Prazo original">' + fmtDate(t.original_deadline) + ' &rarr; </span>';
+  }
+
   return `<div class="card ${cls}" draggable="true" ondragstart="dStart(event,${t.id})" ondragend="dEnd(event)" onclick="openEdit(${t.id})">
     <div class="c-client">${t.client}</div><div class="c-priority ${t.priority||'normal'}">${t.priority==='urgente'?'Urgente':t.priority==='alta'?'Alta':'Normal'}</div><div class="c-title">${t.title}</div>
     ${checklistHTML}
     ${valueHTML}
     ${lastHistHTML}
-    <div class="c-meta"><div class="c-assignee"><div class="avatar" style="background:${color}">${ini(name)}</div><span class="c-aname">${name}</span>${teamAvatarsHTML}</div><span class="c-dl ${dl}">${dt}</span></div></div>`;
+    <div class="c-meta"><div class="c-assignee"><div class="avatar" style="background:${color}">${ini(name)}</div><span class="c-aname">${name}</span>${teamAvatarsHTML}</div>${origDlHTML}<span class="c-dl ${dl}">${dt}</span></div></div>`;
 }
 
 function renderSummary() {
@@ -859,6 +865,8 @@ async function openEdit(id) {
 }
 
 function closeModal() { document.getElementById('taskModal').classList.remove('active'); }
+
+function byId(id){return document.getElementById(id);}
 
 function fillAssignees(sel) {
   document.getElementById('iAssignee').innerHTML=users.map(u=>`<option value="${u.id}" ${u.id===sel?'selected':''}>${u.name}</option>`).join('');
