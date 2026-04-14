@@ -92,31 +92,42 @@
 .plist::-webkit-scrollbar{display:none;}
 .plist{scrollbar-width:none;-ms-overflow-style:none;}
 
-/* Apple-style refinements */
-body{background:linear-gradient(180deg,#F5F5F7 0%,#E8E8ED 100%);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#1d1d1f;}
+
+/* ===== Apple-style refinements + big processos strip ===== */
+body{background:linear-gradient(180deg,#F5F5F7 0%,#E8E8ED 100%);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#1d1d1f;padding-bottom:220px;}
 .card,.panel,.member,.task,.side,.weather,.calendar,.grid > *{background:rgba(255,255,255,0.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(0,0,0,0.06);box-shadow:0 1px 2px rgba(0,0,0,0.04),0 8px 24px rgba(0,0,0,0.06);border-radius:18px;}
-.header,header{background:rgba(255,255,255,0.8);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(0,0,0,0.06);}
+.header,header,.hdr{background:rgba(255,255,255,0.8);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(0,0,0,0.06);}
 h1,h2,h3,.member-name{letter-spacing:-0.01em;}
 
-/* Processos cycling strip */
-.proc-strip{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:14px 24px 16px;background:linear-gradient(180deg,rgba(255,255,255,0.0) 0%,rgba(255,255,255,0.9) 40%,rgba(255,255,255,0.95) 100%);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);border-top:1px solid rgba(0,0,0,0.08);box-shadow:0 -4px 20px rgba(0,0,0,0.05);}
-.proc-strip .ps-label{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#86868b;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
-.proc-strip .ps-label::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#0071E3;box-shadow:0 0 0 0 rgba(0,113,227,0.5);animation:psPulse 1.8s infinite;}
-@keyframes psPulse{0%{box-shadow:0 0 0 0 rgba(0,113,227,0.55);}70%{box-shadow:0 0 0 10px rgba(0,113,227,0);}100%{box-shadow:0 0 0 0 rgba(0,113,227,0);}}
-.proc-strip .ps-card{display:flex;align-items:center;gap:20px;flex-wrap:wrap;transition:opacity 0.5s ease, transform 0.5s ease;}
-.proc-strip.ps-fade .ps-card{opacity:0;transform:translateY(6px);}
-.ps-num{font-family:-apple-system,"SF Mono","Menlo",monospace;font-size:15px;font-weight:600;color:#1d1d1f;background:#f2f2f7;border-radius:10px;padding:6px 10px;border:1px solid rgba(0,0,0,0.06);}
-.ps-client{font-size:20px;font-weight:600;color:#1d1d1f;letter-spacing:-0.01em;}
-.ps-meta{display:flex;gap:14px;align-items:center;color:#515154;font-size:13px;flex-wrap:wrap;}
-.ps-meta b{color:#1d1d1f;font-weight:500;margin-right:4px;}
-.ps-badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:0.02em;text-transform:uppercase;}
+/* Scrollbar hidden but still scrollable */
+.plist::-webkit-scrollbar{display:none;}
+.plist{scrollbar-width:none;-ms-overflow-style:none;}
+
+/* ===== PROCESSOS STRIP (BIG) ===== */
+.proc-strip{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:22px 40px 26px;min-height:190px;background:linear-gradient(180deg,rgba(245,245,247,0.0) 0%,rgba(255,255,255,0.92) 30%,rgba(255,255,255,0.98) 100%);backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);border-top:1px solid rgba(0,0,0,0.08);box-shadow:0 -8px 32px rgba(0,0,0,0.08);display:flex;flex-direction:column;gap:14px;}
+.proc-strip .ps-label{display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#86868b;}
+.proc-strip .ps-label::before{content:"";display:inline-block;width:12px;height:12px;border-radius:50%;background:#0071E3;box-shadow:0 0 0 0 rgba(0,113,227,0.6);animation:psPulse 1.6s infinite;}
+.proc-strip .ps-icon{width:22px;height:22px;color:#0071E3;flex-shrink:0;}
+@keyframes psPulse{0%{box-shadow:0 0 0 0 rgba(0,113,227,0.55);}70%{box-shadow:0 0 0 14px rgba(0,113,227,0);}100%{box-shadow:0 0 0 0 rgba(0,113,227,0);}}
+.proc-strip .ps-card{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:28px;transition:opacity 0.55s ease, transform 0.55s ease;min-height:120px;}
+.proc-strip.ps-fade .ps-card{opacity:0;transform:translateY(10px);}
+.ps-num{font-family:"SF Mono","Menlo","Monaco",monospace;font-size:28px;font-weight:700;color:#1d1d1f;background:linear-gradient(180deg,#f2f2f7 0%,#e8e8ed 100%);border-radius:16px;padding:18px 22px;border:1px solid rgba(0,0,0,0.08);letter-spacing:-0.01em;white-space:nowrap;}
+.ps-main{display:flex;flex-direction:column;gap:10px;min-width:0;}
+.ps-client{font-size:44px;font-weight:700;color:#1d1d1f;letter-spacing:-0.02em;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ps-meta{display:flex;gap:28px;align-items:center;color:#515154;font-size:20px;flex-wrap:wrap;}
+.ps-meta > span{display:inline-flex;align-items:center;gap:6px;}
+.ps-meta b{color:#86868b;font-weight:600;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;margin-right:2px;}
+.ps-badge{display:inline-flex;align-items:center;padding:8px 18px;border-radius:999px;font-size:16px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;}
 .ps-badge.ativo{background:#E8F5E9;color:#1B5E20;}
 .ps-badge.suspenso{background:#FFF8E1;color:#7D5A00;}
 .ps-badge.arquivado{background:#ECEFF1;color:#37474F;}
 .ps-badge.encerrado{background:#FFEBEE;color:#B71C1C;}
-.ps-counter{margin-left:auto;font-size:12px;color:#86868b;font-variant-numeric:tabular-nums;}
-.ps-prazo-alert{color:#C62828;font-weight:600;}
-body{padding-bottom:100px;}
+.ps-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+.ps-counter{font-size:15px;color:#86868b;font-variant-numeric:tabular-nums;font-weight:600;}
+.ps-prazo-alert{color:#C62828;font-weight:700;}
+.ps-prazo-vencido{color:#B71C1C;font-weight:700;}
+.ps-bar{position:absolute;left:0;bottom:0;height:4px;background:#0071E3;width:0;transition:width 6.5s linear;}
+
 </style>
 </head>
 <body>
@@ -151,7 +162,7 @@ body{padding-bottom:100px;}
     <div id="weatherContent">Carregando...</div>
   </div>
 </div>
-<div class="refresh-bar" id="refr">Atualizando...</div><div class="proc-strip" id="procStrip"><div class="ps-label">Processos Judiciais</div><div class="ps-card" id="procCard"><span style="color:#86868b;font-size:14px;">Carregando processos...</span></div></div>
+<div class="refresh-bar" id="refr">Atualizando...</div><div class="proc-strip" id="procStrip"><div class="ps-label"><svg class="ps-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M4 21h16"/><path d="M7 8l-3 6h6z"/><path d="M17 8l-3 6h6z"/><path d="M7 8h10"/></svg>Processos Judiciais</div><div class="ps-card" id="procCard"><span style="color:#86868b;font-size:20px;">Carregando processos...</span></div><div class="ps-bar" id="procBar"></div></div>
 
 
 
@@ -288,23 +299,57 @@ async function loadWeather(){
 function weatherDesc(c){if(c===0)return'Ceu limpo';if(c<=3)return'Parcialmente nublado';if(c<=48)return'Nublado';if(c<=57)return'Garoa';if(c<=67)return'Chuva';if(c<=77)return'Neve';if(c<=82)return'Pancadas';if(c<=86)return'Neve forte';if(c<=99)return'Tempestade';return'--';}
 function weatherIcon(c){if(c===0)return'\u2600';if(c<=3)return'\u26c5';if(c<=48)return'\u2601';if(c<=67)return'\ud83c\udf27';if(c<=82)return'\ud83c\udf27';if(c<=99)return'\u26a1';return'\u2601';}
 
-(function(){const tracked=new WeakMap();function tick(el){const st=tracked.get(el);if(!st||!el.isConnected){tracked.delete(el);return;}if(el.scrollHeight<=el.clientHeight+4){tracked.delete(el);el.scrollTop=0;return;}if(st.paused>0){st.paused--;}else{el.scrollTop+=st.dir*0.35;if(st.dir===1&&el.scrollTop>=el.scrollHeight-el.clientHeight-1){st.dir=-1;st.paused=80;}else if(st.dir===-1&&el.scrollTop<=0){st.dir=1;st.paused=80;}}requestAnimationFrame(()=>tick(el));}function scan(){document.querySelectorAll(".plist").forEach(el=>{const over=el.scrollHeight>el.clientHeight+4;if(over&&!tracked.has(el)){tracked.set(el,{dir:1,paused:60});requestAnimationFrame(()=>tick(el));}else if(!over&&tracked.has(el)){tracked.delete(el);el.scrollTop=0;}});}setInterval(scan,1500);if(document.readyState!="loading")scan();else document.addEventListener("DOMContentLoaded",scan);})();
 
-/* Processos cycling */
+/* Auto-scroll for task lists that overflow */
+(function(){
+  function tick(el){
+    const st=el.__autoScroll;
+    if(!st||!el.isConnected){el.__autoScroll=null;return;}
+    if(el.scrollHeight<=el.clientHeight+4){el.__autoScroll=null;el.scrollTop=0;return;}
+    if(st.paused>0){st.paused--;}
+    else{
+      el.scrollTop+=st.dir*0.6;
+      if(st.dir===1&&el.scrollTop>=el.scrollHeight-el.clientHeight-1){st.dir=-1;st.paused=100;}
+      else if(st.dir===-1&&el.scrollTop<=0){st.dir=1;st.paused=100;}
+    }
+    requestAnimationFrame(()=>tick(el));
+  }
+  function scan(){
+    document.querySelectorAll('.plist').forEach(el=>{
+      const over=el.scrollHeight>el.clientHeight+4;
+      if(over&&!el.__autoScroll){
+        el.__autoScroll={dir:1,paused:70};
+        requestAnimationFrame(()=>tick(el));
+      }else if(!over&&el.__autoScroll){
+        el.__autoScroll=null;
+        el.scrollTop=0;
+      }
+    });
+  }
+  setInterval(scan,1000);
+  if(document.readyState!=='loading')setTimeout(scan,500);
+  else document.addEventListener('DOMContentLoaded',()=>setTimeout(scan,500));
+})();
+
+
+
+/* Processos cycling (BIG display) */
 (function(){
   let procs=[],idx=0,timer=null;
   async function loadProcs(){
     try{
-      const r=await fetch('/api/tv/processos',{credentials:'include'});
+      const r=await fetch('/api/tv/processos');
       if(!r.ok)return;
       const data=await r.json();
-      procs=(data||[]).filter(p=>p.status!=='arquivado'&&p.status!=='encerrado');
+      const act=(data||[]).filter(p=>p.status!=='arquivado'&&p.status!=='encerrado');
+      procs=act;
+      const strip=document.getElementById('procStrip');
       if(procs.length===0){
-        const card=document.getElementById('procCard');
-        if(card)card.innerHTML='<span style="color:#86868b;font-size:14px;">Nenhum processo ativo</span>';
+        if(strip){strip.style.display='none';document.body.style.paddingBottom='24px';}
         return;
       }
-      if(!timer){idx=0;renderProc();timer=setInterval(nextProc,6500);}
+      if(strip){strip.style.display='flex';document.body.style.paddingBottom='220px';}
+      if(!timer){idx=0;renderProc();timer=setInterval(nextProc,7000);}
     }catch(e){}
   }
   function fmtDate(s){if(!s)return '';const d=new Date(s+'T00:00:00');return d.toLocaleDateString('pt-BR');}
@@ -321,26 +366,40 @@ function weatherIcon(c){if(c===0)return'\u2600';if(c<=3)return'\u26c5';if(c<=48)
       const du=daysUntil(p.prazo);
       let prazoHtml='';
       if(p.prazo){
-        const isAlert=du!==null&&du<=7;
-        prazoHtml='<span class="'+(isAlert?'ps-prazo-alert':'')+'"><b>Prazo:</b>'+esc(fmtDate(p.prazo))+(du!==null&&du>=0&&du<=30?' ('+du+'d)':'')+'</span>';
+        let cls='';
+        let extra='';
+        if(du!==null){
+          if(du<0){cls='ps-prazo-vencido';extra=' (vencido '+(-du)+'d)';}
+          else if(du<=7){cls='ps-prazo-alert';extra=' ('+du+'d)';}
+          else if(du<=30){extra=' ('+du+'d)';}
+        }
+        prazoHtml='<span class="'+cls+'"><b>Prazo</b>'+esc(fmtDate(p.prazo))+extra+'</span>';
       }
       card.innerHTML=
-        '<span class="ps-num">'+esc(p.numero||'—')+'</span>'+
-        '<span class="ps-client">'+esc(p.cliente||'')+'</span>'+
-        '<div class="ps-meta">'+
-          (p.tipo?'<span><b>Tipo:</b>'+esc(p.tipo)+'</span>':'')+
-          (p.vara?'<span><b>Vara:</b>'+esc(p.vara)+'</span>':'')+
-          prazoHtml+
-          '<span class="ps-badge '+esc(p.status||'ativo')+'">'+esc(p.status||'ativo')+'</span>'+
+        '<div class="ps-num">'+esc(p.numero||'—')+'</div>'+
+        '<div class="ps-main">'+
+          '<div class="ps-client">'+esc(p.cliente||'')+'</div>'+
+          '<div class="ps-meta">'+
+            (p.tipo?'<span><b>Tipo</b>'+esc(p.tipo)+'</span>':'')+
+            (p.vara?'<span><b>Vara</b>'+esc(p.vara)+'</span>':'')+
+            prazoHtml+
+          '</div>'+
         '</div>'+
-        '<span class="ps-counter">'+((idx%procs.length)+1)+' / '+procs.length+'</span>';
+        '<div class="ps-right">'+
+          '<div class="ps-badge '+esc(p.status||'ativo')+'">'+esc(p.status||'ativo')+'</div>'+
+          '<div class="ps-counter">'+((idx%procs.length)+1)+' / '+procs.length+'</div>'+
+        '</div>';
       strip.classList.remove('ps-fade');
-    },450);
+      /* restart progress bar */
+      const bar=document.getElementById('procBar');
+      if(bar){bar.style.transition='none';bar.style.width='0%';void bar.offsetWidth;bar.style.transition='width 6.8s linear';bar.style.width='100%';}
+    },500);
   }
   function nextProc(){if(procs.length===0)return;idx=(idx+1)%procs.length;renderProc();}
   loadProcs();
-  setInterval(loadProcs,120000);
+  setInterval(loadProcs,90000);
 })();
+
 </script>
 </body>
 </html>
