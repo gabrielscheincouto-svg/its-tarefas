@@ -295,7 +295,7 @@ function weatherIcon(c){if(c===0)return'\u2600';if(c<=3)return'\u26c5';if(c<=48)
   let procs=[],idx=0,timer=null;
   async function loadProcs(){
     try{
-      const r=await fetch('/api/processos',{credentials:'include'});
+      const r=await fetch('/api/tv/processos',{credentials:'include'});
       if(!r.ok)return;
       const data=await r.json();
       procs=(data||[]).filter(p=>p.status!=='arquivado'&&p.status!=='encerrado');
