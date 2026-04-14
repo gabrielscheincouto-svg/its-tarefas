@@ -61,7 +61,6 @@ app.use(session({
     signed: true,
     overwrite: true
 }));
-}));
 
 // Rate limit para login (anti brute force): 8 tentativas por IP a cada 15 min
 const loginLimiter = rateLimit({
