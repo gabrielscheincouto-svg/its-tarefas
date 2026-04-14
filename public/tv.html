@@ -91,6 +91,32 @@
 
 .plist::-webkit-scrollbar{display:none;}
 .plist{scrollbar-width:none;-ms-overflow-style:none;}
+
+/* Apple-style refinements */
+body{background:linear-gradient(180deg,#F5F5F7 0%,#E8E8ED 100%);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#1d1d1f;}
+.card,.panel,.member,.task,.side,.weather,.calendar,.grid > *{background:rgba(255,255,255,0.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(0,0,0,0.06);box-shadow:0 1px 2px rgba(0,0,0,0.04),0 8px 24px rgba(0,0,0,0.06);border-radius:18px;}
+.header,header{background:rgba(255,255,255,0.8);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(0,0,0,0.06);}
+h1,h2,h3,.member-name{letter-spacing:-0.01em;}
+
+/* Processos cycling strip */
+.proc-strip{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:14px 24px 16px;background:linear-gradient(180deg,rgba(255,255,255,0.0) 0%,rgba(255,255,255,0.9) 40%,rgba(255,255,255,0.95) 100%);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);border-top:1px solid rgba(0,0,0,0.08);box-shadow:0 -4px 20px rgba(0,0,0,0.05);}
+.proc-strip .ps-label{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#86868b;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.proc-strip .ps-label::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#0071E3;box-shadow:0 0 0 0 rgba(0,113,227,0.5);animation:psPulse 1.8s infinite;}
+@keyframes psPulse{0%{box-shadow:0 0 0 0 rgba(0,113,227,0.55);}70%{box-shadow:0 0 0 10px rgba(0,113,227,0);}100%{box-shadow:0 0 0 0 rgba(0,113,227,0);}}
+.proc-strip .ps-card{display:flex;align-items:center;gap:20px;flex-wrap:wrap;transition:opacity 0.5s ease, transform 0.5s ease;}
+.proc-strip.ps-fade .ps-card{opacity:0;transform:translateY(6px);}
+.ps-num{font-family:-apple-system,"SF Mono","Menlo",monospace;font-size:15px;font-weight:600;color:#1d1d1f;background:#f2f2f7;border-radius:10px;padding:6px 10px;border:1px solid rgba(0,0,0,0.06);}
+.ps-client{font-size:20px;font-weight:600;color:#1d1d1f;letter-spacing:-0.01em;}
+.ps-meta{display:flex;gap:14px;align-items:center;color:#515154;font-size:13px;flex-wrap:wrap;}
+.ps-meta b{color:#1d1d1f;font-weight:500;margin-right:4px;}
+.ps-badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:0.02em;text-transform:uppercase;}
+.ps-badge.ativo{background:#E8F5E9;color:#1B5E20;}
+.ps-badge.suspenso{background:#FFF8E1;color:#7D5A00;}
+.ps-badge.arquivado{background:#ECEFF1;color:#37474F;}
+.ps-badge.encerrado{background:#FFEBEE;color:#B71C1C;}
+.ps-counter{margin-left:auto;font-size:12px;color:#86868b;font-variant-numeric:tabular-nums;}
+.ps-prazo-alert{color:#C62828;font-weight:600;}
+body{padding-bottom:100px;}
 </style>
 </head>
 <body>
@@ -125,7 +151,9 @@
     <div id="weatherContent">Carregando...</div>
   </div>
 </div>
-<div class="refresh-bar" id="refr">Atualizando...</div>
+<div class="refresh-bar" id="refr">Atualizando...</div><div class="proc-strip" id="procStrip"><div class="ps-label">Processos Judiciais</div><div class="ps-card" id="procCard"><span style="color:#86868b;font-size:14px;">Carregando processos...</span></div></div>
+
+
 
 <script>
 let tasks=[],members=[];
@@ -261,6 +289,58 @@ function weatherDesc(c){if(c===0)return'Ceu limpo';if(c<=3)return'Parcialmente n
 function weatherIcon(c){if(c===0)return'\u2600';if(c<=3)return'\u26c5';if(c<=48)return'\u2601';if(c<=67)return'\ud83c\udf27';if(c<=82)return'\ud83c\udf27';if(c<=99)return'\u26a1';return'\u2601';}
 
 (function(){const tracked=new WeakMap();function tick(el){const st=tracked.get(el);if(!st||!el.isConnected){tracked.delete(el);return;}if(el.scrollHeight<=el.clientHeight+4){tracked.delete(el);el.scrollTop=0;return;}if(st.paused>0){st.paused--;}else{el.scrollTop+=st.dir*0.35;if(st.dir===1&&el.scrollTop>=el.scrollHeight-el.clientHeight-1){st.dir=-1;st.paused=80;}else if(st.dir===-1&&el.scrollTop<=0){st.dir=1;st.paused=80;}}requestAnimationFrame(()=>tick(el));}function scan(){document.querySelectorAll(".plist").forEach(el=>{const over=el.scrollHeight>el.clientHeight+4;if(over&&!tracked.has(el)){tracked.set(el,{dir:1,paused:60});requestAnimationFrame(()=>tick(el));}else if(!over&&tracked.has(el)){tracked.delete(el);el.scrollTop=0;}});}setInterval(scan,1500);if(document.readyState!="loading")scan();else document.addEventListener("DOMContentLoaded",scan);})();
+
+/* Processos cycling */
+(function(){
+  let procs=[],idx=0,timer=null;
+  async function loadProcs(){
+    try{
+      const r=await fetch('/api/processos',{credentials:'include'});
+      if(!r.ok)return;
+      const data=await r.json();
+      procs=(data||[]).filter(p=>p.status!=='arquivado'&&p.status!=='encerrado');
+      if(procs.length===0){
+        const card=document.getElementById('procCard');
+        if(card)card.innerHTML='<span style="color:#86868b;font-size:14px;">Nenhum processo ativo</span>';
+        return;
+      }
+      if(!timer){idx=0;renderProc();timer=setInterval(nextProc,6500);}
+    }catch(e){}
+  }
+  function fmtDate(s){if(!s)return '';const d=new Date(s+'T00:00:00');return d.toLocaleDateString('pt-BR');}
+  function daysUntil(s){if(!s)return null;const d=new Date(s+'T00:00:00');const now=new Date();now.setHours(0,0,0,0);return Math.ceil((d-now)/86400000);}
+  function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);}
+  function renderProc(){
+    if(procs.length===0)return;
+    const p=procs[idx%procs.length];
+    const strip=document.getElementById('procStrip');
+    const card=document.getElementById('procCard');
+    if(!strip||!card)return;
+    strip.classList.add('ps-fade');
+    setTimeout(()=>{
+      const du=daysUntil(p.prazo);
+      let prazoHtml='';
+      if(p.prazo){
+        const isAlert=du!==null&&du<=7;
+        prazoHtml='<span class="'+(isAlert?'ps-prazo-alert':'')+'"><b>Prazo:</b>'+esc(fmtDate(p.prazo))+(du!==null&&du>=0&&du<=30?' ('+du+'d)':'')+'</span>';
+      }
+      card.innerHTML=
+        '<span class="ps-num">'+esc(p.numero||'—')+'</span>'+
+        '<span class="ps-client">'+esc(p.cliente||'')+'</span>'+
+        '<div class="ps-meta">'+
+          (p.tipo?'<span><b>Tipo:</b>'+esc(p.tipo)+'</span>':'')+
+          (p.vara?'<span><b>Vara:</b>'+esc(p.vara)+'</span>':'')+
+          prazoHtml+
+          '<span class="ps-badge '+esc(p.status||'ativo')+'">'+esc(p.status||'ativo')+'</span>'+
+        '</div>'+
+        '<span class="ps-counter">'+((idx%procs.length)+1)+' / '+procs.length+'</span>';
+      strip.classList.remove('ps-fade');
+    },450);
+  }
+  function nextProc(){if(procs.length===0)return;idx=(idx+1)%procs.length;renderProc();}
+  loadProcs();
+  setInterval(loadProcs,120000);
+})();
 </script>
 </body>
 </html>
