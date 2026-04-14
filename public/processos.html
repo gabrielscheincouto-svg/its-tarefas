@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Processos Judiciais · ITS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+:root{
+  --bg:#F5F5F7;--panel:#FFFFFF;--text:#1D1D1F;--muted:#86868B;
+  --sep:rgba(60,60,67,0.12);--sep-strong:rgba(60,60,67,0.22);
+  --accent:#0071E3;--accent-hover:#0077ED;--danger:#FF3B30;--ok:#34C759;--warn:#FF9500;
+  --radius:14px;--radius-lg:20px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.04),0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,0.06),0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg:0 24px 64px rgba(0,0,0,0.18),0 8px 16px rgba(0,0,0,0.08);
+}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.45;letter-spacing:-0.01em;min-height:100vh;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{text-decoration:underline;}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(245,245,247,0.78);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--sep);}
+.topbar-inner{max-width:1200px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:18px;}
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-size:14px;font-weight:500;}
+.title{font-size:17px;font-weight:600;letter-spacing:-0.02em;}
+.spacer{flex:1;}
+.btn{appearance:none;border:0;background:transparent;font:inherit;color:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:980px;font-size:14px;font-weight:500;transition:background 0.15s,transform 0.1s;line-height:1;}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent-hover);}
+.btn-secondary{background:rgba(0,0,0,0.05);color:var(--text);}
+.btn-secondary:hover{background:rgba(0,0,0,0.08);}
+.btn-danger{background:transparent;color:var(--danger);}
+.btn-danger:hover{background:rgba(255,59,48,0.1);}
+.btn-icon{padding:6px;border-radius:8px;color:var(--muted);}
+.btn-icon:hover{background:rgba(0,0,0,0.06);color:var(--text);}
+.container{max-width:1200px;margin:0 auto;padding:24px;}
+.toolbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+.search{flex:1;min-width:200px;position:relative;}
+.search input{width:100%;padding:10px 14px 10px 36px;border:1px solid var(--sep);border-radius:10px;background:var(--panel);font:inherit;font-size:14px;color:var(--text);outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
+.search input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(0,113,227,0.12);}
+.search::before{content:'';position:absolute;left:12px;top:50%;width:14px;height:14px;transform:translateY(-50%);background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2386868B' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='7'/><path d='m21 21-4.3-4.3'/></svg>") center/contain no-repeat;opacity:0.7;}
+.filter-pills{display:flex;gap:6px;}
+.pill{padding:8px 14px;border-radius:980px;background:rgba(0,0,0,0.05);font-size:13px;font-weight:500;cursor:pointer;transition:background 0.15s;border:0;color:var(--text);}
+.pill:hover{background:rgba(0,0,0,0.08);}
+.pill.active{background:var(--text);color:var(--bg);}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));}
+.card{background:var(--panel);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow-sm);border:1px solid transparent;transition:transform 0.15s,box-shadow 0.2s;position:relative;}
+.card:hover{box-shadow:var(--shadow-md);}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.card-numero{font-size:12px;color:var(--muted);font-family:'SF Mono',ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0.02em;}
+.card-cliente{font-size:17px;font-weight:600;letter-spacing:-0.01em;margin-top:4px;color:var(--text);}
+.card-tipo{color:var(--muted);font-size:13px;margin-top:2px;}
+.status-badge{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;padding:4px 9px;border-radius:980px;flex-shrink:0;}
+.status-ativo{background:rgba(52,199,89,0.14);color:#1a7330;}
+.status-arquivado{background:rgba(134,134,139,0.2);color:#595959;}
+.status-suspenso{background:rgba(255,149,0,0.15);color:#a35c00;}
+.status-encerrado{background:rgba(88,86,214,0.14);color:#3832a0;}
+.card-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin:14px 0 10px;padding-top:12px;border-top:1px solid var(--sep);}
+.meta-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;}
+.meta-value{font-size:13px;color:var(--text);font-weight:500;}
+.card-obs{font-size:13px;color:var(--muted);line-height:1.45;margin-top:8px;white-space:pre-wrap;}
+.card-actions{display:flex;gap:4px;justify-content:flex-end;margin-top:10px;padding-top:10px;border-top:1px solid var(--sep);}
+.empty{text-align:center;padding:80px 20px;color:var(--muted);}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:0.4;}
+.empty-title{font-size:17px;font-weight:600;color:var(--text);margin-bottom:4px;}
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.4);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:60px 20px 20px;overflow-y:auto;}
+.modal-bg.show{display:flex;animation:fadeIn 0.2s ease;}
+.modal{background:var(--panel);border-radius:var(--radius-lg);width:100%;max-width:560px;box-shadow:var(--shadow-lg);animation:popIn 0.2s ease;overflow:hidden;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes popIn{from{opacity:0;transform:translateY(10px) scale(0.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+.modal-hdr{padding:18px 24px;border-bottom:1px solid var(--sep);display:flex;align-items:center;justify-content:space-between;}
+.modal-hdr h2{font-size:17px;font-weight:600;}
+.modal-body{padding:20px 24px;}
+.modal-ftr{padding:14px 24px;background:rgba(0,0,0,0.02);border-top:1px solid var(--sep);display:flex;gap:10px;justify-content:flex-end;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--sep);border-radius:10px;background:#FAFAFA;font:inherit;font-size:14px;color:var(--text);outline:none;transition:border-color 0.15s,box-shadow 0.15s,background 0.15s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(0,113,227,0.12);}
+.field textarea{resize:vertical;min-height:80px;font-family:inherit;}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--text);color:var(--bg);padding:12px 20px;border-radius:12px;font-size:14px;font-weight:500;z-index:200;opacity:0;transition:all 0.3s;box-shadow:var(--shadow-md);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.skeleton{height:180px;background:linear-gradient(90deg,rgba(0,0,0,0.04) 0%,rgba(0,0,0,0.08) 50%,rgba(0,0,0,0.04) 100%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--radius-lg);}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+@media (max-width:640px){.topbar-inner,.container{padding-left:16px;padding-right:16px;}.grid{grid-template-columns:1fr;}.row{grid-template-columns:1fr;}.modal-bg{padding:16px;}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="topbar-inner">
+  <a class="back-link" href="/">‹ Início</a>
+  <div class="title">Processos Judiciais</div>
+  <div class="spacer"></div>
+  <button class="btn btn-primary" id="btnNew">+ Novo Processo</button>
+</div></div>
+<div class="container">
+  <div class="toolbar">
+    <div class="search"><input id="search" type="text" placeholder="Buscar por número, cliente ou responsável..."></div>
+    <div class="filter-pills" id="filterPills">
+      <button class="pill active" data-status="">Todos</button>
+      <button class="pill" data-status="ativo">Ativos</button>
+      <button class="pill" data-status="suspenso">Suspensos</button>
+      <button class="pill" data-status="arquivado">Arquivados</button>
+      <button class="pill" data-status="encerrado">Encerrados</button>
+    </div>
+  </div>
+  <div id="list" class="grid"></div>
+</div>
+
+<div class="modal-bg" id="modalBg"><div class="modal">
+  <div class="modal-hdr"><h2 id="modalTitle">Novo Processo</h2><button class="btn-icon btn" onclick="closeModal()" aria-label="Fechar">✕</button></div>
+  <form id="form" class="modal-body">
+    <input type="hidden" id="f-id">
+    <div class="row">
+      <div class="field"><label>Número do Processo *</label><input id="f-numero" required placeholder="0000000-00.0000.0.00.0000"></div>
+      <div class="field"><label>Status</label><select id="f-status"><option value="ativo">Ativo</option><option value="suspenso">Suspenso</option><option value="arquivado">Arquivado</option><option value="encerrado">Encerrado</option></select></div>
+    </div>
+    <div class="field"><label>Cliente *</label><input id="f-cliente" required placeholder="Nome do cliente"></div>
+    <div class="row">
+      <div class="field"><label>Tipo</label><input id="f-tipo" placeholder="Trabalhista, Cível, Tributário..."></div>
+      <div class="field"><label>Vara / Tribunal</label><input id="f-vara" placeholder="1ª Vara Cível"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Responsável</label><select id="f-resp"><option value="">—</option></select></div>
+      <div class="field"><label>Próximo Prazo</label><input id="f-prazo" type="date"></div>
+    </div>
+    <div class="field"><label>Observações</label><textarea id="f-obs" placeholder="Andamento, anotações, próximos passos..."></textarea></div>
+  </form>
+  <div class="modal-ftr">
+    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+    <button type="button" class="btn btn-primary" id="btnSave">Salvar</button>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='/api';
+let processos=[],users=[],filterStatus='',searchQ='';
+
+async function api(path,opts={}){
+  const r=await fetch(API+path,{credentials:'include',headers:{'Content-Type':'application/json'},...opts});
+  if(!r.ok){
+    if(r.status===401){window.location.href='/';return;}
+    const err=await r.json().catch(()=>({error:r.statusText}));
+    throw new Error(err.error||'Erro');
+  }
+  return r.status===204?null:r.json();
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function fmtDate(d){if(!d)return '—';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});}
+function userName(id){if(!id)return '—';const u=users.find(x=>x.id==id);return u?(u.name||u.full_name||u.email||'—'):'—';}
+
+function render(){
+  const list=document.getElementById('list');
+  const q=searchQ.toLowerCase();
+  const filtered=processos.filter(p=>{
+    if(filterStatus&&p.status!==filterStatus)return false;
+    if(q){const s=(p.numero+' '+p.cliente+' '+(p.tipo||'')+' '+userName(p.responsavel_id)).toLowerCase();if(!s.includes(q))return false;}
+    return true;
+  });
+  if(!filtered.length){
+    list.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📂</div><div class="empty-title">Nenhum processo encontrado</div><div>'+(processos.length?'Tente mudar os filtros.':'Clique em + Novo Processo para começar.')+'</div></div>';
+    return;
+  }
+  list.innerHTML=filtered.map(p=>{
+    const statusCls='status-'+(p.status||'ativo');
+    const statusLabel=({ativo:'Ativo',suspenso:'Suspenso',arquivado:'Arquivado',encerrado:'Encerrado'})[p.status||'ativo'];
+    return `<div class="card">
+      <div class="card-top">
+        <div>
+          <div class="card-numero">${escapeHtml(p.numero||'')}</div>
+          <div class="card-cliente">${escapeHtml(p.cliente||'')}</div>
+          <div class="card-tipo">${escapeHtml(p.tipo||'Sem classificação')}</div>
+        </div>
+        <span class="status-badge ${statusCls}">${statusLabel}</span>
+      </div>
+      <div class="card-meta">
+        <div><div class="meta-label">Vara</div><div class="meta-value">${escapeHtml(p.vara||'—')}</div></div>
+        <div><div class="meta-label">Responsável</div><div class="meta-value">${escapeHtml(userName(p.responsavel_id))}</div></div>
+        <div><div class="meta-label">Próximo prazo</div><div class="meta-value">${fmtDate(p.prazo)}</div></div>
+        <div><div class="meta-label">Atualizado</div><div class="meta-value">${p.updated_at?new Date(p.updated_at).toLocaleDateString('pt-BR'):'—'}</div></div>
+      </div>
+      ${p.observacoes?`<div class="card-obs">${escapeHtml(p.observacoes)}</div>`:''}
+      <div class="card-actions">
+        <button class="btn btn-secondary" onclick="openEdit(${p.id})">Editar</button>
+        <button class="btn btn-danger" onclick="del(${p.id})">Excluir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
+
+function openNew(){
+  document.getElementById('modalTitle').textContent='Novo Processo';
+  document.getElementById('f-id').value='';
+  ['f-numero','f-cliente','f-tipo','f-vara','f-obs','f-prazo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-status').value='ativo';
+  document.getElementById('f-resp').value='';
+  document.getElementById('modalBg').classList.add('show');
+  setTimeout(()=>document.getElementById('f-numero').focus(),100);
+}
+
+window.openEdit=function(id){
+  const p=processos.find(x=>x.id===id);if(!p)return;
+  document.getElementById('modalTitle').textContent='Editar Processo';
+  document.getElementById('f-id').value=p.id;
+  document.getElementById('f-numero').value=p.numero||'';
+  document.getElementById('f-cliente').value=p.cliente||'';
+  document.getElementById('f-tipo').value=p.tipo||'';
+  document.getElementById('f-vara').value=p.vara||'';
+  document.getElementById('f-obs').value=p.observacoes||'';
+  document.getElementById('f-prazo').value=p.prazo||'';
+  document.getElementById('f-status').value=p.status||'ativo';
+  document.getElementById('f-resp').value=p.responsavel_id||'';
+  document.getElementById('modalBg').classList.add('show');
+};
+
+window.closeModal=function(){document.getElementById('modalBg').classList.remove('show');};
+
+window.del=async function(id){
+  const p=processos.find(x=>x.id===id);if(!p)return;
+  if(!confirm('Excluir o processo '+p.numero+' ('+p.cliente+')?'))return;
+  try{await api('/processos/'+id,{method:'DELETE'});processos=processos.filter(x=>x.id!==id);render();toast('Processo excluído');}
+  catch(e){toast('Erro: '+e.message);}
+};
+
+async function save(){
+  const id=document.getElementById('f-id').value;
+  const payload={
+    numero:document.getElementById('f-numero').value.trim(),
+    cliente:document.getElementById('f-cliente').value.trim(),
+    tipo:document.getElementById('f-tipo').value.trim(),
+    vara:document.getElementById('f-vara').value.trim(),
+    responsavel_id:document.getElementById('f-resp').value||null,
+    prazo:document.getElementById('f-prazo').value||null,
+    observacoes:document.getElementById('f-obs').value.trim(),
+    status:document.getElementById('f-status').value
+  };
+  if(!payload.numero||!payload.cliente){toast('Número e cliente são obrigatórios');return;}
+  try{
+    if(id){
+      const u=await api('/processos/'+id,{method:'PUT',body:JSON.stringify(payload)});
+      const i=processos.findIndex(x=>x.id==id);if(i>=0)processos[i]=u;
+      toast('Salvo');
+    }else{
+      const n=await api('/processos',{method:'POST',body:JSON.stringify(payload)});
+      processos.unshift(n);toast('Criado');
+    }
+    closeModal();render();
+  }catch(e){toast('Erro: '+e.message);}
+}
+
+async function load(){
+  try{
+    [processos,users]=await Promise.all([api('/processos'),api('/users').catch(()=>[])]);
+    const resp=document.getElementById('f-resp');
+    resp.innerHTML='<option value="">—</option>'+users.map(u=>`<option value="${u.id}">${escapeHtml(u.name||u.full_name||u.email||('Usuário '+u.id))}</option>`).join('');
+    render();
+  }catch(e){toast('Erro ao carregar: '+e.message);}
+}
+
+document.getElementById('btnNew').addEventListener('click',openNew);
+document.getElementById('btnSave').addEventListener('click',save);
+document.getElementById('search').addEventListener('input',e=>{searchQ=e.target.value;render();});
+document.getElementById('filterPills').addEventListener('click',e=>{
+  const b=e.target.closest('.pill');if(!b)return;
+  document.querySelectorAll('.filter-pills .pill').forEach(x=>x.classList.toggle('active',x===b));
+  filterStatus=b.dataset.status;render();
+});
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();save();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// Initial skeleton
+document.getElementById('list').innerHTML=Array(6).fill('<div class="skeleton"></div>').join('');
+load();
+</script>
+</body>
+</html>
