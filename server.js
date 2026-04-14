@@ -1054,6 +1054,63 @@ app.get('/api/weather', async (req, res) => {
     }
 });
 
+// ===== PROCESSOS JUDICIAIS =====
+app.get('/api/processos', requireAuth, async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('processos').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        res.json(data || []);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/processos', requireAuth, async (req, res) => {
+    try {
+        const { numero, cliente, tipo, vara, responsavel_id, prazo, observacoes, status } = req.body;
+        if (!numero || !cliente) return res.status(400).json({ error: 'Número e cliente são obrigatórios' });
+        const row = {
+            numero, cliente,
+            tipo: tipo || null,
+            vara: vara || null,
+            responsavel_id: responsavel_id || null,
+            prazo: prazo || null,
+            observacoes: observacoes || null,
+            status: status || 'ativo'
+        };
+        const { data, error } = await supabase.from('processos').insert([row]).select().single();
+        if (error) throw error;
+        res.status(201).json(data);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.put('/api/processos/:id', requireAuth, async (req, res) => {
+    try {
+        const updates = {};
+        ['numero','cliente','tipo','vara','responsavel_id','prazo','observacoes','status'].forEach(f => {
+            if (req.body[f] !== undefined) updates[f] = req.body[f] || null;
+        });
+        updates.updated_at = new Date().toISOString();
+        const { data, error } = await supabase.from('processos').update(updates).eq('id', req.params.id).select().single();
+        if (error) throw error;
+        res.json(data);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/processos/:id', requireAuth, async (req, res) => {
+    try {
+        const { error } = await supabase.from('processos').delete().eq('id', req.params.id);
+        if (error) throw error;
+        res.json({ ok: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // ===== START =====
 async function start() {
     await seedDatabase();
