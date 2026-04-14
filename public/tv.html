@@ -47,6 +47,9 @@
   .pb.p{background:var(--accent-lt);color:var(--accent);border:1px solid var(--accent-lt);}
 
   .plist{padding:10px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:7px;}
+  .pl-anim{display:flex;flex-direction:column;gap:7px;animation:plFade .5s ease;}
+  .pl-pager{margin-top:auto;padding-top:8px;font-size:11px;color:var(--muted);text-align:center;font-weight:600;letter-spacing:0.3px;border-top:1px dashed var(--border);}
+  @keyframes plFade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
   .plist::-webkit-scrollbar{width:4px;}
   .plist::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
   .ti{background:var(--white);border:1.5px solid var(--border-lt);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
@@ -167,7 +170,9 @@ h1,h2,h3,.member-name{letter-spacing:-0.01em;}
 
 
 <script>
-let tasks=[],members=[];
+let tasks=[],members=[],pageIdx={},pageTimer=null;
+const TASKS_PER_PAGE=5;
+const PAGE_ROTATE_MS=8000;
 
 async function load(){
   try{
@@ -182,43 +187,70 @@ function dU(d){const t=new Date(d+'T00:00:00'),n=new Date();n.setHours(0,0,0,0);
 function fD(d){return new Date(d+'T00:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});}
 function ini(n){return(n||'?').split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,2);}
 
+function tasksFor(m){
+  const my=tasks.filter(t=>t.assignee_id===m.id&&t.status!=='done');
+  my.sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+  return my;
+}
+
+function taskHTML(t){
+  const d=dU(t.deadline);let dl='ok',dt=fD(t.deadline),cls='';
+  if(d<0){dl='ov';dt=Math.abs(d)+'d atr';cls='venc';}
+  else if(d===0){dl='u';dt='HOJE';cls='urg';}
+  else if(d<=2){dl='u';dt=d+'d';cls='urg';}
+  else if(d<=5){dl='w';dt=d+'d';cls='atn';}
+  let origHtml='';
+  if(t.original_deadline&&t.original_deadline!==t.deadline){origHtml='<span class="ti-orig">'+fD(t.original_deadline)+' &rarr; </span>';}
+  let teamHtml='';
+  const assignee=members.find(x=>x.id===t.assignee_id);
+  if(assignee){teamHtml+='<div class="ti-av main" style="background:'+assignee.color+'" title="'+assignee.name+'">'+ini(assignee.name)+'</div>';}
+  if(t.additional_assignees_parsed&&t.additional_assignees_parsed.length>0){
+    t.additional_assignees_parsed.slice(0,3).forEach(function(a){
+      const u=members.find(x=>x.id===a);
+      if(u){teamHtml+='<div class="ti-av" style="background:'+u.color+'" title="'+u.name+'">'+ini(u.name)+'</div>';}
+    });
+    if(t.additional_assignees_parsed.length>3){teamHtml+='<span class="ti-av-more">+'+String(t.additional_assignees_parsed.length-3)+'</span>';}
+  }
+  return `<div class="ti ${cls}"><div class="ti-body"><div class="ti-cl">${t.client}</div><div class="ti-tt">${t.title}</div></div><div style="display:flex;align-items:center;justify-content:space-between;"><div class="ti-team">${teamHtml}</div><div style="display:flex;align-items:center;gap:2px;">${origHtml}<span class="ti-dl ${dl}">${dt}</span></div></div></div>`;
+}
+
+function renderMemberList(m){
+  const el=document.querySelector('[data-pl="'+m.id+'"]');
+  if(!el)return;
+  const my=tasksFor(m);
+  if(my.length===0){
+    el.innerHTML='<div class="empty"><span class="empty-i"></span>Sem pend&ecirc;ncias!</div>';
+    return;
+  }
+  const total=Math.ceil(my.length/TASKS_PER_PAGE);
+  const page=(pageIdx[m.id]||0)%total;
+  const start=page*TASKS_PER_PAGE;
+  const pageTasks=my.slice(start,start+TASKS_PER_PAGE);
+  let html='<div class="pl-anim">'+pageTasks.map(taskHTML).join('')+'</div>';
+  if(total>1){html+='<div class="pl-pager">P\u00e1gina '+(page+1)+' / '+total+' \u00b7 '+my.length+' tarefas</div>';}
+  el.innerHTML=html;
+}
+
+function rotatePages(){
+  members.forEach(m=>{
+    const my=tasksFor(m);
+    const total=Math.ceil(my.length/TASKS_PER_PAGE);
+    if(total>1){pageIdx[m.id]=((pageIdx[m.id]||0)+1)%total;renderMemberList(m);}
+  });
+}
+
 function render(){
   const grid=document.getElementById('grid');
   grid.innerHTML=members.map(m=>{
-    const my=tasks.filter(t=>t.assignee_id===m.id&&t.status!=='done');
-    my.sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+    const my=tasksFor(m);
     const over=my.filter(t=>dU(t.deadline)<0).length;
     const doing=my.filter(t=>t.status==='doing').length;
     const todo=my.filter(t=>t.status==='todo').length;
-    let listHTML='';
-    if(my.length===0){
-      listHTML='<div class="empty"><span class="empty-i"></span>Sem pend&ecirc;ncias!</div>';
-    }else{
-      listHTML=my.slice(0,20).map(t=>{
-        const d=dU(t.deadline);let dl='ok',dt=fD(t.deadline),cls='';
-        if(d<0){dl='ov';dt=Math.abs(d)+'d atr';cls='venc';}
-        else if(d===0){dl='u';dt='HOJE';cls='urg';}
-        else if(d<=2){dl='u';dt=d+'d';cls='urg';}
-        else if(d<=5){dl='w';dt=d+'d';cls='atn';}
-        let origHtml='';
-        if(t.original_deadline&&t.original_deadline!==t.deadline){origHtml='<span class="ti-orig">'+fD(t.original_deadline)+' &rarr; </span>';}
-        // Build team avatars
-        let teamHtml='';
-        const assignee=members.find(x=>x.id===t.assignee_id);
-        if(assignee){teamHtml+='<div class="ti-av main" style="background:'+assignee.color+'" title="'+assignee.name+'">'+ini(assignee.name)+'</div>';}
-        if(t.additional_assignees_parsed&&t.additional_assignees_parsed.length>0){
-          t.additional_assignees_parsed.slice(0,3).forEach(function(a){
-            const u=members.find(x=>x.id===a);
-            if(u){teamHtml+='<div class="ti-av" style="background:'+u.color+'" title="'+u.name+'">'+ini(u.name)+'</div>';}
-          });
-          if(t.additional_assignees_parsed.length>3){teamHtml+='<span class="ti-av-more">+'+String(t.additional_assignees_parsed.length-3)+'</span>';}
-        }
-        return `<div class="ti ${cls}"><div class="ti-body"><div class="ti-cl">${t.client}</div><div class="ti-tt">${t.title}</div></div><div style="display:flex;align-items:center;justify-content:space-between;"><div class="ti-team">${teamHtml}</div><div style="display:flex;align-items:center;gap:2px;">${origHtml}<span class="ti-dl ${dl}">${dt}</span></div></div></div>`;
-      }).join('');
-      if(my.length>20) listHTML+=`<div class="empty" style="padding:10px;">+${my.length-20} mais...</div>`;
-    }
-    return `<div class="pcard"><div class="phdr"><div class="pav" style="background:${m.color}">${ini(m.name)}</div><div class="pinfo"><div class="pname">${m.name}</div><div class="pcnt">${my.length} pend&ecirc;ncia(s)</div></div><div class="pbadges">${over?`<span class="pb o">${over}</span>`:''}${doing?`<span class="pb d">${doing}</span>`:''}${todo?`<span class="pb p">${todo}</span>`:''}</div></div><div class="plist">${listHTML}</div></div>`;
+    if(pageIdx[m.id]===undefined)pageIdx[m.id]=0;
+    return `<div class="pcard"><div class="phdr"><div class="pav" style="background:${m.color}">${ini(m.name)}</div><div class="pinfo"><div class="pname">${m.name}</div><div class="pcnt">${my.length} pend&ecirc;ncia(s)</div></div><div class="pbadges">${over?`<span class="pb o">${over}</span>`:''}${doing?`<span class="pb d">${doing}</span>`:''}${todo?`<span class="pb p">${todo}</span>`:''}</div></div><div class="plist" data-pl="${m.id}"></div></div>`;
   }).join('');
+  members.forEach(renderMemberList);
+  if(!pageTimer)pageTimer=setInterval(rotatePages,PAGE_ROTATE_MS);
 
   // Stats header
   const act=tasks.filter(t=>t.status!=='done');
@@ -300,36 +332,7 @@ function weatherDesc(c){if(c===0)return'Ceu limpo';if(c<=3)return'Parcialmente n
 function weatherIcon(c){if(c===0)return'\u2600';if(c<=3)return'\u26c5';if(c<=48)return'\u2601';if(c<=67)return'\ud83c\udf27';if(c<=82)return'\ud83c\udf27';if(c<=99)return'\u26a1';return'\u2601';}
 
 
-/* Auto-scroll for task lists that overflow */
-(function(){
-  function tick(el){
-    const st=el.__autoScroll;
-    if(!st||!el.isConnected){el.__autoScroll=null;return;}
-    if(el.scrollHeight<=el.clientHeight+4){el.__autoScroll=null;el.scrollTop=0;return;}
-    if(st.paused>0){st.paused--;}
-    else{
-      el.scrollTop+=st.dir*0.6;
-      if(st.dir===1&&el.scrollTop>=el.scrollHeight-el.clientHeight-1){st.dir=-1;st.paused=100;}
-      else if(st.dir===-1&&el.scrollTop<=0){st.dir=1;st.paused=100;}
-    }
-    requestAnimationFrame(()=>tick(el));
-  }
-  function scan(){
-    document.querySelectorAll('.plist').forEach(el=>{
-      const over=el.scrollHeight>el.clientHeight+4;
-      if(over&&!el.__autoScroll){
-        el.__autoScroll={dir:1,paused:70};
-        requestAnimationFrame(()=>tick(el));
-      }else if(!over&&el.__autoScroll){
-        el.__autoScroll=null;
-        el.scrollTop=0;
-      }
-    });
-  }
-  setInterval(scan,1000);
-  if(document.readyState!=='loading')setTimeout(scan,500);
-  else document.addEventListener('DOMContentLoaded',()=>setTimeout(scan,500));
-})();
+/* Task pagination: 5 tasks per user, cycling every 8s (handled in render/rotatePages) */
 
 
 
