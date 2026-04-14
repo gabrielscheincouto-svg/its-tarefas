@@ -1054,6 +1054,16 @@ app.get('/api/weather', async (req, res) => {
     }
 });
 
+
+// Public TV processos endpoint (no auth required)
+app.get('/api/tv/processos', async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('processos').select('id,numero,cliente,tipo,vara,prazo,status,responsavel_id').in('status', ['ativo','suspenso']).order('prazo', { ascending: true, nullsFirst: false });
+        if (error) throw error;
+        res.json(data || []);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ===== PROCESSOS JUDICIAIS =====
 app.get('/api/processos', requireAuth, async (req, res) => {
     try {
