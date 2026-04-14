@@ -1,5 +1,5 @@
 const express = require('express');
-const session = require('express-session');
+const session = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const helmet = require('helmet');
@@ -53,16 +53,14 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 // Sessao com cookies seguros em producao
 app.use(session({
     name: 'its.sid',
-    secret: process.env.SESSION_SECRET || 'dev-only-secret-troque-em-producao-32chars',
-    resave: false,
-    saveUninitialized: false,
-    rolling: true,
-    cookie: {
-        maxAge: 8 * 60 * 60 * 1000, // 8 horas (era 30 dias)
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: IS_PROD
-    }
+    keys: [process.env.SESSION_SECRET || 'dev-only-secret-troque-em-producao-32chars'],
+    maxAge: 8 * 60 * 60 * 1000, // 8 horas
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: IS_PROD,
+    signed: true,
+    overwrite: true
+}));
 }));
 
 // Rate limit para login (anti brute force): 8 tentativas por IP a cada 15 min
@@ -235,23 +233,15 @@ app.post('/api/login', loginLimiter, async (req, res) => {
         return res.status(401).json({ error: 'Credenciais invalidas' });
     }
 
-    // Regenera sessao para prevenir session fixation
-    req.session.regenerate((err) => {
-        if (err) return res.status(500).json({ error: 'Erro de sessao' });
-        req.session.userId = user.id;
-        req.session.role = user.role;
-        req.session.userName = user.name;
-        req.session.save(() => {
-            res.json({ id: user.id, name: user.name, role: user.role, color: user.color });
-        });
-    });
+    // Define a sessao (stateless cookie-session)
+    req.session = { userId: user.id, role: user.role, userName: user.name };
+    res.json({ id: user.id, name: user.name, role: user.role, color: user.color });
 });
 
 app.post('/api/logout', (req, res) => {
-    req.session.destroy(() => {
-        res.clearCookie('its.sid');
-        res.json({ ok: true });
-    });
+    req.session = null;
+    res.clearCookie('its.sid');
+    res.json({ ok: true });
 });
 
 app.get('/api/me', requireAuth, async (req, res) => {
