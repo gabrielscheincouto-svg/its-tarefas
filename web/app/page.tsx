@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 const TAREFAS_URL = "https://its-tarefas-7xlm.onrender.com/";
+const CHAMADOS_URL = "https://its-tarefas-7xlm.onrender.com/cliente/login";
 
 export default function Portal() {
   return (
@@ -18,6 +19,8 @@ export default function Portal() {
         <nav className="hidden md:flex gap-8 text-sm text-gray-300">
           <a href="#areas" className="hover:text-its-green transition">Áreas de atuação</a>
           <a href="#acesso" className="hover:text-its-green transition">Acessar portal</a>
+          <a href={CHAMADOS_URL} target="_blank" rel="noopener noreferrer"
+            className="hover:text-its-green transition">iTS Chamados</a>
         </nav>
         <Link href="/login" className="text-sm text-gray-300 hover:text-its-green">Entrar</Link>
       </header>
@@ -36,7 +39,7 @@ export default function Portal() {
         <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="g" width="60" height="60" patternUnits="userSpaceOnUse">
-              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#00E676" strokeWidth="0.4" />
+              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#25EAB4" strokeWidth="0.4" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#g)" />
@@ -122,13 +125,21 @@ export default function Portal() {
           <p className="mt-4 text-gray-400">Login único e seguro para clientes e equipe ITS.</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           <AreaCard
             href="/login"
             badge="PARA CLIENTES"
             title="Área do Cliente"
-            desc="Indicadores, planejamento tributário mensal, economia gerada, documentos e chamados."
+            desc="Indicadores, planejamento tributário mensal, economia gerada e documentos."
             icon="👤"
+          />
+          <AreaCard
+            href={CHAMADOS_URL}
+            badge="SUPORTE"
+            title="iTS Chamados"
+            desc="Abra e acompanhe seus chamados de suporte, dúvidas tributárias e solicitações."
+            icon="💬"
+            external
           />
           <AreaCard
             href={TAREFAS_URL}
