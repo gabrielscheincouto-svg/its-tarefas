@@ -821,21 +821,14 @@ app.post('/api/client/login', loginLimiter, async (req, res) => {
         return res.status(401).json({ error: 'Credenciais invalidas' });
     }
 
-    req.session.regenerate((err) => {
-        if (err) return res.status(500).json({ error: 'Erro de sessao' });
-        req.session.clientId = client.id;
-        req.session.clientName = client.name;
-        req.session.save(() => {
-            res.json({ id: client.id, name: client.name, company: client.company });
-        });
-    });
+    req.session = { clientId: client.id, clientName: client.name };
+    res.json({ id: client.id, name: client.name, company: client.company });
 });
 
 app.post('/api/client/logout', (req, res) => {
-    req.session.destroy(() => {
-        res.clearCookie('its.sid');
-        res.json({ ok: true });
-    });
+    req.session = null;
+    res.clearCookie('its.sid');
+    res.json({ ok: true });
 });
 
 app.get('/api/client/me', requireClient, async (req, res) => {
