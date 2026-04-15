@@ -9,11 +9,15 @@ const config: Config = {
     extend: {
       colors: {
         its: {
-          dark: "#0A0A0A",
-          darker: "#050505",
-          gray: "#1F1F1F",
-          green: "#00E676",
-          greenHover: "#00C853",
+          dark: "#111111",
+          darker: "#0A0A0A",
+          gray: "#242424",
+          grayLight: "#2F2F2F",
+          green: "#25EAB4",
+          greenHover: "#1DCFA0",
+          greenSoft: "#5BCFBA",
+          text: "#F7F7F7",
+          muted: "#BBBBBB",
         },
       },
       fontFamily: {
