@@ -3,17 +3,63 @@
 @tailwind utilities;
 
 :root {
-  --its-dark: #0A0A0A;
-  --its-green: #00E676;
+  --its-dark: #111111;
+  --its-darker: #0A0A0A;
+  --its-gray: #242424;
+  --its-gray-light: #2F2F2F;
+  --its-green: #25EAB4;
+  --its-green-hover: #1DCFA0;
+  --its-green-soft: #5BCFBA;
+  --its-text: #F7F7F7;
+  --its-muted: #BBBBBB;
 }
 
-html, body { background: #0A0A0A; color: #fff; font-family: Inter, system-ui, sans-serif; }
+html, body {
+  background: var(--its-dark);
+  color: var(--its-text);
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 .btn-green {
-  background: var(--its-green); color: #000; font-weight: 700;
-  padding: 0.75rem 1.5rem; border-radius: 0.5rem;
-  transition: background .15s;
+  background: var(--its-green);
+  color: #0A0A0A;
+  font-weight: 700;
+  padding: 0.85rem 1.75rem;
+  border-radius: 0.5rem;
+  letter-spacing: 0.02em;
+  transition: background .15s, transform .15s, box-shadow .15s;
+  box-shadow: 0 10px 30px -12px rgba(37, 234, 180, 0.35);
 }
-.btn-green:hover { background: #00C853; }
+.btn-green:hover {
+  background: var(--its-green-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px -12px rgba(37, 234, 180, 0.5);
+}
 
-.card { background: #141414; border: 1px solid #1f1f1f; border-radius: 0.75rem; }
+.btn-outline {
+  background: transparent;
+  color: var(--its-green);
+  font-weight: 700;
+  padding: 0.85rem 1.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(37, 234, 180, 0.4);
+  letter-spacing: 0.02em;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.btn-outline:hover {
+  background: rgba(37, 234, 180, 0.08);
+  border-color: var(--its-green);
+}
+
+.card {
+  background: var(--its-gray);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.85rem;
+  transition: border-color .2s, transform .2s, box-shadow .2s;
+}
+.card:hover {
+  border-color: rgba(37, 234, 180, 0.4);
+  box-shadow: 0 18px 40px -20px rgba(37, 234, 180, 0.25);
+}
