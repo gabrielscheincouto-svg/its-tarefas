@@ -65,7 +65,7 @@ export default function MakrochuiLogin() {
               className="text-[10px] font-bold uppercase"
               style={{ color: "#DC2626", letterSpacing: "2px" }}
             >
-              Sistema de Gestão
+              Cecopel Analytics
             </div>
           </div>
         </div>
@@ -81,14 +81,14 @@ export default function MakrochuiLogin() {
               className="block text-[10px] font-bold uppercase mb-2"
               style={{ color: "#999", letterSpacing: "1.2px" }}
             >
-              Usuário
+              E-mail
             </label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              placeholder="seu.usuario"
+              placeholder="seu@cecopel.com.br"
               className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none transition-all duration-200"
               style={{ background: "#0D0D0D", border: "1.5px solid #2A2A2A" }}
               onFocus={(e) => (e.target.style.borderColor = "#DC2626")}
@@ -141,7 +141,7 @@ export default function MakrochuiLogin() {
           className="mt-10 pt-6 text-center text-[10px] font-medium uppercase"
           style={{ borderTop: "1px solid #1E1E1E", color: "#444", letterSpacing: "1.5px" }}
         >
-          Makrochui · Sistema interno de gestão
+          Makrochui · Cecopel Analytics
         </div>
       </div>
     </main>

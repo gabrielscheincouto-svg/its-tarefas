@@ -16,16 +16,15 @@ export default function LoginPage() {
     setLoading(true);
     setErro(null);
 
-    const isMakrochui = login.toLowerCase().endsWith("@makrochui.com");
+    const isMakrochui = login.toLowerCase().endsWith("@makrochui.com") || login.toLowerCase().endsWith("@cecopel.com.br");
 
     /* ââ Makrochui: @makrochui.com ââ */
     if (isMakrochui) {
-      const username = login.split("@")[0].toLowerCase();
       try {
         const res = await fetch("/api/makrochui", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "login", username, password: senha }),
+          body: JSON.stringify({ action: "login", username: login.toLowerCase(), password: senha }),
         });
         if (!res.ok) {
           setErro("UsuÃ¡rio ou senha incorretos.");
