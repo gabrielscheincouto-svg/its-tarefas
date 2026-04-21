@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase-browser";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [login, setLogin] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -15,14 +15,40 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setErro(null);
+
+    const isMakrochui = login.toLowerCase().endsWith("@makrochui.com");
+
+    /* ââ Makrochui: @makrochui.com ââ */
+    if (isMakrochui) {
+      const username = login.split("@")[0].toLowerCase();
+      try {
+        const res = await fetch("/api/makrochui", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "login", username, password: senha }),
+        });
+        if (!res.ok) {
+          setErro("UsuÃ¡rio ou senha incorretos.");
+          setLoading(false);
+          return;
+        }
+        router.push("/makrochui/painel");
+        return;
+      } catch {
+        setErro("Erro ao conectar. Tente novamente.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    /* ââ ITS: qualquer outro e-mail (Supabase Auth) ââ */
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+    const { error } = await supabase.auth.signInWithPassword({ email: login, password: senha });
     if (error) {
       setErro("E-mail ou senha incorretos.");
       setLoading(false);
       return;
     }
-    // Verifica a role do usuário e direciona
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const { data: profile } = await supabase
@@ -44,7 +70,7 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen bg-its-dark flex items-center justify-center p-6">
       <div className="card w-full max-w-md p-8">
-        <Link href="/" className="text-xs text-gray-500 hover:text-its-green">← Voltar</Link>
+        <Link href="/" className="text-xs text-gray-500 hover:text-its-green">â Voltar</Link>
         <div className="mt-4 flex items-center gap-3">
           <div className="w-8 h-8 bg-its-green"
             style={{ clipPath: "polygon(0 50%, 50% 0, 100% 50%, 50% 100%)" }} />
@@ -53,14 +79,15 @@ export default function LoginPage() {
             <div className="text-[10px] text-its-green -mt-1">Tax and Corporate</div>
           </div>
         </div>
-        <h1 className="mt-6 text-2xl font-bold">Área do Cliente</h1>
+        <h1 className="mt-6 text-2xl font-bold">Ãrea do Cliente</h1>
         <p className="text-sm text-gray-400">Acesse com seu e-mail cadastrado.</p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div>
             <label className="text-xs text-gray-400">E-mail</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              required className="mt-1 w-full bg-its-gray border border-its-gray rounded-md px-3 py-2 text-white focus:outline-none focus:border-its-green" />
+            <input type="email" value={login} onChange={(e) => setLogin(e.target.value)}
+              required placeholder="seu@email.com"
+              className="mt-1 w-full bg-its-gray border border-its-gray rounded-md px-3 py-2 text-white focus:outline-none focus:border-its-green" />
           </div>
           <div>
             <label className="text-xs text-gray-400">Senha</label>
@@ -74,10 +101,10 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-6 pt-6 border-t border-its-gray text-center">
-          <div className="text-xs text-gray-500">É da equipe ITS?</div>
+          <div className="text-xs text-gray-500">Ã da equipe ITS?</div>
           <Link href="/gestao"
             className="text-sm text-its-green font-bold hover:underline">
-            Acessar espaço do escritório →
+            Acessar espaÃ§o do escritÃ³rio â
           </Link>
         </div>
       </div>
