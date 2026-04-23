@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financeiro - ITS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f6fa;--side:#ffffff;--side2:#f3f4f8;--panel:#ffffff;--panel2:#f7f8fb;
+  --line:#e5e7eb;--text:#111827;--muted:#6b7280;--mutedLight:#4b5563;
+  --purple:#7c5cff;--purpleDark:#6b48f5;--purpleLight:#a58bff;
+  --yellow:#f59e0b;--green:#16a34a;--red:#ef4444;--blue:#3b82f6;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;}
+body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+.app{display:flex;min-height:100vh;}
+
+/* ===== SIDEBAR ===== */
+.side{width:240px;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;overflow-y:auto;box-shadow:1px 0 3px rgba(0,0,0,.04);}
+.side-hdr{padding:22px 20px 16px;}
+.side-brand{font-size:18px;font-weight:800;letter-spacing:.5px;}
+.side-sub{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.side-user{margin:12px 20px;padding:10px 12px;background:var(--side2);border-radius:10px;display:flex;gap:10px;align-items:center;}
+.side-avatar{width:32px;height:32px;border-radius:8px;background:var(--purple);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+.side-uname{font-size:13px;font-weight:700;}
+.side-urole{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;}
+.side-section{padding:16px 20px 6px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+.side-nav{display:flex;flex-direction:column;padding:0 10px;}
+.side-item{padding:9px 12px;border-radius:8px;color:var(--mutedLight);text-decoration:none;font-size:13px;font-weight:500;display:flex;gap:10px;align-items:center;cursor:pointer;border:none;background:transparent;text-align:left;}
+.side-item:hover{background:var(--side2);color:var(--text);}
+.side-item.active{background:var(--purple);color:#fff;font-weight:600;box-shadow:0 2px 6px rgba(124,92,255,.3);}
+.side-item-ico{width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
+.side-foot{margin-top:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
+.side-btn{padding:10px 14px;border-radius:10px;color:#fff;text-decoration:none;font-size:12px;font-weight:700;text-align:center;}
+.sb-tv{background:#b45309;}
+.sb-db{background:#1e3a8a;}
+.sb-year{background:#7f1d1d;}
+.sb-logout{color:var(--muted);text-align:center;font-size:12px;padding:8px;cursor:pointer;background:transparent;border:none;}
+
+/* ===== MAIN ===== */
+.main{flex:1;margin-left:240px;padding:28px 32px;min-height:100vh;}
+.pg-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}
+.pg-title{font-size:24px;font-weight:800;display:flex;align-items:center;gap:10px;}
+.pg-ico{width:36px;height:36px;background:var(--purple);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.pg-sub{font-size:13px;color:var(--muted);margin-top:4px;margin-left:46px;}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:22px;}
+.kpi{background:var(--panel);border-radius:12px;padding:16px 18px;border:1px solid var(--line);border-left:3px solid var(--purple);position:relative;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.kpi.yellow{border-color:var(--yellow);}
+.kpi.red{border-color:var(--red);}
+.kpi.gray{border-color:#3a4562;}
+.kpi.green{border-color:var(--green);}
+.kpi.blue{border-color:var(--blue);}
+.kpi-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:700;margin-bottom:8px;}
+.kpi-val{font-size:26px;font-weight:800;}
+.kpi-val.money{font-size:20px;}
+
+/* Card */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.card-col{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:0;margin-bottom:16px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.card-head{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;border-bottom:1px solid transparent;}
+.card-head.open{border-bottom-color:var(--line);}
+.card-title{font-size:15px;font-weight:700;display:flex;gap:10px;align-items:center;}
+.card-chev{font-size:10px;color:var(--muted);}
+.card-body{padding:14px 18px;display:none;}
+.card-body.open{display:block;}
+
+/* Buttons */
+.row-btns{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.btn{padding:10px 16px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;text-decoration:none;}
+.btn-primary{background:var(--purple);color:#fff;}
+.btn-primary:hover{background:var(--purpleDark);}
+.btn-secondary{background:transparent;color:var(--text);border:1px solid var(--line);}
+.btn-secondary:hover{background:var(--panel2);}
+.btn-green{background:var(--green);color:#fff;}
+.btn-green:hover{filter:brightness(.95);}
+.btn-red{background:var(--red);color:#fff;}
+.btn-ghost{background:transparent;color:var(--mutedLight);border:1px solid var(--line);}
+.btn-ghost:hover{color:var(--text);}
+.btn-sm{padding:6px 12px;font-size:11px;}
+.btn-icon{padding:6px 9px;background:var(--panel2);border:1px solid var(--line);color:var(--mutedLight);border-radius:7px;cursor:pointer;font-size:11px;}
+.btn-icon:hover{color:var(--text);}
+.btn-icon.danger:hover{color:var(--red);border-color:var(--red);}
+
+/* Table */
+.tbl-wrap{overflow-x:auto;}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{text-align:left;padding:12px 14px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:700;border-bottom:1px solid var(--line);background:var(--panel2);}
+.tbl td{padding:14px;font-size:13px;border-bottom:1px solid var(--line);}
+.tbl tr:hover td{background:rgba(124,92,255,.06);}
+.tbl .empresa{font-weight:700;}
+.tbl .empresa-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.b-aceita{background:rgba(34,197,94,.15);color:var(--green);}
+.b-enviada{background:rgba(59,130,246,.15);color:var(--blue);}
+.b-rascunho{background:rgba(122,134,158,.15);color:var(--mutedLight);}
+.b-recusada{background:rgba(239,68,68,.15);color:var(--red);}
+.b-expirada{background:rgba(247,185,85,.15);color:var(--yellow);}
+.b-contratada{background:rgba(124,92,255,.15);color:var(--purpleLight);}
+
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;}
+.modal.show{display:flex;}
+.modal-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;max-width:760px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.15);}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line);}
+.modal-title{font-size:17px;font-weight:800;display:flex;align-items:center;gap:10px;}
+.modal-close{background:transparent;color:var(--muted);border:none;cursor:pointer;font-size:22px;line-height:1;}
+
+.v-empresa{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:700;margin-bottom:4px;}
+.v-nome{font-size:18px;font-weight:800;}
+.v-cnpj{font-size:12px;color:var(--muted);margin-top:2px;}
+.v-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px 18px;background:var(--panel2);border-radius:10px;margin:14px 0;}
+.v-field-lbl{font-size:12px;color:var(--muted);}
+.v-field-lbl b{color:var(--text);font-weight:700;}
+.v-svc-title{font-size:14px;font-weight:700;margin:16px 0 8px;}
+.v-tbl{width:100%;border-collapse:collapse;}
+.v-tbl th{text-align:left;padding:10px 12px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:700;border-bottom:1px solid var(--line);}
+.v-tbl td{padding:12px;font-size:13px;border-bottom:1px solid var(--line);}
+.v-tbl .num{text-align:right;font-weight:600;}
+.v-tbl .total-row td{font-weight:800;border-top:2px solid var(--line);border-bottom:none;padding-top:14px;}
+.v-tbl .total-row .total-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;}
+.v-actions{margin-top:20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
+
+/* Form */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.inp{width:100%;padding:10px 12px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;}
+.inp:focus{outline:none;border-color:var(--purple);}
+label{font-size:11px;color:var(--muted);margin-bottom:6px;display:block;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+textarea.inp{min-height:80px;resize:vertical;}
+hr{border:none;border-top:1px solid var(--line);margin:16px 0;}
+
+.itens-tbl{width:100%;border-collapse:collapse;margin-top:10px;}
+.itens-tbl th,.itens-tbl td{padding:8px;text-align:left;border-bottom:1px solid var(--line);font-size:12px;}
+.itens-tbl th{color:var(--muted);text-transform:uppercase;font-size:10px;letter-spacing:.5px;}
+
+.empty{text-align:center;padding:60px 20px;color:var(--muted);font-size:13px;}
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+
+.link-box{display:flex;gap:8px;align-items:center;background:var(--panel2);border-radius:8px;padding:10px;margin-top:10px;font-size:12px;}
+.link-box input{flex:1;background:transparent;border:none;color:var(--text);font-family:monospace;}
+
+/* Responsive */
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:780px){
+  .side{position:static;width:100%;height:auto;}.main{margin-left:0;padding:20px;}
+  .kpis{grid-template-columns:repeat(2,1fr);}
+  .grid,.grid3,.v-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ========= SIDEBAR ========= -->
+<aside class="side">
+  <div class="side-hdr">
+    <div class="side-brand">ITS</div>
+    <div class="side-sub">Financeiro 2026</div>
+  </div>
+  <div class="side-user">
+    <div class="side-avatar" id="sb_ava">G</div>
+    <div><div class="side-uname" id="sb_name">-</div><div class="side-urole">Financeiro</div></div>
+  </div>
+
+  <div class="side-section">Principal</div>
+  <nav class="side-nav">
+    <a class="side-item" href="/"><span class="side-item-ico">&#9783;</span> Kanban</a>
+  </nav>
+
+  <div class="side-section">Modulos</div>
+  <nav class="side-nav">
+    <button class="side-item active" data-tab="propostas"><span class="side-item-ico">&#128221;</span> Propostas</button>
+    <button class="side-item" data-tab="contratos"><span class="side-item-ico">&#128196;</span> Contratos</button>
+    <button class="side-item" data-tab="servicos"><span class="side-item-ico">&#128188;</span> Catalogo</button>
+    <button class="side-item" data-tab="templates"><span class="side-item-ico">&#128203;</span> Templates</button>
+  </nav>
+
+  <div class="side-foot">
+    <button class="sb-logout" onclick="sair()">Sair do Sistema</button>
+  </div>
+</aside>
+
+<!-- ========= MAIN ========= -->
+<main class="main">
+
+<!-- =========== PROPOSTAS =========== -->
+<section id="tab-propostas">
+  <div class="pg-hdr">
+    <div>
+      <div class="pg-title"><div class="pg-ico">$</div> Departamento Financeiro</div>
+      <div class="pg-sub">Gerencie propostas comerciais e gere contratos de prestacao de servicos</div>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis">
+    <div class="kpi"><div class="kpi-lbl">Total de Propostas</div><div class="kpi-val" id="k_total">0</div></div>
+    <div class="kpi yellow"><div class="kpi-lbl">Aceitas</div><div class="kpi-val" id="k_aceitas">0</div></div>
+    <div class="kpi yellow"><div class="kpi-lbl">Aguardando Resp.</div><div class="kpi-val" id="k_aguardando">0</div></div>
+    <div class="kpi gray"><div class="kpi-lbl">Recusadas</div><div class="kpi-val" id="k_recusadas">0</div></div>
+    <div class="kpi"><div class="kpi-lbl">Receita Fechada/Mes</div><div class="kpi-val money" id="k_fechada">R$ 0,00</div></div>
+    <div class="kpi yellow"><div class="kpi-lbl">Receita Potencial</div><div class="kpi-val money" id="k_potencial">R$ 0,00</div></div>
+  </div>
+
+  <!-- Historico de propostas colapsavel -->
+  <div class="card-col">
+    <div class="card-head open" onclick="toggleHist()">
+      <div class="card-title"><span>&#128196;</span> Historico de Propostas <span style="color:var(--muted);font-weight:500;" id="hist_count">(0)</span></div>
+      <div class="card-chev" id="hist_chev">&#9652;</div>
+    </div>
+    <div class="card-body open" id="hist_body">
+      <div class="row-btns">
+        <button class="btn btn-primary" onclick="openProposta()">+ Nova Proposta</button>
+        <button class="btn btn-secondary" onclick="exportCSV()">&#128229; Exportar CSV</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Empresa</th><th>Titulo</th><th>Valor</th><th>Criada em</th><th>Validade</th><th>Status</th><th style="text-align:right;">Acoes</th></tr></thead>
+          <tbody id="prop_tbody"><tr><td colspan="7" class="empty">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========== CONTRATOS =========== -->
+<section id="tab-contratos" style="display:none;">
+  <div class="pg-hdr">
+    <div>
+      <div class="pg-title"><div class="pg-ico" style="background:#16a34a;">&#128196;</div> Contratos</div>
+      <div class="pg-sub">Contratos gerados a partir das propostas aceitas</div>
+    </div>
+  </div>
+  <div class="card-col">
+    <div class="card-head open"><div class="card-title">Todos os contratos</div></div>
+    <div class="card-body open">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Numero</th><th>Cliente</th><th>Titulo</th><th>Valor</th><th>Vigencia</th><th>Status</th><th style="text-align:right;">Acoes</th></tr></thead>
+          <tbody id="ct_tbody"><tr><td colspan="7" class="empty">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========== CATALOGO DE SERVICOS =========== -->
+<section id="tab-servicos" style="display:none;">
+  <div class="pg-hdr">
+    <div>
+      <div class="pg-title"><div class="pg-ico" style="background:#f7b955;color:#201700;">&#128188;</div> Catalogo de Servicos</div>
+      <div class="pg-sub">Servicos reutilizaveis para agilizar a montagem das propostas</div>
+    </div>
+    <button class="btn btn-primary" onclick="openServico()">+ Novo Servico</button>
+  </div>
+  <div id="srv_list"></div>
+</section>
+
+<!-- =========== TEMPLATES =========== -->
+<section id="tab-templates" style="display:none;">
+  <div class="pg-hdr">
+    <div>
+      <div class="pg-title"><div class="pg-ico" style="background:#3b82f6;">&#128203;</div> Templates de Contrato</div>
+      <div class="pg-sub">Modelos com placeholders dinamicos</div>
+    </div>
+    <button class="btn btn-primary" onclick="openTemplate()">+ Novo Template</button>
+  </div>
+  <div id="tpl_list"></div>
+</section>
+
+</main>
+</div>
+
+<!-- ===== MODAL: VER PROPOSTA (estilo Cecopel) ===== -->
+<div class="modal" id="modalView"><div class="modal-box">
+  <div class="modal-hdr">
+    <div class="modal-title">&#128221; Proposta &mdash; <span id="vw_empresa_titulo"></span></div>
+    <button class="modal-close" onclick="closeView()">&times;</button>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+    <div>
+      <div class="v-empresa">Empresa</div>
+      <div class="v-nome" id="vw_nome"></div>
+      <div class="v-cnpj" id="vw_cnpj"></div>
+    </div>
+    <div id="vw_badge"></div>
+  </div>
+  <div class="v-grid">
+    <div class="v-field-lbl">Contato: <b id="vw_contato">-</b></div>
+    <div class="v-field-lbl">Telefone: <b id="vw_tel">-</b></div>
+    <div class="v-field-lbl">E-mail: <b id="vw_email">-</b></div>
+    <div class="v-field-lbl">Vigencia: <b id="vw_vigencia">-</b></div>
+    <div class="v-field-lbl">Valida ate: <b id="vw_valid">-</b></div>
+    <div class="v-field-lbl">Criada em: <b id="vw_criada">-</b></div>
+    <div class="v-field-lbl">Por: <b id="vw_por">-</b></div>
+    <div class="v-field-lbl">Valor total: <b id="vw_total">-</b></div>
+  </div>
+  <div class="v-svc-title">Servicos</div>
+  <table class="v-tbl">
+    <thead><tr><th>Servico</th><th class="num">Qtd</th><th class="num">Unit.</th><th class="num">Total</th></tr></thead>
+    <tbody id="vw_itens"></tbody>
+    <tfoot><tr class="total-row"><td colspan="3"><span class="total-lbl">Total da Proposta</span></td><td class="num" id="vw_total_foot"></td></tr></tfoot>
+  </table>
+  <div class="v-actions">
+    <button class="btn btn-secondary" onclick="imprimirProposta()">&#128424; Imprimir Proposta</button>
+    <button class="btn btn-ghost" id="vw_btn_link" onclick="copiarLinkAtual()">&#128279; Copiar Link</button>
+    <button class="btn btn-ghost" id="vw_btn_enviar" onclick="enviarPropostaAtual()">&#9993; Enviar (gerar link)</button>
+    <button class="btn btn-ghost" id="vw_btn_editar" onclick="editarPropostaAtual()">&#9998; Editar</button>
+    <button class="btn btn-green" id="vw_btn_contrato" onclick="openGerarContratoAtual()">&#128196; Gerar Contrato</button>
+    <button class="btn btn-secondary" onclick="closeView()">Fechar</button>
+  </div>
+</div></div>
+
+<!-- ===== MODAL: NOVA/EDITAR PROPOSTA ===== -->
+<div class="modal" id="modalProp"><div class="modal-box">
+  <div class="modal-hdr"><div class="modal-title" id="mpTitle">Nova Proposta</div><button class="modal-close" onclick="closeProposta()">&times;</button></div>
+  <div class="grid">
+    <div><label>Nome do Cliente *</label><input class="inp" id="p_cliente_nome"></div>
+    <div><label>Empresa / Razao Social</label><input class="inp" id="p_cliente_empresa"></div>
+    <div><label>CNPJ ou CPF</label><input class="inp" id="p_cliente_documento"></div>
+    <div><label>Email</label><input class="inp" id="p_cliente_email"></div>
+  </div>
+  <div style="margin-top:10px;"><label>Contato / Telefone</label><input class="inp" id="p_cliente_contato" placeholder="Nome do contato, telefone"></div>
+  <div style="margin-top:10px;"><label>Endereco</label><input class="inp" id="p_cliente_endereco"></div>
+  <div class="grid" style="margin-top:10px;">
+    <div><label>Representante Legal</label><input class="inp" id="p_cliente_representante"></div>
+    <div><label>CPF do Representante</label><input class="inp" id="p_cliente_cpf_representante"></div>
+  </div>
+  <hr>
+  <div><label>Titulo da Proposta *</label><input class="inp" id="p_titulo" placeholder="Ex: Proposta de Honorarios - Recuperacao PIS/COFINS"></div>
+  <div style="margin-top:10px;"><label>Objeto / Descricao</label><textarea class="inp" id="p_objeto"></textarea></div>
+  <div class="grid" style="margin-top:10px;">
+    <div><label>Forma de Pagamento</label><input class="inp" id="p_forma_pagamento" placeholder="Ex: 12x mensais"></div>
+    <div><label>Validade (dias)</label><input class="inp" id="p_validade_dias" type="number" value="15"></div>
+  </div>
+  <div class="grid" style="margin-top:10px;">
+    <div><label>Vigencia (texto)</label><input class="inp" id="p_vigencia" placeholder="Ex: 12 meses"></div>
+    <div><label>Observacoes internas</label><input class="inp" id="p_observacoes"></div>
+  </div>
+
+  <div style="margin:18px 0 8px;font-size:14px;font-weight:700;">Itens da Proposta</div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <select class="inp" id="p_add_servico" style="flex:1;"><option value="">Selecione do catalogo...</option></select>
+    <button class="btn btn-secondary" onclick="addItemFromCatalogo()">+ Adicionar</button>
+    <button class="btn btn-ghost" onclick="addItemCustom()">+ Avulso</button>
+  </div>
+  <table class="itens-tbl">
+    <thead><tr><th>Descricao</th><th>Qtd</th><th>Unit</th><th>Total</th><th></th></tr></thead>
+    <tbody id="p_itens_body"></tbody>
+    <tfoot><tr><th colspan="3" style="text-align:right;">VALOR TOTAL</th><th colspan="2" id="p_total">R$ 0,00</th></tr></tfoot>
+  </table>
+
+  <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end;">
+    <button class="btn btn-ghost" onclick="closeProposta()">Cancelar</button>
+    <button class="btn btn-secondary" onclick="saveProposta(false)">Salvar rascunho</button>
+    <button class="btn btn-primary" onclick="saveProposta(true)">Salvar e gerar link</button>
+  </div>
+</div></div>
+
+<!-- ===== MODAL: SERVICO ===== -->
+<div class="modal" id="modalSrv"><div class="modal-box" style="max-width:560px;">
+  <div class="modal-hdr"><div class="modal-title" id="msTitle">Novo Servico</div><button class="modal-close" onclick="closeServico()">&times;</button></div>
+  <div><label>Nome *</label><input class="inp" id="s_nome"></div>
+  <div style="margin-top:10px;"><label>Descricao</label><textarea class="inp" id="s_descricao"></textarea></div>
+  <div class="grid3" style="margin-top:10px;">
+    <div><label>Valor padrao</label><input class="inp" id="s_valor_padrao" type="number" step="0.01"></div>
+    <div><label>Tipo</label><select class="inp" id="s_tipo"><option value="pontual">Pontual</option><option value="mensal">Mensal</option><option value="exito">Exito</option></select></div>
+    <div><label>Categoria</label><select class="inp" id="s_categoria"><option value="fiscal">Fiscal</option><option value="contabil">Contabil</option><option value="societario">Societario</option><option value="rh">RH</option><option value="outro">Outro</option></select></div>
+  </div>
+  <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end;">
+    <button class="btn btn-ghost" onclick="closeServico()">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveServico()">Salvar</button>
+  </div>
+</div></div>
+
+<!-- ===== MODAL: GERAR CONTRATO ===== -->
+<div class="modal" id="modalCt"><div class="modal-box">
+  <div class="modal-hdr"><div class="modal-title">Gerar Contrato</div><button class="modal-close" onclick="closeCt()">&times;</button></div>
+  <div><label>Template</label><select class="inp" id="ct_template_id"></select></div>
+  <div style="margin-top:10px;"><label>Clausula de Honorarios (HTML)</label><textarea class="inp" id="ct_clausula_honorarios" rows="5"></textarea></div>
+  <div style="margin-top:10px;"><label>Forma de Pagamento (HTML)</label><textarea class="inp" id="ct_forma_pagamento" rows="3"></textarea></div>
+  <div style="margin-top:10px;"><label>Prazo e Rescisao (HTML)</label><textarea class="inp" id="ct_prazo_rescisao" rows="3"></textarea></div>
+  <div class="grid" style="margin-top:10px;">
+    <div><label>Foro</label><input class="inp" id="ct_foro" value="Pelotas/RS"></div>
+    <div><label>Cidade de assinatura</label><input class="inp" id="ct_cidade" value="Pelotas"></div>
+  </div>
+  <div class="grid" style="margin-top:10px;">
+    <div><label>Vigencia inicio</label><input class="inp" id="ct_vig_ini" type="date"></div>
+    <div><label>Vigencia fim</label><input class="inp" id="ct_vig_fim" type="date"></div>
+  </div>
+  <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end;">
+    <button class="btn btn-ghost" onclick="closeCt()">Cancelar</button>
+    <button class="btn btn-green" onclick="gerarContrato()">Gerar Contrato</button>
+  </div>
+</div></div>
+
+<!-- ===== MODAL: ENVIAR P/ KANBAN ===== -->
+<div class="modal" id="modalTask"><div class="modal-box" style="max-width:560px;">
+  <div class="modal-hdr"><div class="modal-title">Enviar para o Kanban</div><button class="modal-close" onclick="closeTask()">&times;</button></div>
+  <div><label>Titulo da tarefa</label><input class="inp" id="t_title"></div>
+  <div class="grid" style="margin-top:10px;">
+    <div><label>Responsavel</label><select class="inp" id="t_assignee"></select></div>
+    <div><label>Prazo</label><input class="inp" id="t_deadline" type="date"></div>
+  </div>
+  <div class="grid" style="margin-top:10px;">
+    <div><label>Prioridade</label><select class="inp" id="t_priority"><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></div>
+    <div><label>Checklist (opcional)</label><select class="inp" id="t_checklist"><option value="">Sem checklist</option></select></div>
+  </div>
+  <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end;">
+    <button class="btn btn-ghost" onclick="closeTask()">Cancelar</button>
+    <button class="btn btn-primary" onclick="enviarParaKanban()">Criar Tarefa</button>
+  </div>
+</div></div>
+
+<!-- ===== MODAL: TEMPLATE ===== -->
+<div class="modal" id="modalTpl"><div class="modal-box">
+  <div class="modal-hdr"><div class="modal-title" id="mtTitle">Novo Template</div><button class="modal-close" onclick="closeTemplate()">&times;</button></div>
+  <div><label>Nome</label><input class="inp" id="tpl_nome"></div>
+  <div style="margin-top:10px;"><label>Corpo (HTML com placeholders)</label><textarea class="inp" id="tpl_corpo" rows="15"></textarea></div>
+  <div style="margin-top:10px;"><label style="display:flex;gap:6px;align-items:center;"><input type="checkbox" id="tpl_default"> Marcar como padrao</label></div>
+  <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end;">
+    <button class="btn btn-ghost" onclick="closeTemplate()">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveTemplate()">Salvar</button>
+  </div>
+</div></div>
+
+<!-- ===== MODAL: LINK ===== -->
+<div class="modal" id="modalLink"><div class="modal-box" style="max-width:520px;">
+  <div class="modal-hdr"><div class="modal-title">Link de aceite gerado</div><button class="modal-close" onclick="document.getElementById('modalLink').classList.remove('show');">&times;</button></div>
+  <p style="color:var(--muted);font-size:13px;">Envie o link abaixo ao cliente por WhatsApp ou e-mail:</p>
+  <div class="link-box"><input id="lk_url" readonly><button class="btn btn-primary btn-sm" onclick="copyLink()">Copiar</button></div>
+</div></div>
+
+<script>
+let ME=null, USERS=[], PROPOSTAS=[], SERVICOS=[], CONTRATOS=[], TEMPLATES=[], CHECKLISTS=[];
+let currentProp=null, currentItens=[], currentSrv=null, currentCtProposta=null, currentCtContrato=null, currentTpl=null, viewingProp=null;
+
+async function init(){
+  const me = await fetch('/api/me').then(r=>r.ok?r.json():null);
+  if(!me){ location.href='/'; return; }
+  ME=me;
+  document.getElementById('sb_name').textContent = me.name;
+  document.getElementById('sb_ava').textContent = (me.name||'?').slice(0,1).toUpperCase();
+  document.querySelectorAll('.side-item[data-tab]').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+  await Promise.all([loadUsers(), loadServicos(), loadTemplates(), loadPropostas(), loadContratos(), loadChecklists()]);
+}
+async function loadUsers(){ USERS = await fetch('/api/users').then(r=>r.json()); }
+async function loadServicos(){ SERVICOS = await fetch('/api/servicos-catalogo').then(r=>r.json()); renderServicos(); fillServicoSelect(); }
+async function loadTemplates(){ TEMPLATES = await fetch('/api/contrato-templates').then(r=>r.json()); renderTemplates(); }
+async function loadPropostas(){ PROPOSTAS = await fetch('/api/propostas').then(r=>r.json()); renderPropostas(); }
+async function loadContratos(){ CONTRATOS = await fetch('/api/contratos').then(r=>r.json()); renderContratos(); }
+async function loadChecklists(){ CHECKLISTS = await fetch('/api/checklist-templates').then(r=>r.ok?r.json():[]).catch(()=>[]); }
+
+function switchTab(t){
+  ['propostas','contratos','servicos','templates'].forEach(x=>{
+    document.getElementById('tab-'+x).style.display = x===t ? '' : 'none';
+  });
+  document.querySelectorAll('.side-item[data-tab]').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
+}
+function toggleHist(){ const b=document.getElementById('hist_body'); const h=document.getElementById('hist_chev'); b.classList.toggle('open'); h.textContent = b.classList.contains('open')?'\u25B2':'\u25BC'; document.querySelector('.card-head').classList.toggle('open'); }
+
+// =========== PROPOSTAS ============
+function renderPropostas(){
+  const stats={rascunho:0,enviada:0,aceita:0,recusada:0,contratada:0,expirada:0};
+  let fechada=0, potencial=0;
+  PROPOSTAS.forEach(p=>{ stats[p.status]=(stats[p.status]||0)+1; if(p.status==='aceita'||p.status==='contratada') fechada += Number(p.valor_total||0); if(p.status==='enviada') potencial += Number(p.valor_total||0); });
+  document.getElementById('k_total').textContent = PROPOSTAS.length;
+  document.getElementById('k_aceitas').textContent = (stats.aceita||0) + (stats.contratada||0);
+  document.getElementById('k_aguardando').textContent = stats.enviada||0;
+  document.getElementById('k_recusadas').textContent = stats.recusada||0;
+  document.getElementById('k_fechada').textContent = fmtMoney(fechada);
+  document.getElementById('k_potencial').textContent = fmtMoney(potencial);
+  document.getElementById('hist_count').textContent = '(' + PROPOSTAS.length + ')';
+
+  const tbody = document.getElementById('prop_tbody');
+  if(PROPOSTAS.length===0){ tbody.innerHTML = '<tr><td colspan="7" class="empty">Nenhuma proposta ainda. Clique em "Nova Proposta" para comecar.</td></tr>'; return; }
+  tbody.innerHTML = PROPOSTAS.map(p=>{
+    const created = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '-';
+    const valid = p.created_at ? new Date(new Date(p.created_at).getTime() + (p.validade_dias||15)*86400000).toLocaleDateString('pt-BR') : '-';
+    return `<tr>
+      <td><div class="empresa">${escapeHtml(p.cliente_empresa||p.cliente_nome)}</div>${p.cliente_documento?`<div class="empresa-sub">${escapeHtml(p.cliente_documento)}</div>`:''}</td>
+      <td>${escapeHtml(p.titulo)}<div class="empresa-sub" style="font-family:monospace;">${p.numero}</div></td>
+      <td><b>${fmtMoney(p.valor_total)}</b></td>
+      <td>${created}</td>
+      <td>${valid}</td>
+      <td><span class="badge b-${p.status}">${statusLabel(p.status)}</span></td>
+      <td style="text-align:right;white-space:nowrap;">
+        <button class="btn-icon" title="Ver" onclick="openView(${p.id})">&#128065;</button>
+        ${p.aceite_token?`<button class="btn-icon" title="Copiar link" onclick="copiarLink('${p.aceite_token}')">&#128279;</button>`:''}
+        ${p.status==='aceita'?`<button class="btn-icon" style="color:var(--green);border-color:var(--green);" title="Gerar Contrato" onclick="openGerarContrato(${p.id})">&#128196;</button>`:''}
+        <button class="btn-icon danger" title="Excluir" onclick="delProposta(${p.id})">&#128465;</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+function statusLabel(s){ return {rascunho:'Rascunho',enviada:'Enviada',aceita:'Aceita',recusada:'Recusada',expirada:'Expirada',contratada:'Contratada'}[s]||s; }
+
+// ===== VIEW MODAL (Cecopel style) =====
+async function openView(id){
+  const p = await fetch('/api/propostas/'+id).then(r=>r.json());
+  viewingProp = p;
+  document.getElementById('vw_empresa_titulo').textContent = (p.cliente_empresa||p.cliente_nome||'').toUpperCase();
+  document.getElementById('vw_nome').textContent = p.cliente_empresa||p.cliente_nome||'';
+  document.getElementById('vw_cnpj').textContent = p.cliente_documento ? ((p.cliente_documento.replace(/\D/g,'').length===14?'CNPJ: ':'CPF: ')+p.cliente_documento) : '';
+  document.getElementById('vw_badge').innerHTML = `<span class="badge b-${p.status}">&#10003; ${statusLabel(p.status)}</span>`;
+  document.getElementById('vw_contato').textContent = p.cliente_nome || '-';
+  document.getElementById('vw_tel').textContent = p.cliente_contato || '-';
+  document.getElementById('vw_email').textContent = p.cliente_email || '-';
+  document.getElementById('vw_vigencia').textContent = p.vigencia || p.titulo || '-';
+  const criada = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '-';
+  const valid = p.created_at ? new Date(new Date(p.created_at).getTime() + (p.validade_dias||15)*86400000).toLocaleDateString('pt-BR') : '-';
+  document.getElementById('vw_criada').textContent = criada;
+  document.getElementById('vw_valid').textContent = valid;
+  const criador = USERS.find(u=>u.id===p.created_by);
+  document.getElementById('vw_por').textContent = criador ? criador.name : '-';
+  document.getElementById('vw_total').textContent = fmtMoney(p.valor_total);
+  document.getElementById('vw_total_foot').textContent = fmtMoney(p.valor_total);
+  document.getElementById('vw_itens').innerHTML = (p.itens||[]).map(i=>`<tr><td>${escapeHtml(i.descricao)}${i.tipo==='mensal'?'<span class="empresa-sub">Recorrente mensal</span>':''}</td><td class="num">${Number(i.quantidade)}</td><td class="num">${fmtMoney(i.valor_unitario)}</td><td class="num">${fmtMoney(i.valor_total)}</td></tr>`).join('');
+
+  document.getElementById('vw_btn_contrato').style.display = (p.status==='aceita')?'':'none';
+  document.getElementById('vw_btn_enviar').style.display = (p.status==='rascunho')?'':'none';
+  document.getElementById('vw_btn_link').style.display = p.aceite_token?'':'none';
+  document.getElementById('vw_btn_editar').style.display = (p.status==='rascunho')?'':'none';
+  document.getElementById('modalView').classList.add('show');
+}
+function closeView(){ document.getElementById('modalView').classList.remove('show'); viewingProp=null; }
+function imprimirProposta(){
+  if(!viewingProp || !viewingProp.aceite_token) { alert('Envie a proposta primeiro para gerar o link publico.'); return; }
+  window.open('/p/'+viewingProp.aceite_token,'_blank');
+}
+async function enviarPropostaAtual(){ if(viewingProp){ await enviarProposta(viewingProp.id); closeView(); } }
+function editarPropostaAtual(){ if(viewingProp){ closeView(); editProposta(viewingProp.id); } }
+function copiarLinkAtual(){ if(viewingProp && viewingProp.aceite_token) copiarLink(viewingProp.aceite_token); }
+function openGerarContratoAtual(){ if(viewingProp){ closeView(); openGerarContrato(viewingProp.id); } }
+
+// ===== CREATE/EDIT PROPOSTA =====
+function openProposta(){
+  currentProp=null; currentItens=[];
+  document.getElementById('mpTitle').textContent='Nova Proposta';
+  ['p_cliente_nome','p_cliente_empresa','p_cliente_documento','p_cliente_email','p_cliente_contato','p_cliente_endereco','p_cliente_representante','p_cliente_cpf_representante','p_titulo','p_objeto','p_forma_pagamento','p_observacoes','p_vigencia'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('p_validade_dias').value=15;
+  renderItens();
+  document.getElementById('modalProp').classList.add('show');
+}
+function closeProposta(){ document.getElementById('modalProp').classList.remove('show'); }
+
+async function editProposta(id){
+  const p = await fetch('/api/propostas/'+id).then(r=>r.json());
+  currentProp = p; currentItens = p.itens || [];
+  document.getElementById('mpTitle').textContent='Proposta '+p.numero;
+  ['cliente_nome','cliente_empresa','cliente_documento','cliente_email','cliente_contato','cliente_endereco','cliente_representante','cliente_cpf_representante','titulo','objeto','forma_pagamento','observacoes','vigencia'].forEach(f=>{
+    const el=document.getElementById('p_'+f); if(el) el.value = p[f] || '';
+  });
+  document.getElementById('p_validade_dias').value=p.validade_dias||15;
+  renderItens();
+  document.getElementById('modalProp').classList.add('show');
+}
+
+function fillServicoSelect(){
+  const sel=document.getElementById('p_add_servico');
+  sel.innerHTML='<option value="">Selecione do catalogo...</option>' + SERVICOS.filter(s=>s.ativo).map(s=>`<option value="${s.id}">${escapeHtml(s.nome)} - ${fmtMoney(s.valor_padrao)}</option>`).join('');
+}
+function addItemFromCatalogo(){
+  const id=Number(document.getElementById('p_add_servico').value); if(!id) return;
+  const s=SERVICOS.find(x=>x.id===id); if(!s) return;
+  currentItens.push({ servico_id:s.id, descricao:s.nome, quantidade:1, valor_unitario:Number(s.valor_padrao||0), valor_total:Number(s.valor_padrao||0), tipo:s.tipo });
+  document.getElementById('p_add_servico').value=''; renderItens();
+}
+function addItemCustom(){ currentItens.push({ servico_id:null, descricao:'', quantidade:1, valor_unitario:0, valor_total:0, tipo:'pontual' }); renderItens(); }
+function updateItem(i, field, val){
+  currentItens[i][field] = field==='descricao'?val:Number(val)||0;
+  currentItens[i].valor_total = Number(currentItens[i].quantidade||0) * Number(currentItens[i].valor_unitario||0);
+  renderItens();
+}
+function removeItem(i){ currentItens.splice(i,1); renderItens(); }
+function renderItens(){
+  const body=document.getElementById('p_itens_body');
+  body.innerHTML = currentItens.map((it,i)=>`
+    <tr>
+      <td><input class="inp" style="padding:5px 8px;" value="${escapeHtml(it.descricao)}" onchange="updateItem(${i},'descricao',this.value)"></td>
+      <td><input class="inp" style="padding:5px 8px;width:70px;" type="number" step="0.01" value="${it.quantidade}" onchange="updateItem(${i},'quantidade',this.value)"></td>
+      <td><input class="inp" style="padding:5px 8px;width:100px;" type="number" step="0.01" value="${it.valor_unitario}" onchange="updateItem(${i},'valor_unitario',this.value)"></td>
+      <td style="font-weight:700;">${fmtMoney(it.valor_total)}</td>
+      <td><button class="btn-icon danger" onclick="removeItem(${i})">&times;</button></td>
+    </tr>`).join('');
+  const tot = currentItens.reduce((a,i)=>a+Number(i.valor_total||0),0);
+  document.getElementById('p_total').textContent = fmtMoney(tot);
+}
+
+async function saveProposta(enviar){
+  if(!document.getElementById('p_cliente_nome').value || !document.getElementById('p_titulo').value){ alert('Preencha cliente e titulo'); return; }
+  const payload = {};
+  ['cliente_nome','cliente_empresa','cliente_documento','cliente_email','cliente_contato','cliente_endereco','cliente_representante','cliente_cpf_representante','titulo','objeto','forma_pagamento','observacoes','vigencia'].forEach(f=>{ payload[f] = document.getElementById('p_'+f).value; });
+  payload.validade_dias = Number(document.getElementById('p_validade_dias').value)||15;
+  payload.itens = currentItens;
+  let propId;
+  if(currentProp){ await fetch('/api/propostas/'+currentProp.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); propId=currentProp.id; }
+  else { const c = await fetch('/api/propostas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json()); propId=c.id; }
+  closeProposta();
+  await loadPropostas();
+  if(enviar && propId) enviarProposta(propId);
+}
+async function enviarProposta(id){
+  const r = await fetch('/api/propostas/'+id+'/enviar',{method:'POST'}).then(r=>r.json());
+  await loadPropostas();
+  if(r.link){ document.getElementById('lk_url').value=r.link; document.getElementById('modalLink').classList.add('show'); }
+}
+function copiarLink(token){ document.getElementById('lk_url').value = location.origin+'/p/'+token; document.getElementById('modalLink').classList.add('show'); }
+function copyLink(){ const i=document.getElementById('lk_url'); i.select(); document.execCommand('copy'); alert('Link copiado!'); }
+async function delProposta(id){ if(!confirm('Excluir proposta?')) return; await fetch('/api/propostas/'+id,{method:'DELETE'}); loadPropostas(); }
+
+function exportCSV(){
+  if(PROPOSTAS.length===0){ alert('Nenhuma proposta para exportar.'); return; }
+  const rows = [['Numero','Empresa','CNPJ/CPF','Titulo','Valor','Criada em','Validade','Status']];
+  PROPOSTAS.forEach(p=>{
+    const created = p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '';
+    const valid = p.created_at ? new Date(new Date(p.created_at).getTime() + (p.validade_dias||15)*86400000).toLocaleDateString('pt-BR') : '';
+    rows.push([p.numero, (p.cliente_empresa||p.cliente_nome||'').replace(/;/g,','), p.cliente_documento||'', (p.titulo||'').replace(/;/g,','), Number(p.valor_total||0).toFixed(2), created, valid, statusLabel(p.status)]);
+  });
+  const csv = rows.map(r=>r.join(';')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'propostas.csv'; a.click();
+}
+
+// ===== CONTRATO =====
+function openGerarContrato(propId){
+  currentCtProposta=propId;
+  document.getElementById('ct_template_id').innerHTML = TEMPLATES.map(t=>`<option value="${t.id}" ${t.is_default?'selected':''}>${escapeHtml(t.nome)}</option>`).join('');
+  const p = PROPOSTAS.find(x=>x.id===propId);
+  document.getElementById('ct_clausula_honorarios').value = '<p>Pelos servicos prestados, a CONTRATANTE pagara a CONTRATADA o valor total de '+fmtMoney(p.valor_total)+'.</p>';
+  document.getElementById('ct_forma_pagamento').value = '<p>'+(p.forma_pagamento||'Conforme acordado entre as partes.')+'</p>';
+  document.getElementById('ct_prazo_rescisao').value = '<p>O presente contrato vigorara por prazo indeterminado, podendo ser rescindido por qualquer das partes mediante aviso previo de 30 (trinta) dias.</p>';
+  document.getElementById('ct_foro').value='Pelotas/RS'; document.getElementById('ct_cidade').value='Pelotas';
+  document.getElementById('ct_vig_ini').value=new Date().toISOString().slice(0,10);
+  document.getElementById('ct_vig_fim').value='';
+  document.getElementById('modalCt').classList.add('show');
+}
+function closeCt(){ document.getElementById('modalCt').classList.remove('show'); }
+async function gerarContrato(){
+  const payload = {
+    proposta_id:currentCtProposta, template_id:Number(document.getElementById('ct_template_id').value),
+    clausula_honorarios:document.getElementById('ct_clausula_honorarios').value,
+    forma_pagamento_texto:document.getElementById('ct_forma_pagamento').value,
+    prazo_rescisao:document.getElementById('ct_prazo_rescisao').value,
+    foro:document.getElementById('ct_foro').value, cidade_assinatura:document.getElementById('ct_cidade').value,
+    vigencia_inicio:document.getElementById('ct_vig_ini').value||null, vigencia_fim:document.getElementById('ct_vig_fim').value||null
+  };
+  const r = await fetch('/api/contratos/gerar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  if(!r.ok){ alert((await r.json()).error||'Erro'); return; }
+  closeCt();
+  await Promise.all([loadPropostas(),loadContratos()]);
+  switchTab('contratos');
+}
+
+function renderContratos(){
+  const tbody = document.getElementById('ct_tbody');
+  if(CONTRATOS.length===0){ tbody.innerHTML='<tr><td colspan="7" class="empty">Nenhum contrato gerado ainda.</td></tr>'; return; }
+  tbody.innerHTML = CONTRATOS.map(c=>{
+    const vig = [c.vigencia_inicio,c.vigencia_fim].filter(Boolean).map(d=>new Date(d).toLocaleDateString('pt-BR')).join(' a ') || '-';
+    return `<tr>
+      <td><b style="font-family:monospace;">${c.numero}</b></td>
+      <td>${escapeHtml(c.cliente_nome||'')}</td>
+      <td>${escapeHtml(c.titulo||'')}</td>
+      <td><b>${fmtMoney(c.valor)}</b></td>
+      <td>${vig}</td>
+      <td><span class="badge b-aceita">${c.status}</span>${c.task_id?' <span class="badge b-contratada">tarefa #'+c.task_id+'</span>':''}</td>
+      <td style="text-align:right;white-space:nowrap;">
+        <a class="btn-icon" title="Ver" href="/contrato/${c.id}" target="_blank">&#128065;</a>
+        ${!c.task_id?`<button class="btn-icon" style="color:var(--purpleLight);border-color:var(--purple);" title="Enviar p/ Tarefa" onclick="openSendTask(${c.id})">&#128233;</button>`:''}
+      </td></tr>`;
+  }).join('');
+}
+
+function openSendTask(contratoId){
+  currentCtContrato=contratoId;
+  const c = CONTRATOS.find(x=>x.id===contratoId);
+  document.getElementById('t_title').value = 'Inicio de trabalho - ' + (c.titulo||'');
+  document.getElementById('t_assignee').innerHTML = USERS.map(u=>`<option value="${u.id}" ${u.id===ME.id?'selected':''}>${escapeHtml(u.name)}</option>`).join('');
+  const d = new Date(); d.setDate(d.getDate()+7);
+  document.getElementById('t_deadline').value = d.toISOString().slice(0,10);
+  document.getElementById('t_priority').value='normal';
+  document.getElementById('t_checklist').innerHTML='<option value="">Sem checklist</option>' + CHECKLISTS.map(t=>`<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+  document.getElementById('modalTask').classList.add('show');
+}
+function closeTask(){ document.getElementById('modalTask').classList.remove('show'); }
+async function enviarParaKanban(){
+  const payload = {
+    title:document.getElementById('t_title').value,
+    assignee_id:Number(document.getElementById('t_assignee').value),
+    deadline:document.getElementById('t_deadline').value,
+    priority:document.getElementById('t_priority').value,
+    checklist_template_id:Number(document.getElementById('t_checklist').value)||null
+  };
+  const r = await fetch('/api/contratos/'+currentCtContrato+'/to-task',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  if(!r.ok){ alert((await r.json()).error||'Erro'); return; }
+  closeTask(); loadContratos(); alert('Tarefa criada no Kanban!');
+}
+
+// ===== SERVICOS =====
+function renderServicos(){
+  const el=document.getElementById('srv_list');
+  if(SERVICOS.length===0){ el.innerHTML='<div class="card empty">Catalogo vazio. Cadastre servicos para reusar nas propostas.</div>'; return; }
+  el.innerHTML = `<div class="card-col"><div class="card-body open" style="display:block;"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Servico</th><th>Categoria</th><th>Tipo</th><th>Valor Padrao</th><th>Ativo</th><th style="text-align:right;">Acoes</th></tr></thead><tbody>`
+    + SERVICOS.map(s=>`<tr>
+      <td><div class="empresa">${escapeHtml(s.nome)}</div>${s.descricao?`<div class="empresa-sub">${escapeHtml(s.descricao)}</div>`:''}</td>
+      <td><span class="badge b-enviada">${s.categoria||'-'}</span></td>
+      <td><span class="badge b-aceita">${s.tipo}</span></td>
+      <td><b>${fmtMoney(s.valor_padrao)}</b></td>
+      <td>${s.ativo?'Sim':'<span style="color:var(--muted);">Nao</span>'}</td>
+      <td style="text-align:right;white-space:nowrap;">
+        <button class="btn-icon" onclick="editServico(${s.id})">&#9998;</button>
+        <button class="btn-icon danger" onclick="delServico(${s.id})">&#128465;</button>
+      </td></tr>`).join('') + `</tbody></table></div></div></div>`;
+}
+function openServico(){
+  currentSrv=null; document.getElementById('msTitle').textContent='Novo Servico';
+  ['s_nome','s_descricao','s_valor_padrao'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('s_tipo').value='pontual'; document.getElementById('s_categoria').value='fiscal';
+  document.getElementById('modalSrv').classList.add('show');
+}
+function closeServico(){ document.getElementById('modalSrv').classList.remove('show'); }
+function editServico(id){
+  const s=SERVICOS.find(x=>x.id===id); currentSrv=s;
+  document.getElementById('msTitle').textContent='Editar Servico';
+  document.getElementById('s_nome').value=s.nome;
+  document.getElementById('s_descricao').value=s.descricao||'';
+  document.getElementById('s_valor_padrao').value=s.valor_padrao||0;
+  document.getElementById('s_tipo').value=s.tipo;
+  document.getElementById('s_categoria').value=s.categoria||'outro';
+  document.getElementById('modalSrv').classList.add('show');
+}
+async function saveServico(){
+  const payload = {
+    nome:document.getElementById('s_nome').value, descricao:document.getElementById('s_descricao').value,
+    valor_padrao:Number(document.getElementById('s_valor_padrao').value)||0,
+    tipo:document.getElementById('s_tipo').value, categoria:document.getElementById('s_categoria').value
+  };
+  if(currentSrv){ await fetch('/api/servicos-catalogo/'+currentSrv.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); }
+  else { await fetch('/api/servicos-catalogo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); }
+  closeServico(); loadServicos();
+}
+async function delServico(id){ if(!confirm('Excluir servico?')) return; await fetch('/api/servicos-catalogo/'+id,{method:'DELETE'}); loadServicos(); }
+
+// ===== TEMPLATES =====
+function renderTemplates(){
+  const el=document.getElementById('tpl_list');
+  if(!TEMPLATES.length){ el.innerHTML='<div class="card empty">Nenhum template.</div>'; return; }
+  el.innerHTML = TEMPLATES.map(t=>`
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;">
+      <div><div style="font-size:15px;font-weight:700;">${escapeHtml(t.nome)}</div>${t.is_default?'<span class="badge b-aceita" style="margin-top:6px;display:inline-block;">PADRAO</span>':''}</div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn-icon" onclick="editTemplate(${t.id})">&#9998;</button>
+        <button class="btn-icon danger" onclick="delTemplate(${t.id})">&#128465;</button>
+      </div>
+    </div></div>`).join('');
+}
+function openTemplate(){ currentTpl=null; document.getElementById('mtTitle').textContent='Novo Template'; document.getElementById('tpl_nome').value=''; document.getElementById('tpl_corpo').value=''; document.getElementById('tpl_default').checked=false; document.getElementById('modalTpl').classList.add('show'); }
+function closeTemplate(){ document.getElementById('modalTpl').classList.remove('show'); }
+function editTemplate(id){ const t=TEMPLATES.find(x=>x.id===id); currentTpl=t; document.getElementById('mtTitle').textContent='Editar Template'; document.getElementById('tpl_nome').value=t.nome; document.getElementById('tpl_corpo').value=t.corpo_html; document.getElementById('tpl_default').checked=t.is_default; document.getElementById('modalTpl').classList.add('show'); }
+async function saveTemplate(){
+  const payload = { nome:document.getElementById('tpl_nome').value, corpo_html:document.getElementById('tpl_corpo').value, is_default:document.getElementById('tpl_default').checked };
+  if(currentTpl){ await fetch('/api/contrato-templates/'+currentTpl.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); }
+  else{ await fetch('/api/contrato-templates',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); }
+  closeTemplate(); loadTemplates();
+}
+async function delTemplate(id){ if(!confirm('Excluir template?')) return; await fetch('/api/contrato-templates/'+id,{method:'DELETE'}); loadTemplates(); }
+
+async function sair(){ await fetch('/api/logout',{method:'POST'}); location.href='/'; }
+
+function fmtMoney(v){ return 'R$ '+Number(v||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+init();
+</script>
+</body></html>
