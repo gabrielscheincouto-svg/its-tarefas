@@ -116,7 +116,7 @@ module.exports = function({ app, supabase, requireAuth, logTaskHistory, path }) 
     const { data: rows } = await supabase.from('propostas').select('aceite_token,status').eq('id', id).limit(1);
     const p = rows && rows[0];
     if (!p) return res.status(404).json({ error: 'Proposta nao encontrada' });
-    const token = p.aceite_token || crypto.randomBytes(24).toString('hex');
+    const token = p.aceite_token || (crypto.randomBytes(5).toString('base64').replace(/[+/=]/g,'').slice(0,7));
     await supabase.from('propostas').update({ status: 'enviada', aceite_token: token, updated_at: new Date().toISOString() }).eq('id', id);
     const link = req.protocol + '://' + req.get('host') + '/p/' + token;
     res.json({ ok: true, token, link });
