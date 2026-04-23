@@ -262,4 +262,71 @@ module.exports = function({ app, supabase, requireAuth, logTaskHistory, path }) 
   // ===== PAGINAS =====
   app.get('/financeiro', requireAuth, (req, res) => { res.sendFile(path.join(__dirname, 'public', 'financeiro.html')); });
   app.get('/contrato/:id', requireAuth, requireFinanceiro, (req, res) => { res.sendFile(path.join(__dirname, 'public', 'contrato-view.html')); });
+
+  // ============================================
+  // ===== META ANUAL DE HONORARIOS ==============
+  // ============================================
+  app.get('/api/metas-honorarios/:ano', requireAuth, requireFinanceiro, async (req, res) => {
+    const ano = Number(req.params.ano);
+    const { data } = await supabase.from('metas_honorarios').select('*').eq('ano', ano).limit(1);
+    res.json(data && data[0] ? data[0] : { ano, valor_meta: 0 });
+  });
+
+  app.put('/api/metas-honorarios/:ano', requireAuth, requireFinanceiro, async (req, res) => {
+    const ano = Number(req.params.ano);
+    const { valor_meta } = req.body;
+    const { data: ex } = await supabase.from('metas_honorarios').select('id').eq('ano', ano).limit(1);
+    if (ex && ex[0]) {
+      const { error } = await supabase.from('metas_honorarios').update({ valor_meta: Number(valor_meta) || 0, updated_at: new Date().toISOString() }).eq('ano', ano);
+      if (error) return res.status(500).json({ error: error.message });
+    } else {
+      const { error } = await supabase.from('metas_honorarios').insert({ ano, valor_meta: Number(valor_meta) || 0, created_by: req.session.userId });
+      if (error) return res.status(500).json({ error: error.message });
+    }
+    res.json({ ok: true });
+  });
+
+  app.get('/api/honorarios/:ano', requireAuth, requireFinanceiro, async (req, res) => {
+    const ano = Number(req.params.ano);
+    const start = ano + '-01-01';
+    const end = (ano + 1) + '-01-01';
+    const { data } = await supabase.from('honorarios_lancamentos').select('*').gte('data', start).lt('data', end).order('data', { ascending: false });
+    res.json(data || []);
+  });
+
+  app.get('/api/honorarios/:ano/resumo', requireAuth, requireFinanceiro, async (req, res) => {
+    const ano = Number(req.params.ano);
+    const start = ano + '-01-01';
+    const end = (ano + 1) + '-01-01';
+    const { data } = await supabase.from('honorarios_lancamentos').select('data, valor').gte('data', start).lt('data', end);
+    const porMes = Array(12).fill(0);
+    let total = 0;
+    (data || []).forEach(row => { const m = new Date(row.data).getUTCMonth(); porMes[m] += Number(row.valor) || 0; total += Number(row.valor) || 0; });
+    const { data: mRows } = await supabase.from('metas_honorarios').select('valor_meta').eq('ano', ano).limit(1);
+    const meta = mRows && mRows[0] ? Number(mRows[0].valor_meta) : 0;
+    res.json({ ano, meta, total, porMes, falta: Math.max(0, meta - total), pct: meta > 0 ? Math.min(100, (total / meta) * 100) : 0 });
+  });
+
+  app.post('/api/honorarios', requireAuth, requireFinanceiro, async (req, res) => {
+    const { data: dataLanc, valor, descricao, cliente, contrato_id } = req.body;
+    if (!valor) return res.status(400).json({ error: 'valor obrigatorio' });
+    const { data, error } = await supabase.from('honorarios_lancamentos').insert({ data: dataLanc || new Date().toISOString().slice(0,10), valor: Number(valor), descricao, cliente, contrato_id: contrato_id || null, created_by: req.session.userId }).select();
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data[0]);
+  });
+
+  app.put('/api/honorarios/:id', requireAuth, requireFinanceiro, async (req, res) => {
+    const id = Number(req.params.id);
+    const upd = {};
+    ['data','valor','descricao','cliente'].forEach(f => { if (req.body[f] !== undefined) upd[f] = req.body[f]; });
+    if (upd.valor !== undefined) upd.valor = Number(upd.valor);
+    const { error } = await supabase.from('honorarios_lancamentos').update(upd).eq('id', id);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ ok: true });
+  });
+
+  app.delete('/api/honorarios/:id', requireAuth, requireFinanceiro, async (req, res) => {
+    await supabase.from('honorarios_lancamentos').delete().eq('id', Number(req.params.id));
+    res.json({ ok: true });
+  });
 };
