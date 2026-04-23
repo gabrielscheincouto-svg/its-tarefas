@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contrato - ITS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif;}
+body{background:#f3f4f6;color:#111;min-height:100vh;padding:24px 12px;}
+.topbar{max-width:820px;margin:0 auto 16px;display:flex;gap:8px;justify-content:space-between;align-items:center;}
+.btn{padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;}
+.btn-primary{background:#6366F1;color:#fff;}
+.btn-secondary{background:#fff;color:#111;border:1px solid #e5e7eb;}
+.btn-success{background:#16a34a;color:#fff;}
+.topbar a{color:#6366F1;text-decoration:none;font-size:13px;font-weight:600;}
+.page{max-width:820px;margin:0 auto;background:#fff;padding:48px 56px;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.hdr{text-align:center;margin-bottom:28px;}
+.hdr-logo{font-size:22px;font-weight:800;color:#6366F1;}
+.hdr-sub{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;}
+.meta{font-family:monospace;font-size:11px;color:#6b7280;text-align:right;margin-bottom:16px;}
+.corpo{font-size:13px;line-height:1.7;color:#111;}
+.corpo h1{font-size:18px;font-weight:800;text-align:center;margin:0 0 20px;}
+.corpo h3{font-size:14px;font-weight:700;margin:18px 0 8px;}
+.corpo p{margin-bottom:10px;}
+.corpo ul{margin:6px 0 10px 22px;}
+.corpo li{margin-bottom:4px;}
+.footer-page{text-align:center;margin-top:32px;padding-top:20px;border-top:1px solid #e5e7eb;font-size:10px;color:#9ca3af;}
+@media print{ .topbar{display:none!important;} body{background:#fff;padding:0;} .page{box-shadow:none;border-radius:0;max-width:100%;padding:40px;} }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="/financeiro">&larr; Voltar ao Financeiro</a>
+  <div style="display:flex;gap:8px;">
+    <button class="btn btn-secondary" onclick="window.print()">&#128424; Imprimir / Salvar PDF</button>
+    <button class="btn btn-success" id="btnSendTask" style="display:none;" onclick="sendToTask()">&#10140; Enviar para Tarefa</button>
+  </div>
+</div>
+
+<div class="page" id="page">
+  <div class="hdr"><div class="hdr-logo">ITS Tax and Corporate</div><div class="hdr-sub">Inteligencia Tributaria e Societaria</div></div>
+  <div class="meta" id="meta"></div>
+  <div class="corpo" id="corpo"></div>
+  <div class="footer-page">Avenida Carlos Gomes, 403, Sala 702, Porto Alegre/RS - 90480-003<br>T. +55 51 3015-3835 &middot; contato@itsfirst.com.br &middot; www.itsfirst.com.br</div>
+</div>
+
+<script>
+const id = location.pathname.split('/').pop();
+let CT = null, USERS = [], CHECKLISTS = [];
+
+async function init(){
+  try {
+    const [c, u, cl] = await Promise.all([
+      fetch('/api/contratos/'+id).then(r=>r.json()),
+      fetch('/api/users').then(r=>r.json()),
+      fetch('/api/checklist-templates').then(r=>r.ok?r.json():[]).catch(()=>[])
+    ]);
+    CT = c; USERS = u; CHECKLISTS = cl;
+    document.getElementById('corpo').innerHTML = c.conteudo_html || '<p>Contrato sem conteudo.</p>';
+    document.getElementById('meta').textContent = c.numero + ' | Status: ' + (c.status||'') + (c.task_id ? ' | Tarefa criada #'+c.task_id : '');
+    if(!c.task_id){ document.getElementById('btnSendTask').style.display=''; }
+  } catch(e){ document.getElementById('corpo').innerHTML = '<p style="color:#991b1b;">Erro ao carregar contrato.</p>'; }
+}
+
+async function sendToTask(){
+  const title = prompt('Titulo da tarefa:', 'Inicio de trabalho - ' + (CT.titulo||''));
+  if(!title) return;
+  const assignee = prompt('ID do responsavel (deixe em branco para voce):\n' + USERS.map(u=>u.id+' = '+u.name).join('\n'));
+  const days = Number(prompt('Prazo em dias a partir de hoje:','7'))||7;
+  const d = new Date(); d.setDate(d.getDate()+days);
+  const payload = {
+    title,
+    assignee_id: assignee ? Number(assignee) : undefined,
+    deadline: d.toISOString().slice(0,10),
+    priority: 'normal'
+  };
+  const r = await fetch('/api/contratos/'+id+'/to-task',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  if(!r.ok){ alert((await r.json()).error||'Erro'); return; }
+  alert('Tarefa criada no Kanban!'); location.reload();
+}
+
+init();
+</script>
+</body></html>
