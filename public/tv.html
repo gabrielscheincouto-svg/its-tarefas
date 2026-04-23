@@ -170,9 +170,13 @@ h1,h2,h3,.member-name{letter-spacing:-0.01em;}
 
 
 <script>
-let tasks=[],members=[],pageIdx={},pageTimer=null;
-const TASKS_PER_PAGE=5;
-const PAGE_ROTATE_MS=8000;
+let tasks=[],members=[],pageIdx={},pageTimer=null,memberPageIdx=0;
+const TASKS_PER_PAGE=30;
+const PAGE_ROTATE_MS=60000;
+const MEMBERS_PER_PAGE=1;
+const MEMBER_ROTATE_MS=15000;
+function nextMemberPage(){if(!members||members.length<=MEMBERS_PER_PAGE)return;const pages=Math.max(1,Math.ceil(members.length/MEMBERS_PER_PAGE));memberPageIdx=(memberPageIdx+1)%pages;render();}
+setInterval(nextMemberPage,MEMBER_ROTATE_MS);
 
 async function load(){
   try{
@@ -241,7 +245,7 @@ function rotatePages(){
 
 function render(){
   const grid=document.getElementById('grid');
-  grid.innerHTML=members.map(m=>{
+  const memberStart=memberPageIdx*MEMBERS_PER_PAGE;const visibleMembers=members.slice(memberStart,memberStart+MEMBERS_PER_PAGE);grid.style.gridTemplateColumns='repeat('+Math.max(1,visibleMembers.length)+',1fr)';grid.innerHTML=visibleMembers.map(m=>{
     const my=tasksFor(m);
     const over=my.filter(t=>dU(t.deadline)<0).length;
     const doing=my.filter(t=>t.status==='doing').length;
