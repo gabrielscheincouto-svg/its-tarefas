@@ -1103,6 +1103,9 @@ app.delete('/api/processos/:id', requireAuth, async (req, res) => {
     }
 });
 
+// Modulo Financeiro (propostas, contratos, catalogo de servicos)
+require('./financeiro-routes')({ app, supabase, requireAuth, logTaskHistory, path });
+
 // ===== START =====
 async function start() {
     await seedDatabase();
