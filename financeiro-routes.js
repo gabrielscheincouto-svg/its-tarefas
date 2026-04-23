@@ -108,7 +108,10 @@ module.exports = function({ app, supabase, requireAuth, logTaskHistory, path }) 
     res.json({ ok: true });
   });
   app.delete('/api/propostas/:id', requireAuth, requireFinanceiro, async (req, res) => {
-    await supabase.from('propostas').delete().eq('id', Number(req.params.id));
+    const id = Number(req.params.id);
+    // cascade: apagar contratos vinculados antes (FK)
+    await supabase.from('contratos').delete().eq('proposta_id', id);
+    await supabase.from('propostas').delete().eq('id', id);
     res.json({ ok: true });
   });
   app.post('/api/propostas/:id/enviar', requireAuth, requireFinanceiro, async (req, res) => {
@@ -130,6 +133,18 @@ module.exports = function({ app, supabase, requireAuth, logTaskHistory, path }) 
     if (!p) return res.status(404).json({ error: 'Proposta nao encontrada' });
     if (p.status !== 'aceita') return res.status(400).json({ error: 'Proposta nao esta aceita' });
     await supabase.from('propostas').update({ status: 'enviada', aceita_em: null, aceita_ip: null, aceita_user_agent: null, updated_at: new Date().toISOString() }).eq('id', id);
+    res.json({ ok: true });
+  });
+
+  // Reverter contratacao (apaga contrato gerado e volta para aceita)
+  app.post('/api/propostas/:id/reverter-contratacao', requireAuth, requireFinanceiro, async (req, res) => {
+    const id = Number(req.params.id);
+    const { data: rows } = await supabase.from('propostas').select('status').eq('id', id).limit(1);
+    const p = rows && rows[0];
+    if (!p) return res.status(404).json({ error: 'Proposta nao encontrada' });
+    if (p.status !== 'contratada') return res.status(400).json({ error: 'Proposta nao esta contratada' });
+    await supabase.from('contratos').delete().eq('proposta_id', id);
+    await supabase.from('propostas').update({ status: 'aceita', updated_at: new Date().toISOString() }).eq('id', id);
     res.json({ ok: true });
   });
 
