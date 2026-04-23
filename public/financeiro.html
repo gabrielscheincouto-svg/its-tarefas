@@ -557,6 +557,7 @@ function renderPropostas(){
         <button class="btn-icon" title="Ver" onclick="openView(${p.id})">&#128065;</button>
         ${p.aceite_token?`<button class="btn-icon" title="Copiar link" onclick="copiarLink('${p.aceite_token}')">&#128279;</button>`:''}
         ${p.status==='aceita'?`<button class="btn-icon" style="color:var(--green);border-color:var(--green);" title="Gerar Contrato" onclick="openGerarContrato(${p.id})">&#128196;</button>`:''}
+        <button class="btn-icon" title="Editar" onclick="editProposta(${p.id})">&#9998;</button>
         <button class="btn-icon danger" title="Excluir" onclick="delProposta(${p.id})">&#128465;</button>
       </td>
     </tr>`;
@@ -589,7 +590,7 @@ async function openView(id){
   document.getElementById('vw_btn_contrato').style.display = (p.status==='aceita')?'':'none';
   document.getElementById('vw_btn_enviar').style.display = (p.status==='rascunho')?'':'none';
   document.getElementById('vw_btn_link').style.display = p.aceite_token?'':'none';
-  document.getElementById('vw_btn_editar').style.display = (p.status==='rascunho')?'':'none';
+  document.getElementById('vw_btn_editar').style.display = (p.status==='contratada')?'none':'';
   document.getElementById('modalView').classList.add('show');
 }
 function closeView(){ document.getElementById('modalView').classList.remove('show'); viewingProp=null; }
