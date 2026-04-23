@@ -178,6 +178,7 @@ hr{border:none;border-top:1px solid var(--line);margin:16px 0;}
     <button class="side-item active" data-tab="propostas"><span class="side-item-ico">&#128221;</span> Propostas</button>
     <button class="side-item" data-tab="contratos"><span class="side-item-ico">&#128196;</span> Contratos</button>
     <button class="side-item" data-tab="servicos"><span class="side-item-ico">&#128188;</span> Catalogo</button>
+    <button class="side-item" data-tab="meta"><span class="side-item-ico">&#128200;</span> Meta Anual</button>
     <button class="side-item" data-tab="templates"><span class="side-item-ico">&#128203;</span> Templates</button>
   </nav>
 
@@ -227,6 +228,69 @@ hr{border:none;border-top:1px solid var(--line);margin:16px 0;}
     </div>
   </div>
 </section>
+
+<!-- =========== META ANUAL =========== -->
+<section id="tab-meta" style="display:none;">
+  <div class="pg-hdr">
+    <div>
+      <div class="pg-title"><div class="pg-ico" style="background:#16a34a;">&#128200;</div> Meta Anual de Honorários</div>
+      <div class="pg-sub">Acompanhe o progresso da meta do ano e os lançamentos mensais</div>
+    </div>
+    <button class="btn btn-primary" onclick="openLancamento()">+ Novo Lançamento</button>
+  </div>
+
+  <div class="card" style="padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:16px;">
+      <div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:700;">Meta <span id="metaAno"></span></div>
+        <div style="font-size:28px;font-weight:800;margin-top:4px;">R$ <span id="metaValor">0,00</span> <button class="btn-icon" onclick="editMeta()" style="margin-left:8px;">&#9998;</button></div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:700;">Realizado</div>
+        <div style="font-size:28px;font-weight:800;color:var(--green);margin-top:4px;">R$ <span id="metaRealizado">0,00</span></div>
+      </div>
+    </div>
+    <div style="background:var(--panel2);border-radius:10px;height:28px;overflow:hidden;position:relative;margin-bottom:10px;">
+      <div id="metaBar" style="height:100%;background:linear-gradient(90deg,#16a34a,#22c55e);width:0%;transition:width .5s;"></div>
+      <div id="metaPct" style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--text);">0%</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);">
+      <span>Concluído: <b style="color:var(--green);" id="metaPctOk">0%</b></span>
+      <span>Faltante: <b style="color:var(--yellow);" id="metaPctFalta">100%</b> (R$ <span id="metaFalta">0,00</span>)</span>
+    </div>
+  </div>
+
+  <div class="card" style="padding:18px;">
+    <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Resumo Mensal</div>
+    <div id="resumoMensal" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;"></div>
+  </div>
+
+  <div class="card-col">
+    <div class="card-head open"><div class="card-title">Lançamentos do Ano</div></div>
+    <div class="card-body open">
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Data</th><th>Cliente</th><th>Descrição</th><th>Valor</th><th style="text-align:right;">Ações</th></tr></thead>
+        <tbody id="lancTbody"><tr><td colspan="5" class="empty">Carregando...</td></tr></tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<!-- MODAL LANCAMENTO -->
+<div class="modal" id="modalLanc"><div class="modal-box" style="max-width:520px;">
+  <div class="modal-hdr"><div class="modal-title">Novo Lançamento</div><button class="modal-close" onclick="closeLancamento()">&times;</button></div>
+  <div class="grid">
+    <div><label>Data</label><input class="inp" id="l_data" type="date"></div>
+    <div><label>Valor (R$)</label><input class="inp" id="l_valor" type="number" step="0.01"></div>
+  </div>
+  <div style="margin-top:10px;"><label>Cliente</label><input class="inp" id="l_cliente"></div>
+  <div style="margin-top:10px;"><label>Descrição</label><input class="inp" id="l_desc"></div>
+  <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end;">
+    <button class="btn btn-ghost" onclick="closeLancamento()">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveLancamento()">Salvar</button>
+  </div>
+</div></div>
+
 
 <!-- =========== CONTRATOS =========== -->
 <section id="tab-contratos" style="display:none;">
@@ -447,7 +511,7 @@ async function init(){
   document.getElementById('sb_name').textContent = me.name;
   document.getElementById('sb_ava').textContent = (me.name||'?').slice(0,1).toUpperCase();
   document.querySelectorAll('.side-item[data-tab]').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
-  await Promise.all([loadUsers(), loadServicos(), loadTemplates(), loadPropostas(), loadContratos(), loadChecklists()]);
+  await Promise.all([loadUsers(), loadServicos(), loadTemplates(), loadPropostas(), loadContratos(), loadChecklists(), loadMeta()]);
 }
 async function loadUsers(){ USERS = await fetch('/api/users').then(r=>r.json()); }
 async function loadServicos(){ SERVICOS = await fetch('/api/servicos-catalogo').then(r=>r.json()); renderServicos(); fillServicoSelect(); }
@@ -457,7 +521,7 @@ async function loadContratos(){ CONTRATOS = await fetch('/api/contratos').then(r
 async function loadChecklists(){ CHECKLISTS = await fetch('/api/checklist-templates').then(r=>r.ok?r.json():[]).catch(()=>[]); }
 
 function switchTab(t){
-  ['propostas','contratos','servicos','templates'].forEach(x=>{
+  ['propostas','contratos','servicos','templates','meta'].forEach(x=>{
     document.getElementById('tab-'+x).style.display = x===t ? '' : 'none';
   });
   document.querySelectorAll('.side-item[data-tab]').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
@@ -774,6 +838,80 @@ async function sair(){ await fetch('/api/logout',{method:'POST'}); location.href
 
 function fmtMoney(v){ return 'R$ '+Number(v||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+
+// ============== META ANUAL ==============
+const ANO_META = new Date().getFullYear();
+let METAS_DATA = null, LANCAMENTOS = [];
+
+async function loadMeta(){
+  try {
+    const [meta, resumo, lancs] = await Promise.all([
+      fetch('/api/metas-honorarios/'+ANO_META).then(r=>r.json()),
+      fetch('/api/honorarios/'+ANO_META+'/resumo').then(r=>r.json()),
+      fetch('/api/honorarios/'+ANO_META).then(r=>r.json())
+    ]);
+    METAS_DATA = meta;
+    LANCAMENTOS = lancs || [];
+    renderMeta(resumo, meta);
+    renderLancamentos();
+  } catch(e){ console.error(e); }
+}
+
+function renderMeta(resumo, meta){
+  document.getElementById('metaAno').textContent = ANO_META;
+  const valorMeta = Number(meta.valor_meta||0);
+  document.getElementById('metaValor').textContent = fmtNumBR(valorMeta);
+  const realizado = Number(resumo.total||0);
+  document.getElementById('metaRealizado').textContent = fmtNumBR(realizado);
+  const pct = Math.min(100, valorMeta > 0 ? (realizado/valorMeta)*100 : 0);
+  document.getElementById('metaBar').style.width = pct+'%';
+  document.getElementById('metaPct').textContent = pct.toFixed(1)+'%';
+  document.getElementById('metaPctOk').textContent = pct.toFixed(1)+'%';
+  const falta = Math.max(0, valorMeta - realizado);
+  document.getElementById('metaFalta').textContent = fmtNumBR(falta);
+  document.getElementById('metaPctFalta').textContent = (100-pct).toFixed(1)+'%';
+  const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const el = document.getElementById('resumoMensal');
+  el.innerHTML = meses.map((m,i)=>`<div style="background:var(--panel2);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700;">${m}</div><div style="font-size:14px;font-weight:700;margin-top:4px;">R$ ${fmtNumBR(resumo.porMes?resumo.porMes[i]||0:0)}</div></div>`).join('');
+}
+function fmtNumBR(n){ return Number(n||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+
+function renderLancamentos(){
+  const tbody = document.getElementById('lancTbody');
+  if(!LANCAMENTOS || LANCAMENTOS.length===0){ tbody.innerHTML='<tr><td colspan="5" class="empty">Nenhum lan\u00e7amento no ano.</td></tr>'; return; }
+  tbody.innerHTML = LANCAMENTOS.map(l=>`<tr>
+    <td>${new Date(l.data).toLocaleDateString('pt-BR',{timeZone:'UTC'})}</td>
+    <td>${escapeHtml(l.cliente||'-')}</td>
+    <td>${escapeHtml(l.descricao||'')}</td>
+    <td><b>R$ ${fmtNumBR(l.valor)}</b></td>
+    <td style="text-align:right;"><button class="btn-icon danger" onclick="delLancamento(${l.id})">&#128465;</button></td>
+  </tr>`).join('');
+}
+
+function openLancamento(){
+  document.getElementById('l_data').value = new Date().toISOString().slice(0,10);
+  document.getElementById('l_valor').value='';
+  document.getElementById('l_cliente').value='';
+  document.getElementById('l_desc').value='';
+  document.getElementById('modalLanc').classList.add('show');
+}
+function closeLancamento(){ document.getElementById('modalLanc').classList.remove('show'); }
+async function saveLancamento(){
+  const payload = { data:document.getElementById('l_data').value, valor:Number(document.getElementById('l_valor').value)||0, cliente:document.getElementById('l_cliente').value, descricao:document.getElementById('l_desc').value };
+  if(!payload.valor){ alert('Informe o valor'); return; }
+  const r = await fetch('/api/honorarios',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  if(!r.ok){ alert('Erro'); return; }
+  closeLancamento(); loadMeta();
+}
+async function delLancamento(id){ if(!confirm('Excluir lan\u00e7amento?')) return; await fetch('/api/honorarios/'+id,{method:'DELETE'}); loadMeta(); }
+async function editMeta(){
+  const novo = prompt('Novo valor da meta anual ('+ANO_META+'):', METAS_DATA ? METAS_DATA.valor_meta : 1000000);
+  if(novo===null) return;
+  const v = Number(novo)||0;
+  await fetch('/api/metas-honorarios/'+ANO_META,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({valor_meta:v})});
+  loadMeta();
+}
 
 init();
 </script>
