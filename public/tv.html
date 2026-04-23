@@ -46,14 +46,14 @@ body{background:#f5f5f7;color:#1d1d1f;letter-spacing:-0.015em;}
 .card-name-s{font-size:11px;color:#86868b;margin-top:1px;}
 .card-count{font-size:16px;font-weight:700;color:#1d1d1f;background:#f5f5f7;padding:4px 12px;border-radius:999px;min-width:32px;text-align:center;}
 .card-tasks{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:8px;}
-.tsk{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed #ededf0;font-size:12px;}
+.tsk{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px dashed #ededf0;font-size:12px;}
 .tsk:last-child{border-bottom:none;}
-.tsk-title{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1d1d1f;font-weight:500;}
-.tsk-client{font-size:10px;color:#86868b;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;}
-.tsk-date{background:#e8f7ec;color:#1a7f3a;font-weight:700;padding:3px 8px;border-radius:8px;font-size:10px;white-space:nowrap;}
+.tsk-title{flex:1;min-width:0;color:#1d1d1f;font-weight:600;font-size:13px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;}
+.tsk-client{font-size:10px;color:#86868b;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;max-width:110px;align-self:center;}
+.tsk-date{background:#e8f7ec;color:#1a7f3a;font-weight:700;padding:3px 8px;border-radius:8px;font-size:10px;white-space:nowrap;flex-shrink:0;align-self:center;}
 .tsk-date.over{background:#fdeceb;color:#c43333;}
 .tsk-date.soon{background:#fff4dd;color:#8a6500;}
-.tsk-bar{width:3px;height:30px;border-radius:2px;background:#22c55e;flex-shrink:0;}
+.tsk-bar{width:3px;align-self:stretch;min-height:30px;border-radius:2px;background:#22c55e;flex-shrink:0;}
 .tsk.over .tsk-bar{background:#c43333;}
 .tsk.soon .tsk-bar{background:#e89100;}
 .empty-card{color:#86868b;font-size:12px;text-align:center;padding:18px 0;font-style:italic;}
@@ -225,7 +225,10 @@ function renderGrid(){
     const my = tasksFor(m);
     const color = m.color || COLORS[idx % COLORS.length];
     const maxTasks = 4;
-    const shown = my.slice(0, maxTasks);
+    const totalPages = Math.max(1, Math.ceil(my.length / maxTasks));
+    const curPage = window._taskPage % totalPages || 0;
+    const start = curPage * maxTasks;
+    const shown = my.slice(start, start + maxTasks);
     const roleText = m.role === 'admin' ? 'Gestão' : 'Colaborador';
     const tasksHtml = shown.length === 0
       ? '<div class="empty-card">Sem pendências!</div>'
@@ -239,7 +242,7 @@ function renderGrid(){
             <div class="tsk-date ${cls}">${fmtDate(t.deadline)}</div>
           </div>`;
         }).join('');
-    const moreInfo = my.length > maxTasks ? `<div class="page-info">+${my.length - maxTasks} tarefa(s)</div>` : '';
+    const moreInfo = totalPages > 1 ? `<div class="page-info">Página ${curPage+1} / ${totalPages} · ${my.length} tarefa(s)</div>` : '';
     return `<div class="card">
       <div class="card-head">
         <div class="av" style="background:${color};">${(m.name||'?').slice(0,1).toUpperCase()}</div>
@@ -319,7 +322,7 @@ async function loadProcessos(){
     const arr = await r.json();
     const el = document.getElementById('procList');
     if (!arr || arr.length === 0) { el.innerHTML = '<div class="empty-card">Nenhum processo ativo</div>'; return; }
-    el.innerHTML = arr.slice(0, 5).map(p => {
+    const procPerPage = 5; const procPages = Math.max(1, Math.ceil(arr.length / procPerPage)); const procPage = (window._procPage||0) % procPages; el.innerHTML = arr.slice(procPage*procPerPage, (procPage+1)*procPerPage).map(p => {
       const prazo = p.prazo ? `<span class="proc-prazo">${fmtDate(p.prazo)}</span>` : '';
       return `<div class="proc-item ${p.status||''}">
         <div class="proc-num">${escapeHtml(p.numero||'')}</div>
@@ -341,6 +344,12 @@ function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;'
 load();
 loadWeather();
 loadProcessos();
+
+// Task/Processo page rotation
+window._taskPage = 0;
+window._procPage = 0;
+setInterval(() => { window._taskPage = (window._taskPage||0) + 1; renderGrid(); }, 15000);
+setInterval(() => { window._procPage = (window._procPage||0) + 1; loadProcessos(); }, 20000);
 
 // Refresh intervals
 setInterval(load, 60000);
