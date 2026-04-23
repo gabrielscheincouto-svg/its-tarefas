@@ -405,56 +405,25 @@ function weatherIcon(c){if(c===0)return'\u2600';if(c<=3)return'\u26c5';if(c<=48)
 
 </script>
 
+<!-- Anti-sleep: Wake Lock + silent video (nao mexe no layout) -->
+<video id="noSleepVid" muted loop playsinline autoplay style="position:fixed;bottom:0;right:0;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1;"><source src="data:video/mp4;base64,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" type="video/mp4"></video>
 <script>
-// ===== Anti-sleep / Wake Lock para o Modo TV =====
-(() => {
-  let wakeLock = null;
-
-  async function requestWakeLock() {
-    try {
-      if ('wakeLock' in navigator) {
-        wakeLock = await navigator.wakeLock.request('screen');
-        wakeLock.addEventListener('release', () => { wakeLock = null; });
-      }
-    } catch (err) {
-      console.warn('Wake Lock nao disponivel:', err.message);
+// Wake Lock API - pede ao OS pra nao apagar a tela
+(async () => {
+  try {
+    if ('wakeLock' in navigator) await navigator.wakeLock.request('screen');
+  } catch(e){}
+  // Reativa quando a aba volta a ficar visivel
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible' && 'wakeLock' in navigator) {
+      try { await navigator.wakeLock.request('screen'); } catch(e){}
     }
-  }
-
-  // Reativa o wake lock quando a aba volta a ficar visivel
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && !wakeLock) requestWakeLock();
   });
-
-  // Primeira tentativa: apos interacao do usuario
-  window.addEventListener('click', requestWakeLock, { once: true });
-  window.addEventListener('touchstart', requestWakeLock, { once: true });
-  window.addEventListener('keydown', requestWakeLock, { once: true });
-
-  // Alguns navegadores ja permitem sem interacao
-  requestWakeLock();
-
-  // Simula atividade a cada 30s (para TVs/browsers que ignoram Wake Lock)
-  setInterval(() => {
-    // Evento sintetico de mousemove pra sinalizar atividade
-    const evt = new MouseEvent('mousemove', { bubbles: true, clientX: Math.random()*10, clientY: Math.random()*10 });
-    document.dispatchEvent(evt);
-    // Pequeno scroll que volta ao mesmo lugar
-    window.scrollBy(0, 1); window.scrollBy(0, -1);
-  }, 30000);
-
-  // Auto-refresh dos dados a cada 60s (se existir funcao loadTasks/loadTv etc.)
-  setInterval(() => {
-    try {
-      if (typeof loadData === 'function') loadData();
-      else if (typeof loadTasks === 'function') loadTasks();
-      else if (typeof refresh === 'function') refresh();
-    } catch(e){}
-  }, 60000);
-
-  // Fallback: recarrega a pagina inteira a cada 30 min para evitar leaks/memoria
-  setTimeout(() => location.reload(), 30 * 60 * 1000);
+  // Garante que o video fique tocando (algumas TVs nao dormem com video ativo)
+  const v = document.getElementById('noSleepVid');
+  if (v) { v.play().catch(()=>{}); setInterval(()=>v.play().catch(()=>{}), 60000); }
 })();
 </script>
+
 </body>
 </html>
