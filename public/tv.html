@@ -404,5 +404,57 @@ function weatherIcon(c){if(c===0)return'\u2600';if(c<=3)return'\u26c5';if(c<=48)
 })();
 
 </script>
+
+<script>
+// ===== Anti-sleep / Wake Lock para o Modo TV =====
+(() => {
+  let wakeLock = null;
+
+  async function requestWakeLock() {
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
+      }
+    } catch (err) {
+      console.warn('Wake Lock nao disponivel:', err.message);
+    }
+  }
+
+  // Reativa o wake lock quando a aba volta a ficar visivel
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && !wakeLock) requestWakeLock();
+  });
+
+  // Primeira tentativa: apos interacao do usuario
+  window.addEventListener('click', requestWakeLock, { once: true });
+  window.addEventListener('touchstart', requestWakeLock, { once: true });
+  window.addEventListener('keydown', requestWakeLock, { once: true });
+
+  // Alguns navegadores ja permitem sem interacao
+  requestWakeLock();
+
+  // Simula atividade a cada 30s (para TVs/browsers que ignoram Wake Lock)
+  setInterval(() => {
+    // Evento sintetico de mousemove pra sinalizar atividade
+    const evt = new MouseEvent('mousemove', { bubbles: true, clientX: Math.random()*10, clientY: Math.random()*10 });
+    document.dispatchEvent(evt);
+    // Pequeno scroll que volta ao mesmo lugar
+    window.scrollBy(0, 1); window.scrollBy(0, -1);
+  }, 30000);
+
+  // Auto-refresh dos dados a cada 60s (se existir funcao loadTasks/loadTv etc.)
+  setInterval(() => {
+    try {
+      if (typeof loadData === 'function') loadData();
+      else if (typeof loadTasks === 'function') loadTasks();
+      else if (typeof refresh === 'function') refresh();
+    } catch(e){}
+  }, 60000);
+
+  // Fallback: recarrega a pagina inteira a cada 30 min para evitar leaks/memoria
+  setTimeout(() => location.reload(), 30 * 60 * 1000);
+})();
+</script>
 </body>
 </html>
