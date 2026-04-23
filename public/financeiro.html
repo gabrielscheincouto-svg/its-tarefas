@@ -375,6 +375,7 @@ hr{border:none;border-top:1px solid var(--line);margin:16px 0;}
     <button class="btn btn-ghost" id="vw_btn_link" onclick="copiarLinkAtual()">&#128279; Copiar Link</button>
     <button class="btn btn-ghost" id="vw_btn_enviar" onclick="enviarPropostaAtual()">&#9993; Enviar (gerar link)</button>
     <button class="btn btn-ghost" id="vw_btn_editar" onclick="editarPropostaAtual()">&#9998; Editar</button>
+    <button class="btn btn-ghost" id="vw_btn_reverter" onclick="reverterAceiteAtual()" style="display:none;">&#8634; Reverter Aceite</button>
     <button class="btn btn-green" id="vw_btn_contrato" onclick="openGerarContratoAtual()">&#128196; Gerar Contrato</button>
     <button class="btn btn-secondary" onclick="closeView()">Fechar</button>
   </div>
@@ -588,6 +589,7 @@ async function openView(id){
   document.getElementById('vw_itens').innerHTML = (p.itens||[]).map(i=>`<tr><td>${escapeHtml(i.descricao)}${i.tipo==='mensal'?'<span class="empresa-sub">Recorrente mensal</span>':''}</td><td class="num">${Number(i.quantidade)}</td><td class="num">${fmtMoney(i.valor_unitario)}</td><td class="num">${fmtMoney(i.valor_total)}</td></tr>`).join('');
 
   document.getElementById('vw_btn_contrato').style.display = (p.status==='aceita')?'':'none';
+  document.getElementById('vw_btn_reverter').style.display = (p.status==='aceita')?'':'none';
   document.getElementById('vw_btn_enviar').style.display = (p.status==='rascunho')?'':'none';
   document.getElementById('vw_btn_link').style.display = p.aceite_token?'':'none';
   document.getElementById('vw_btn_editar').style.display = (p.status==='contratada')?'none':'';
@@ -601,6 +603,7 @@ function imprimirProposta(){
 async function enviarPropostaAtual(){ if(viewingProp){ await enviarProposta(viewingProp.id); closeView(); } }
 function editarPropostaAtual(){ if(viewingProp){ closeView(); editProposta(viewingProp.id); } }
 function copiarLinkAtual(){ if(viewingProp && viewingProp.aceite_token) copiarLink(viewingProp.aceite_token); }
+async function reverterAceiteAtual(){ if(!viewingProp) return; if(!confirm('Reverter aceite desta proposta? Ela voltar\u00e1 para o status "Enviada" e poder\u00e1 ser aceita novamente.')) return; const r = await fetch('/api/propostas/'+viewingProp.id+'/reverter-aceite',{method:'POST'}); if(!r.ok){ alert('Erro'); return; } closeView(); loadPropostas(); }
 function openGerarContratoAtual(){ if(viewingProp){ closeView(); openGerarContrato(viewingProp.id); } }
 
 // ===== CREATE/EDIT PROPOSTA =====
