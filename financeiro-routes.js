@@ -122,6 +122,17 @@ module.exports = function({ app, supabase, requireAuth, logTaskHistory, path }) 
     res.json({ ok: true, token, link });
   });
 
+  // Reverter aceite (caso cliente desista)
+  app.post('/api/propostas/:id/reverter-aceite', requireAuth, requireFinanceiro, async (req, res) => {
+    const id = Number(req.params.id);
+    const { data: rows } = await supabase.from('propostas').select('status').eq('id', id).limit(1);
+    const p = rows && rows[0];
+    if (!p) return res.status(404).json({ error: 'Proposta nao encontrada' });
+    if (p.status !== 'aceita') return res.status(400).json({ error: 'Proposta nao esta aceita' });
+    await supabase.from('propostas').update({ status: 'enviada', aceita_em: null, aceita_ip: null, aceita_user_agent: null, updated_at: new Date().toISOString() }).eq('id', id);
+    res.json({ ok: true });
+  });
+
   // ===== PUBLICO (aceite do cliente) =====
   app.get('/p/:token', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'proposta-publica.html')); });
   app.get('/api/p/:token', async (req, res) => {
