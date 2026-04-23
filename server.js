@@ -247,7 +247,7 @@ app.get('/api/me', requireAuth, async (req, res) => {
     const { data: users } = await supabase.from('users').select('*').eq('id', req.session.userId).limit(1);
     const user = users && users[0];
     if (!user) return res.status(401).json({ error: 'Sessao invalida' });
-    res.json({ id: user.id, name: user.name, username: user.username, role: user.role, color: user.color });
+    res.json({ id: user.id, name: user.name, username: user.username, role: user.role, color: user.color, is_financeiro: user.is_financeiro === true });
 });
 
 // ===== PASSWORD CHANGE ROUTE =====
