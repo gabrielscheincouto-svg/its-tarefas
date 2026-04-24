@@ -1060,7 +1060,7 @@ app.get('/api/processos', requireAuth, async (req, res) => {
 app.post('/api/processos', requireAuth, async (req, res) => {
     try {
         const { numero, cliente, tipo, vara, responsavel_id, prazo, observacoes, status } = req.body;
-        if (!numero || !cliente) return res.status(400).json({ error: 'Número e cliente são obrigatórios' });
+        if (!numero || !cliente) return res.status(400).json({ error: 'NÃºmero e cliente sÃ£o obrigatÃ³rios' });
         const row = {
             numero, cliente,
             tipo: tipo || null,
@@ -1098,6 +1098,258 @@ app.delete('/api/processos/:id', requireAuth, async (req, res) => {
         const { error } = await supabase.from('processos').delete().eq('id', req.params.id);
         if (error) throw error;
         res.json({ ok: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ===== RECURRING TASKS =====
+
+// Helper: calculate next run date based on frequency
+function calcNextRunDate(frequency, targetDay, intervalDays, daysBefore, fromDate) {
+    const now = fromDate ? new Date(fromDate) : new Date();
+    let targetDate;
+
+    if (frequency === 'mensal') {
+        // Next occurrence of target_day in current or next month
+        targetDate = new Date(now.getFullYear(), now.getMonth(), targetDay);
+        if (targetDate <= now) {
+            targetDate = new Date(now.getFullYear(), now.getMonth() + 1, targetDay);
+        }
+        // Handle months with fewer days (e.g. day 31 in Feb)
+        if (targetDate.getDate() !== targetDay) {
+            targetDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), 0); // last day of prev month
+        }
+    } else if (frequency === 'semanal') {
+        // Next occurrence of target weekday (0=Sun, 1=Mon...6=Sat)
+        const currentDay = now.getDay();
+        let daysUntil = targetDay - currentDay;
+        if (daysUntil <= 0) daysUntil += 7;
+        targetDate = new Date(now);
+        targetDate.setDate(now.getDate() + daysUntil);
+    } else if (frequency === 'personalizado') {
+        // Every N days from now
+        targetDate = new Date(now);
+        targetDate.setDate(now.getDate() + (intervalDays || 30));
+    }
+
+    // The task creation date is (days_before) days before the target
+    const runDate = new Date(targetDate);
+    runDate.setDate(runDate.getDate() - (daysBefore || 0));
+
+    // If runDate is in the past (already passed), advance to next cycle
+    if (runDate <= now) {
+        if (frequency === 'mensal') {
+            targetDate.setMonth(targetDate.getMonth() + 1);
+            if (targetDate.getDate() !== targetDay && targetDay <= 28) {
+                targetDate.setDate(targetDay);
+            }
+        } else if (frequency === 'semanal') {
+            targetDate.setDate(targetDate.getDate() + 7);
+        } else {
+            targetDate.setDate(targetDate.getDate() + (intervalDays || 30));
+        }
+        runDate.setTime(targetDate.getTime());
+        runDate.setDate(runDate.getDate() - (daysBefore || 0));
+    }
+
+    return runDate.toISOString().slice(0, 10);
+}
+
+// List recurring rules
+app.get('/api/recurring', requireAuth, async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('recurring_rules')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+
+        // Enrich with user names
+        const { data: allUsers } = await supabase.from('users').select('id, name, color');
+        const enriched = (data || []).map(r => {
+            const u = (allUsers || []).find(x => x.id === r.assignee_id);
+            return {
+                ...r,
+                assignee_name: u ? u.name : 'Desconhecido',
+                assignee_color: u ? u.color : '#868e96'
+            };
+        });
+
+        res.json(enriched);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Create recurring rule
+app.post('/api/recurring', requireAuth, async (req, res) => {
+    try {
+        const { client, title, assignee_id, priority, value, contract_link,
+                additional_assignees, frequency, target_day, interval_days,
+                days_before, end_date } = req.body;
+
+        if (!client || !title || !frequency) {
+            return res.status(400).json({ error: 'client, title e frequency sao obrigatorios' });
+        }
+
+        const nextRun = calcNextRunDate(frequency, target_day, interval_days, days_before);
+
+        const row = {
+            client, title,
+            assignee_id: assignee_id || req.session.userId,
+            priority: priority || 'normal',
+            value: value || null,
+            contract_link: contract_link || null,
+            additional_assignees: additional_assignees ? JSON.stringify(additional_assignees) : null,
+            frequency,
+            target_day: target_day !== undefined ? target_day : null,
+            interval_days: interval_days || null,
+            days_before: days_before || 0,
+            next_run_date: nextRun,
+            end_date: end_date || null,
+            active: true,
+            created_by: req.session.userId
+        };
+
+        const { data, error } = await supabase.from('recurring_rules').insert([row]).select().single();
+        if (error) throw error;
+        res.status(201).json(data);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Update recurring rule
+app.put('/api/recurring/:id', requireAuth, async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+        const { client, title, assignee_id, priority, value, contract_link,
+                additional_assignees, frequency, target_day, interval_days,
+                days_before, end_date, active } = req.body;
+
+        const updates = { updated_at: new Date().toISOString() };
+        if (client !== undefined) updates.client = client;
+        if (title !== undefined) updates.title = title;
+        if (assignee_id !== undefined) updates.assignee_id = assignee_id;
+        if (priority !== undefined) updates.priority = priority;
+        if (value !== undefined) updates.value = value;
+        if (contract_link !== undefined) updates.contract_link = contract_link;
+        if (additional_assignees !== undefined) updates.additional_assignees = JSON.stringify(additional_assignees);
+        if (frequency !== undefined) updates.frequency = frequency;
+        if (target_day !== undefined) updates.target_day = target_day;
+        if (interval_days !== undefined) updates.interval_days = interval_days;
+        if (days_before !== undefined) updates.days_before = days_before;
+        if (end_date !== undefined) updates.end_date = end_date;
+        if (active !== undefined) updates.active = active;
+
+        // Recalculate next_run if schedule changed
+        if (frequency || target_day !== undefined || interval_days !== undefined || days_before !== undefined) {
+            const { data: current } = await supabase.from('recurring_rules').select('*').eq('id', id).single();
+            if (current) {
+                const f = frequency || current.frequency;
+                const td = target_day !== undefined ? target_day : current.target_day;
+                const id2 = interval_days !== undefined ? interval_days : current.interval_days;
+                const db = days_before !== undefined ? days_before : current.days_before;
+                updates.next_run_date = calcNextRunDate(f, td, id2, db);
+            }
+        }
+
+        const { data, error } = await supabase.from('recurring_rules').update(updates).eq('id', id).select().single();
+        if (error) throw error;
+        res.json(data);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Delete recurring rule
+app.delete('/api/recurring/:id', requireAuth, async (req, res) => {
+    try {
+        const { error } = await supabase.from('recurring_rules').delete().eq('id', Number(req.params.id));
+        if (error) throw error;
+        res.json({ ok: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// CHECK & CREATE: generates tasks from recurring rules that are due
+app.post('/api/recurring/check', requireAuth, async (req, res) => {
+    try {
+        const today = new Date().toISOString().slice(0, 10);
+
+        // Find all active rules where next_run_date <= today
+        const { data: dueRules, error } = await supabase
+            .from('recurring_rules')
+            .select('*')
+            .eq('active', true)
+            .lte('next_run_date', today);
+
+        if (error) throw error;
+        if (!dueRules || dueRules.length === 0) {
+            return res.json({ created: 0, tasks: [] });
+        }
+
+        const createdTasks = [];
+
+        for (const rule of dueRules) {
+            // Check if end_date passed
+            if (rule.end_date && today > rule.end_date) {
+                await supabase.from('recurring_rules').update({ active: false, updated_at: new Date().toISOString() }).eq('id', rule.id);
+                continue;
+            }
+
+            // Calculate the actual deadline (the target date, not the run date)
+            let deadlineDate = new Date(rule.next_run_date);
+            deadlineDate.setDate(deadlineDate.getDate() + (rule.days_before || 0));
+            const deadline = deadlineDate.toISOString().slice(0, 10);
+
+            // Create the task
+            const taskData = {
+                client: rule.client,
+                title: rule.title,
+                assignee_id: rule.assignee_id,
+                priority: rule.priority || 'normal',
+                status: 'todo',
+                deadline: deadline,
+                value: rule.value || null,
+                contract_link: rule.contract_link || null,
+                additional_assignees: rule.additional_assignees || null,
+                created_by: rule.created_by
+            };
+
+            const { data: newTask, error: taskError } = await supabase
+                .from('tasks')
+                .insert([taskData])
+                .select()
+                .single();
+
+            if (taskError) {
+                console.error('Erro ao criar tarefa recorrente:', taskError.message);
+                continue;
+            }
+
+            // Log history
+            await logTaskHistory(newTask.id, rule.created_by, 'Sistema', 'created', null, null, null,
+                'Criada automaticamente (recorrencia #' + rule.id + ')');
+
+            createdTasks.push(newTask);
+
+            // Calculate and update next_run_date
+            const nextRun = calcNextRunDate(
+                rule.frequency, rule.target_day, rule.interval_days, rule.days_before,
+                new Date(rule.next_run_date + 'T12:00:00') // from current run date so we advance properly
+            );
+
+            await supabase.from('recurring_rules').update({
+                next_run_date: nextRun,
+                last_run_date: today,
+                updated_at: new Date().toISOString()
+            }).eq('id', rule.id);
+        }
+
+        res.json({ created: createdTasks.length, tasks: createdTasks });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
