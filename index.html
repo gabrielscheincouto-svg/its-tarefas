@@ -390,6 +390,36 @@
     .board{padding:8px;}
     .modal{padding:16px 12px;}
   }
+
+/* ===== RECURRING TASKS ===== */
+.c-recurring { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:1100; display:flex; align-items:center; justify-content:center; }
+.rec-box { background:var(--card); border-radius:14px; width:680px; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 12px 40px rgba(0,0,0,.3); }
+.rec-header { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); }
+.rec-header h2 { font-size:1.15rem; font-weight:700; color:var(--text); }
+.rec-close { background:none; border:none; color:var(--muted); font-size:1.3rem; cursor:pointer; }
+.rec-body { overflow-y:auto; padding:18px 22px; flex:1; }
+.rec-list { display:flex; flex-direction:column; gap:10px; }
+.rec-card { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; }
+.rec-card-info { flex:1; }
+.rec-card-title { font-weight:600; color:var(--text); font-size:.95rem; }
+.rec-card-meta { font-size:.8rem; color:var(--muted); margin-top:3px; }
+.rec-card-actions { display:flex; gap:6px; }
+.rec-card-actions button { background:none; border:none; cursor:pointer; color:var(--muted); font-size:.85rem; padding:4px 8px; border-radius:6px; }
+.rec-card-actions button:hover { background:var(--border); color:var(--text); }
+.rec-badge { display:inline-block; padding:2px 8px; border-radius:8px; font-size:.72rem; font-weight:600; }
+.rec-badge-mensal { background:#dbeafe; color:#1e40af; }
+.rec-badge-semanal { background:#dcfce7; color:#166534; }
+.rec-badge-personalizado { background:#fef3c7; color:#92400e; }
+.rec-form { display:flex; flex-direction:column; gap:12px; }
+.rec-form label { font-size:.85rem; font-weight:600; color:var(--text); }
+.rec-form input, .rec-form select { width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); font-size:.9rem; }
+.rec-form .rec-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.rec-btn-row { display:flex; gap:10px; justify-content:flex-end; margin-top:8px; }
+.rec-btn { padding:8px 18px; border-radius:8px; border:none; cursor:pointer; font-weight:600; font-size:.88rem; }
+.rec-btn-primary { background:var(--accent); color:#fff; }
+.rec-btn-secondary { background:var(--border); color:var(--text); }
+.rec-empty { text-align:center; padding:30px; color:var(--muted); font-size:.95rem; }
+.rec-add-btn { margin-bottom:14px; }
 </style>
 </head>
 <body>
@@ -409,6 +439,7 @@
   <div class="header-right">
     <button class="icon-btn" onclick="openTickets()" title="Chamados" id="btnTickets" style="display:none;position:relative;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg><span id="ticketBadge" style="display:none;position:absolute;top:-2px;right:-2px;background:#c92a2a;color:#fff;border-radius:50%;min-width:16px;height:16px;font-size:9px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;">0</span></button>
     <a href="/financeiro" class="hdr-chip" id="lnkFinanceiro" style="display:none;" title="Financeiro"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Financeiro</span></a>
+    <span class="hdr-chip" onclick="openRecurring()" title="Tarefas Recorrentes" style="cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 014-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 01-4 4H3"/></svg> Recorrentes</span>
     <a href="/tv.html" target="_blank" class="hdr-chip" title="Modo TV"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg><span>TV</span></a>
     <a href="/processos.html" class="hdr-chip" title="Processos Judiciais"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg><span>Proc</span></a><button class="icon-btn" onclick="toggleSettings()" title="Equipe" id="btnSettings" style="display:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></button>
     <div><div class="clock" id="clock">00:00</div><div class="date-disp" id="dateDisp"></div></div>
@@ -649,6 +680,58 @@
 </div>
 
 <div class="toast-box" id="toasts"></div>
+
+
+<!-- ===== RECURRING TASKS MODAL ===== -->
+<div class="c-recurring" id="recurringModal" style="display:none" onclick="if(event.target===this)closeRecurring()">
+  <div class="rec-box">
+    <div class="rec-header">
+      <h2 id="recTitle">Tarefas Recorrentes</h2>
+      <button class="rec-close" onclick="closeRecurring()">&times;</button>
+    </div>
+    <div class="rec-body">
+      <div id="recListView">
+        <button class="rec-btn rec-btn-primary rec-add-btn" onclick="showRecForm()">+ Nova Regra</button>
+        <div class="rec-list" id="recList"></div>
+      </div>
+      <div id="recFormView" style="display:none">
+        <form class="rec-form" id="recForm" onsubmit="saveRecRule(event)">
+          <input type="hidden" id="recEditId">
+          <div class="rec-row">
+            <div><label>Cliente</label><input id="recClient" required></div>
+            <div><label>Titulo da Tarefa</label><input id="recTitleInput" required></div>
+          </div>
+          <div class="rec-row">
+            <div><label>Responsavel</label><select id="recAssignee"></select></div>
+            <div><label>Prioridade</label><select id="recPriority"><option value="normal">Normal</option><option value="urgente">Urgente</option><option value="baixa">Baixa</option></select></div>
+          </div>
+          <div class="rec-row">
+            <div><label>Frequencia</label><select id="recFrequency" onchange="toggleRecFields()"><option value="mensal">Mensal</option><option value="semanal">Semanal</option><option value="personalizado">Personalizado</option></select></div>
+            <div id="recTargetDayDiv"><label>Dia do mes</label><input type="number" id="recTargetDay" min="1" max="31" value="20"></div>
+          </div>
+          <div class="rec-row" id="recWeekdayRow" style="display:none">
+            <div><label>Dia da semana</label><select id="recWeekday"><option value="1">Segunda</option><option value="2">Terca</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sabado</option><option value="0">Domingo</option></select></div>
+          </div>
+          <div class="rec-row" id="recIntervalRow" style="display:none">
+            <div><label>A cada (dias)</label><input type="number" id="recInterval" min="1" value="30"></div>
+          </div>
+          <div class="rec-row">
+            <div><label>Criar tarefa X dias antes</label><input type="number" id="recDaysBefore" min="0" value="2"></div>
+            <div><label>Data final (opcional)</label><input type="date" id="recEndDate"></div>
+          </div>
+          <div class="rec-row">
+            <div><label>Valor (R$)</label><input type="text" id="recValue"></div>
+            <div><label>Link contrato</label><input type="text" id="recContract"></div>
+          </div>
+          <div class="rec-btn-row">
+            <button type="button" class="rec-btn rec-btn-secondary" onclick="showRecList()">Cancelar</button>
+            <button type="submit" class="rec-btn rec-btn-primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 let currentUser = null;
@@ -1557,6 +1640,185 @@ function changeMonth(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}if
       if (el) el.style.display = '';
     }
   } catch(e){}
+})();
+
+
+// ===== RECURRING TASKS =====
+let recRules = [];
+
+function openRecurring() {
+    document.getElementById('recurringModal').style.display = 'flex';
+    showRecList();
+    loadRecRules();
+}
+
+function closeRecurring() {
+    document.getElementById('recurringModal').style.display = 'none';
+}
+
+function showRecList() {
+    document.getElementById('recListView').style.display = '';
+    document.getElementById('recFormView').style.display = 'none';
+    document.getElementById('recTitle').textContent = 'Tarefas Recorrentes';
+}
+
+function showRecForm(rule) {
+    document.getElementById('recListView').style.display = 'none';
+    document.getElementById('recFormView').style.display = '';
+    document.getElementById('recTitle').textContent = rule ? 'Editar Regra' : 'Nova Regra';
+    
+    // Populate assignee select
+    const sel = document.getElementById('recAssignee');
+    sel.innerHTML = '';
+    (window.allUsers || []).forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.textContent = u.name;
+        sel.appendChild(opt);
+    });
+    
+    if (rule) {
+        document.getElementById('recEditId').value = rule.id;
+        document.getElementById('recClient').value = rule.client || '';
+        document.getElementById('recTitleInput').value = rule.title || '';
+        document.getElementById('recAssignee').value = rule.assignee_id || '';
+        document.getElementById('recPriority').value = rule.priority || 'normal';
+        document.getElementById('recFrequency').value = rule.frequency || 'mensal';
+        document.getElementById('recTargetDay').value = rule.target_day || 20;
+        document.getElementById('recDaysBefore').value = rule.days_before || 0;
+        document.getElementById('recEndDate').value = rule.end_date || '';
+        document.getElementById('recValue').value = rule.value || '';
+        document.getElementById('recContract').value = rule.contract_link || '';
+        if (rule.frequency === 'semanal') document.getElementById('recWeekday').value = rule.target_day || 1;
+        if (rule.frequency === 'personalizado') document.getElementById('recInterval').value = rule.interval_days || 30;
+    } else {
+        document.getElementById('recEditId').value = '';
+        document.getElementById('recForm').reset();
+        document.getElementById('recTargetDay').value = 20;
+        document.getElementById('recDaysBefore').value = 2;
+    }
+    toggleRecFields();
+}
+
+function toggleRecFields() {
+    const freq = document.getElementById('recFrequency').value;
+    document.getElementById('recTargetDayDiv').style.display = freq === 'mensal' ? '' : 'none';
+    document.getElementById('recWeekdayRow').style.display = freq === 'semanal' ? '' : 'none';
+    document.getElementById('recIntervalRow').style.display = freq === 'personalizado' ? '' : 'none';
+}
+
+async function loadRecRules() {
+    try {
+        const r = await fetch('/api/recurring');
+        if (!r.ok) return;
+        recRules = await r.json();
+        renderRecList();
+    } catch(e) { console.error('Erro ao carregar recorrencias:', e); }
+}
+
+function renderRecList() {
+    const container = document.getElementById('recList');
+    if (!recRules || recRules.length === 0) {
+        container.innerHTML = '<div class="rec-empty">Nenhuma regra de recorrencia cadastrada.</div>';
+        return;
+    }
+    const freqLabels = { mensal: 'Mensal', semanal: 'Semanal', personalizado: 'Personalizado' };
+    const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+    container.innerHTML = recRules.map(r => {
+        let schedule = '';
+        if (r.frequency === 'mensal') schedule = 'Dia ' + r.target_day + ' de cada mes';
+        else if (r.frequency === 'semanal') schedule = 'Toda ' + (dayNames[r.target_day] || '?');
+        else schedule = 'A cada ' + (r.interval_days || 30) + ' dias';
+        if (r.days_before > 0) schedule += ' (cria ' + r.days_before + 'd antes)';
+        const badge = 'rec-badge rec-badge-' + r.frequency;
+        const statusDot = r.active ? '🟢' : '🔴';
+        return '<div class="rec-card">' +
+            '<div class="rec-card-info">' +
+                '<div class="rec-card-title">' + statusDot + ' ' + (r.client||'') + ' - ' + (r.title||'') + '</div>' +
+                '<div class="rec-card-meta"><span class="' + badge + '">' + (freqLabels[r.frequency]||r.frequency) + '</span> ' + schedule + ' | Resp: ' + (r.assignee_name||'?') + ' | Proxima: ' + (r.next_run_date||'-') + '</div>' +
+            '</div>' +
+            '<div class="rec-card-actions">' +
+                '<button onclick="showRecForm(recRules.find(x=>x.id===' + r.id + '))" title="Editar">✏️</button>' +
+                '<button onclick="toggleRecActive(' + r.id + ',' + !r.active + ')" title="' + (r.active?'Desativar':'Ativar') + '">' + (r.active?'⏸':'▶️') + '</button>' +
+                '<button onclick="deleteRecRule(' + r.id + ')" title="Excluir">🗑️</button>' +
+            '</div></div>';
+    }).join('');
+}
+
+
+async function saveRecRule(e) {
+    e.preventDefault();
+    const editId = document.getElementById('recEditId').value;
+    const freq = document.getElementById('recFrequency').value;
+    let targetDay = null;
+    if (freq === 'mensal') targetDay = parseInt(document.getElementById('recTargetDay').value) || 20;
+    else if (freq === 'semanal') targetDay = parseInt(document.getElementById('recWeekday').value) || 1;
+
+    const body = {
+        client: document.getElementById('recClient').value,
+        title: document.getElementById('recTitleInput').value,
+        assignee_id: parseInt(document.getElementById('recAssignee').value),
+        priority: document.getElementById('recPriority').value,
+        frequency: freq,
+        target_day: targetDay,
+        interval_days: freq === 'personalizado' ? (parseInt(document.getElementById('recInterval').value) || 30) : null,
+        days_before: parseInt(document.getElementById('recDaysBefore').value) || 0,
+        end_date: document.getElementById('recEndDate').value || null,
+        value: document.getElementById('recValue').value || null,
+        contract_link: document.getElementById('recContract').value || null
+    };
+
+    try {
+        const url = editId ? '/api/recurring/' + editId : '/api/recurring';
+        const method = editId ? 'PUT' : 'POST';
+        const r = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        if (!r.ok) { const err = await r.json(); alert(err.error || 'Erro'); return; }
+        showRecList();
+        loadRecRules();
+        showToast(editId ? 'Regra atualizada!' : 'Regra criada!');
+    } catch(e) { alert('Erro: ' + e.message); }
+}
+
+async function deleteRecRule(id) {
+    if (!confirm('Excluir esta regra de recorrencia?')) return;
+    try {
+        await fetch('/api/recurring/' + id, { method: 'DELETE' });
+        loadRecRules();
+        showToast('Regra excluida');
+    } catch(e) { alert('Erro: ' + e.message); }
+}
+
+async function toggleRecActive(id, active) {
+    try {
+        await fetch('/api/recurring/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ active }) });
+        loadRecRules();
+        showToast(active ? 'Regra ativada' : 'Regra desativada');
+    } catch(e) { alert('Erro: ' + e.message); }
+}
+
+// Auto-check recurring on page load
+async function checkRecurringTasks() {
+    try {
+        const r = await fetch('/api/recurring/check', { method: 'POST' });
+        if (!r.ok) return;
+        const result = await r.json();
+        if (result.created > 0) {
+            showToast(result.created + ' tarefa(s) recorrente(s) criada(s)!');
+            if (typeof loadAllTasks === 'function') loadAllTasks();
+            else if (typeof renderBoard === 'function') renderBoard();
+        }
+    } catch(e) { console.error('Erro ao verificar recorrencias:', e); }
+}
+
+// Run auto-check after login
+(function() {
+    const origInit = window.afterLoginInit;
+    window.afterLoginInit = function() {
+        if (origInit) origInit();
+        setTimeout(checkRecurringTasks, 1500);
+    };
+    // If already logged in, check now
+    if (document.querySelector('.board')) setTimeout(checkRecurringTasks, 2000);
 })();
 </script>
 </body>
