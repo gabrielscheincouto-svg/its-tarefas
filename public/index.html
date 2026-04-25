@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ITS Tarefas</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2amily=Inter:wght@300;400;500;600;700;800;900&display=swap');
   :root{--bg:#F5F7FA;--white:#FFFFFF;--light:#F0F2F5;--hover:#E8EBF0;--accent:#25EAB4;--accent-light:rgba(37,234,180,0.10);--accent-lt:rgba(37,234,180,0.10);--green:#10B981;--green-bg:rgba(16,185,129,0.10);--green-bd:rgba(16,185,129,0.30);--yellow:#F59E0B;--yellow-bg:rgba(245,158,11,0.10);--yellow-bd:rgba(245,158,11,0.30);--red:#EF4444;--red-bg:rgba(239,68,68,0.08);--red-bd:rgba(239,68,68,0.30);--purple:#6366F1;--text:#1F2937;--text2:#6B7280;--muted:#9CA3AF;--border:#E5E7EB;--border-lt:#F3F4F6;--radius:14px;--radius-sm:10px;--shadow:0 1px 3px rgba(0,0,0,0.08);}
   body{background:var(--bg);color:var(--text);}
   input,textarea,select{background:var(--light)!important;color:var(--text)!important;border-color:var(--border)!important;}
@@ -392,7 +392,7 @@
   }
 
 /* ===== RECURRING TASKS ===== */
-.c-recurring { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:1100; display:flex; align-items:center; justify-content:center; }
+.c-recurring { position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:1100; display:flex; align-items:center; justify-content:center; }
 .rec-box { background:var(--card); border-radius:14px; width:680px; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 12px 40px rgba(0,0,0,.3); }
 .rec-header { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); }
 .rec-header h2 { font-size:1.15rem; font-weight:700; color:var(--text); }
@@ -1510,7 +1510,7 @@ function renderTickets(){
   const body = document.getElementById('ticketsBody');
   if(allTickets.length === 0){ body.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">Nenhum chamado ainda.</div>'; return; }
   const stLabels={aberto:'Aberto',em_andamento:'Em Andamento',resolvido:'Resolvido',fechado:'Fechado'};
-  body.innerHTML = allTickets.map(t => {
+  body.innerHTML = allTickets.filter(t => t.status !== 'fechado').map(t => {
     const userOpts = users.map(u=>`<option value="${u.id}" ${t.assigned_to===u.id?'selected':''}>${escH(u.name)}</option>`).join('');
     return `<div style="background:var(--light);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;border-left:4px solid ${t.status==='aberto'?'#e67700':t.status==='resolvido'?'#2b8a3e':'#3b5bdb'};">
       <div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:6px;">
