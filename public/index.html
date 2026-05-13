@@ -183,7 +183,7 @@
   .add-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
 
   /* Modal */
-  .overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;}
+  .overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;}
   .overlay.active{display:flex;}
   .modal{background:var(--white);border-radius:20px;padding:32px;width:550px;max-width:90vw;max-height:90vh;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,0.1);}
   .modal h2{font-size:20px;font-weight:800;margin-bottom:24px;color:var(--text);}
@@ -1775,7 +1775,7 @@ async function saveRecRule(e) {
         if (!r.ok) { const err = await r.json(); alert(err.error || 'Erro'); return; }
         showRecList();
         loadRecRules();
-        showToast(editId ? 'Regra atualizada!' : 'Regra criada!');
+        toast(editId ? 'Regra atualizada!' : 'Regra criada!', '', 'success');
     } catch(e) { alert('Erro: ' + e.message); }
 }
 
@@ -1784,7 +1784,7 @@ async function deleteRecRule(id) {
     try {
         await fetch('/api/recurring/' + id, { method: 'DELETE' });
         loadRecRules();
-        showToast('Regra excluida');
+        toast('Regra excluida!', '', 'success');
     } catch(e) { alert('Erro: ' + e.message); }
 }
 
@@ -1792,7 +1792,7 @@ async function toggleRecActive(id, active) {
     try {
         await fetch('/api/recurring/' + id, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ active }) });
         loadRecRules();
-        showToast(active ? 'Regra ativada' : 'Regra desativada');
+        toast(active ? 'Regra ativada!' : 'Regra pausada!', '', active ? 'success' : 'warning');
     } catch(e) { alert('Erro: ' + e.message); }
 }
 
@@ -1803,7 +1803,7 @@ async function checkRecurringTasks() {
         if (!r.ok) return;
         const result = await r.json();
         if (result.created > 0) {
-            showToast(result.created + ' tarefa(s) recorrente(s) criada(s)!');
+            toast(result.created + ' tarefa(s) recorrente(s) criada(s)!', 'Criadas automaticamente', 'success');
             if (typeof loadAllTasks === 'function') loadAllTasks();
             else if (typeof renderBoard === 'function') renderBoard();
         }
