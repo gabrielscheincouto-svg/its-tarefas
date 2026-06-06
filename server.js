@@ -856,11 +856,20 @@ app.post('/api/client/tickets', requireClient, async (req, res) => {
 
 // Client lists their own tickets
 app.get('/api/client/tickets', requireClient, async (req, res) => {
-    const { data } = await supabase.from('tickets').select('*').eq('client_id', req.session.clientId).order('created_at', { ascending: false });
-    res.json(data || []);
+    // Get current client's company
+    const { data: me } = await supabase.from('clients').select('company').eq('id', req.session.clientId).limit(1);
+    if (!me || !me[0]) return res.json([]);
+    // Get all client IDs from the same company
+    const { data: companyClients } = await supabase.from('clients').select('id, name').eq('company', me[0].company);
+    const clientIds = (companyClients || []).map(c => c.id);
+    const clientMap = {};
+    (companyClients || []).forEach(c => { clientMap[c.id] = c.name; });
+    // Get all tickets from those clients
+    const { data } = await supabase.from('tickets').select('*').in('client_id', clientIds).order('created_at', { ascending: false });
+    // Add creator name to each ticket
+    const tickets = (data || []).map(t => ({ ...t, created_by: clientMap[t.client_id] || 'Desconhecido' }));
+    res.json(tickets);
 });
-
-// ===== ADMIN: manage clients =====
 app.get('/api/clients', requireAuth, requireAdmin, async (req, res) => {
     const { data } = await supabase.from('clients').select('id, name, company, email, username, active, created_at').order('name');
     res.json(data || []);
@@ -1060,7 +1069,7 @@ app.get('/api/processos', requireAuth, async (req, res) => {
 app.post('/api/processos', requireAuth, async (req, res) => {
     try {
         const { numero, cliente, tipo, vara, responsavel_id, prazo, observacoes, status } = req.body;
-        if (!numero || !cliente) return res.status(400).json({ error: 'NÃºmero e cliente sÃ£o obrigatÃ³rios' });
+        if (!numero || !cliente) return res.status(400).json({ error: 'NÃÂºmero e cliente sÃÂ£o obrigatÃÂ³rios' });
         const row = {
             numero, cliente,
             tipo: tipo || null,
