@@ -10,16 +10,17 @@
 body{background:#F5F7FA;color:#1F2937;min-height:100vh;}
 
 /* Header */
-.hdr{background:#FFFFFF;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #E5E7EB;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.hdr{background:#111827;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;}
 .logo{display:flex;align-items:center;gap:12px;}
 .li{width:42px;height:42px;background:linear-gradient(135deg,#25EAB4,#10B981);border-radius:12px;color:white;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;box-shadow:0 2px 8px rgba(37,234,180,0.3);}
-.ln{font-weight:800;font-size:17px;color:#1F2937;letter-spacing:-0.3px;}
+.ln{font-weight:800;font-size:17px;color:#FFFFFF;letter-spacing:-0.3px;}
 .ls{font-size:10px;color:#9CA3AF;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-top:2px;}
 .uinfo{display:flex;align-items:center;gap:14px;}
-.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#25EAB4,#10B981);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-.uname{font-size:13px;font-weight:700;color:#1F2937;}
-.logout{background:#F3F4F6;border:1px solid #E5E7EB;padding:8px 16px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;color:#6B7280;transition:all 0.2s;}
-.logout:hover{border-color:#25EAB4;color:#25EAB4;background:#F0FDF9;}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#25EAB4,#10B981);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,0.2);}
+.uname{font-size:13px;font-weight:700;color:#FFFFFF;}
+.ucompany{font-size:10px;color:#9CA3AF;display:block;}
+.logout{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);padding:8px 16px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;color:#9CA3AF;transition:all 0.2s;font-family:inherit;}
+.logout:hover{border-color:#25EAB4;color:#25EAB4;background:rgba(37,234,180,0.08);}
 
 /* App Layout */
 .app-layout{display:flex;min-height:calc(100vh - 65px);}
@@ -27,7 +28,8 @@ body{background:#F5F7FA;color:#1F2937;min-height:100vh;}
 /* Sidebar */
 .sidebar{width:280px;background:#FFFFFF;border-right:1px solid #E5E7EB;padding:0;display:flex;flex-direction:column;flex-shrink:0;}
 .sb-section{padding:20px;border-bottom:1px solid #F3F4F6;}
-.sb-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#9CA3AF;margin-bottom:14px;}
+.sb-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:#9CA3AF;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.sb-title svg{flex-shrink:0;}
 .sb-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .stat-item{text-align:center;background:#F9FAFB;border-radius:10px;padding:14px 8px;border:1px solid #F3F4F6;}
 .stat-number{display:block;font-size:22px;font-weight:800;color:#1F2937;}
@@ -36,7 +38,7 @@ body{background:#F5F7FA;color:#1F2937;min-height:100vh;}
 .recent-item{padding:10px 12px;background:#F9FAFB;border-radius:8px;border:1px solid #F3F4F6;cursor:pointer;transition:all 0.15s;}
 .recent-item:hover{background:#F0FDF9;border-color:#25EAB4;}
 .recent-item .ri-title{font-size:12px;font-weight:600;color:#1F2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.recent-item .ri-date{font-size:10px;color:#9CA3AF;margin-top:3px;}
+.recent-item .ri-meta{font-size:10px;color:#9CA3AF;margin-top:3px;display:flex;justify-content:space-between;}
 .sb-tip{font-size:12px;color:#6B7280;line-height:1.6;}
 .sb-help{background:#F0FDF9;border-left:3px solid #25EAB4;}
 
@@ -45,7 +47,9 @@ body{background:#F5F7FA;color:#1F2937;min-height:100vh;}
 
 /* Cards */
 .card{background:#FFFFFF;border:1px solid #E5E7EB;border-radius:16px;padding:28px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
-.card h2{font-size:16px;margin-bottom:18px;font-weight:700;color:#1F2937;letter-spacing:-0.2px;}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+.card-header svg{color:#25EAB4;flex-shrink:0;}
+.card h2{font-size:16px;font-weight:700;color:#1F2937;letter-spacing:-0.2px;}
 
 /* Form */
 .fg{margin-bottom:16px;}
@@ -57,9 +61,16 @@ textarea{min-height:100px;resize:vertical;}
 select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;}
 
 /* Button */
-.btn{background:linear-gradient(135deg,#25EAB4,#10B981);color:white;border:none;padding:13px 24px;border-radius:11px;font-weight:700;cursor:pointer;font-size:13px;letter-spacing:0.3px;box-shadow:0 3px 10px rgba(37,234,180,0.25);transition:all 0.2s;}
+.btn{background:linear-gradient(135deg,#25EAB4,#10B981);color:white;border:none;padding:13px 24px;border-radius:11px;font-weight:700;cursor:pointer;font-size:13px;letter-spacing:0.3px;box-shadow:0 3px 10px rgba(37,234,180,0.25);transition:all 0.2s;font-family:inherit;display:inline-flex;align-items:center;gap:8px;}
 .btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(37,234,180,0.35);}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn svg{flex-shrink:0;}
+
+/* Filter tabs */
+.filter-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.ftab{padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid #E5E7EB;background:#F9FAFB;color:#6B7280;transition:all 0.15s;font-family:inherit;}
+.ftab:hover{border-color:#25EAB4;color:#1BC99A;}
+.ftab.active{background:#25EAB4;color:#fff;border-color:#25EAB4;}
 
 /* Tickets */
 .tks{display:flex;flex-direction:column;gap:14px;}
@@ -76,11 +87,20 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .tk-st.em_andamento{background:rgba(99,102,241,0.10);color:#6366F1;}
 .tk-st.resolvido{background:rgba(16,185,129,0.10);color:#10B981;}
 .tk-st.fechado{background:#F3F4F6;color:#9CA3AF;}
+.tk-dept{font-size:10px;font-weight:700;color:#25EAB4;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;display:flex;align-items:center;gap:4px;}
+.tk-creator{font-size:10px;font-weight:600;color:#6366F1;background:rgba(99,102,241,0.08);padding:2px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px;margin-bottom:6px;}
 .tk-desc{font-size:13px;color:#6B7280;margin-bottom:10px;line-height:1.6;}
 .tk-resp{background:#F0FDF9;padding:14px;border-radius:10px;border:1px solid rgba(37,234,180,0.2);margin-top:12px;font-size:12px;color:#374151;line-height:1.6;}
 .tk-resp strong{display:block;color:#10B981;margin-bottom:6px;text-transform:uppercase;font-size:10px;letter-spacing:1px;font-weight:800;}
 .tk-date{font-size:10px;color:#9CA3AF;margin-top:10px;}
 .empty{text-align:center;padding:48px;color:#9CA3AF;font-size:14px;}
+
+/* Toast */
+.toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#FFFFFF;border:1.5px solid #10B981;border-radius:12px;padding:12px 16px;box-shadow:0 4px 12px rgba(0,0,0,0.08);animation:tIn .3s;max-width:320px;}
+.toast.error{border-color:#EF4444;}
+.toast-t{font-size:13px;font-weight:700;color:#1F2937;}
+@keyframes tIn{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:none;}}
 
 /* Responsive */
 @media(max-width:768px){
@@ -97,14 +117,18 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 </head>
 <body>
 <div class="hdr">
-  <div class="logo"><div class="li">ITS</div><div><div class="ln">Portal do Cliente</div><div class="ls">Atendimento e SolicitaÃ§Ãµes</div></div></div>
-  <div class="uinfo"><div class="user-avatar" id="uavatar"></div><span class="uname" id="uname"></span><button class="logout" onclick="logout()">Sair &#8594;</button></div>
+  <div class="logo"><div class="li">ITS</div><div><div class="ln">Portal do Cliente</div><div class="ls">Atendimento e Solicita&#231;&#245;es</div></div></div>
+  <div class="uinfo">
+    <div class="user-avatar" id="uavatar"></div>
+    <div><span class="uname" id="uname"></span><span class="ucompany" id="ucompany"></span></div>
+    <button class="logout" onclick="logout()">Sair &#8594;</button>
+  </div>
 </div>
 
 <div class="app-layout">
   <aside class="sidebar">
     <div class="sb-section">
-      <div class="sb-title">ð Resumo</div>
+      <div class="sb-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Resumo</div>
       <div class="sb-stats" id="statsPanel">
         <div class="stat-item"><span class="stat-number" id="statOpen">0</span><span class="stat-label">Abertos</span></div>
         <div class="stat-item"><span class="stat-number" id="statProgress">0</span><span class="stat-label">Em Andamento</span></div>
@@ -112,93 +136,153 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       </div>
     </div>
     <div class="sb-section">
-      <div class="sb-title">â° Recentes</div>
+      <div class="sb-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Recentes</div>
       <div id="recentList" class="recent-list"></div>
     </div>
     <div class="sb-section sb-help">
-      <div class="sb-title">ð¡ Dica</div>
-      <p class="sb-tip">Descreva sua solicitaÃ§Ã£o com o mÃ¡ximo de detalhes para agilizar o atendimento.</p>
+      <div class="sb-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Dica</div>
+      <p class="sb-tip">Descreva sua solicita&#231;&#227;o com o m&#225;ximo de detalhes para agilizar o atendimento.</p>
     </div>
   </aside>
 
   <main class="main-content">
     <div class="card">
-      <h2>ð Abrir Novo Chamado</h2>
-      <div class="fg"><label>Destinat&aacute;rio / Setor</label><select id="dept"><option value="">Selecione o setor...</option><option value="fiscal">Fiscal</option><option value="contabil">Cont&aacute;bil</option><option value="societario">Societ&aacute;rio</option><option value="rh">RH / Departamento Pessoal</option><option value="financeiro">Financeiro</option><option value="geral">Geral / Outros</option></select></div>
-      <div class="fg"><label>Assunto</label><input type="text" id="subj" placeholder="Ex: D&uacute;vida sobre contrato" required></div>
+      <div class="card-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#25EAB4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        <h2>Abrir Novo Chamado</h2>
+      </div>
+      <div class="fg"><label>Destinat&#225;rio / Setor</label><select id="dept"><option value="">Selecione o setor...</option><option value="fiscal">Fiscal</option><option value="contabil">Cont&#225;bil</option><option value="societario">Societ&#225;rio</option><option value="rh">RH / Departamento Pessoal</option><option value="financeiro">Financeiro</option><option value="geral">Geral / Outros</option></select></div>
+      <div class="fg"><label>Assunto</label><input type="text" id="subj" placeholder="Ex: D&#250;vida sobre contrato" required></div>
       <div class="fg"><label>Prioridade</label><select id="prio"><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></div>
-      <div class="fg"><label>Descri&ccedil;&atilde;o</label><textarea id="desc" placeholder="Descreva sua solicita&ccedil;&atilde;o..."></textarea></div>
-      <button class="btn" id="btnSend" onclick="sendTicket()">Enviar Chamado</button>
+      <div class="fg"><label>Descri&#231;&#227;o</label><textarea id="desc" placeholder="Descreva sua solicita&#231;&#227;o..."></textarea></div>
+      <button class="btn" id="btnSend" onclick="sendTicket()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Enviar Chamado</button>
     </div>
 
     <div class="card">
-      <h2>ð Meus Chamados</h2>
+      <div class="card-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#25EAB4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <h2>Chamados da Empresa</h2>
+      </div>
+      <div class="filter-tabs" id="filterTabs">
+        <button class="ftab active" onclick="filterTickets('todos')">Todos</button>
+        <button class="ftab" onclick="filterTickets('aberto')">Abertos</button>
+        <button class="ftab" onclick="filterTickets('em_andamento')">Em Andamento</button>
+        <button class="ftab" onclick="filterTickets('resolvido')">Resolvidos</button>
+      </div>
       <div class="tks" id="list"></div>
     </div>
   </main>
 </div>
 
+<div class="toast-container" id="toasts"></div>
+
 <script>
-async function init(){
-  const r=await fetch('/api/client/me');
-  if(!r.ok){window.location.href='/cliente/login';return;}
-  const me=await r.json();
-  document.getElementById('uname').textContent=me.name;
-  const avatar=document.getElementById('uavatar');
-  if(avatar) avatar.textContent=me.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+let allTickets = [];
+let currentFilter = 'todos';
+
+function toast(title, type) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (type === 'error' ? ' error' : '');
+  el.innerHTML = '<div class="toast-t">' + title + '</div>';
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+async function init() {
+  const r = await fetch('/api/client/me');
+  if (!r.ok) { window.location.href = '/cliente/login'; return; }
+  const me = await r.json();
+  document.getElementById('uname').textContent = me.name;
+  document.getElementById('ucompany').textContent = me.company || '';
+  const avatar = document.getElementById('uavatar');
+  if (avatar) avatar.textContent = me.name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
   loadTickets();
 }
-async function loadTickets(){
-  const r=await fetch('/api/client/tickets');
-  const tks=await r.json();
-  const el=document.getElementById('list');
-  if(tks.length===0){el.innerHTML='<div class="empty">Nenhum chamado ainda. Abra um acima!</div>';return;}
-  el.innerHTML=tks.map(t=>{
-    const stLabels={aberto:'Aberto',em_andamento:'Em Andamento',resolvido:'Resolvido',fechado:'Fechado'};
-    const deptLabels={fiscal:'Fiscal',contabil:'ContÃ¡bil',societario:'SocietÃ¡rio',rh:'RH / Dept. Pessoal',financeiro:'Financeiro',geral:'Geral'};
-    const d=new Date(t.created_at).toLocaleString('pt-BR');
-    return `<div class="tk ${t.status}">
-      <div class="tk-top"><div class="tk-sub">${esc(t.subject)}</div><span class="tk-st ${t.status}">${stLabels[t.status]||t.status}</span></div>
-      ${t.department?`<div style="font-size:10px;font-weight:700;color:#25EAB4;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;">ð ${deptLabels[t.department]||t.department}</div>`:''}
-      <div class="tk-desc">${esc(t.description)}</div>
-      ${t.response?`<div class="tk-resp"><strong>Resposta da equipe:</strong>${esc(t.response)}</div>`:''}
-      <div class="tk-date">Criado em ${d} &bull; #${t.id}</div>
-    </div>`;
+
+async function loadTickets() {
+  const r = await fetch('/api/client/tickets');
+  allTickets = await r.json();
+  renderTickets();
+  updateStats();
+  updateRecent();
+}
+
+function renderTickets() {
+  var tks = currentFilter === 'todos' ? allTickets : allTickets.filter(function(t) { return t.status === currentFilter; });
+  var el = document.getElementById('list');
+  if (tks.length === 0) { el.innerHTML = '<div class="empty">Nenhum chamado encontrado.</div>'; return; }
+  var stLabels = { aberto: 'Aberto', em_andamento: 'Em Andamento', resolvido: 'Resolvido', fechado: 'Fechado' };
+  var deptLabels = { fiscal: 'Fiscal', contabil: 'Contábil', societario: 'Societário', rh: 'RH / Dept. Pessoal', financeiro: 'Financeiro', geral: 'Geral' };
+  el.innerHTML = tks.map(function(t) {
+    var d = new Date(t.created_at).toLocaleString('pt-BR');
+    var creator = t.created_by ? '<span class="tk-creator"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' + esc(t.created_by) + '</span> ' : '';
+    var dept = t.department ? '<div class="tk-dept"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>' + (deptLabels[t.department] || t.department) + '</div>' : '';
+    var resp = t.response ? '<div class="tk-resp"><strong>Resposta da equipe:</strong>' + esc(t.response) + '</div>' : '';
+    return '<div class="tk ' + t.status + '">' +
+      '<div class="tk-top"><div class="tk-sub">' + esc(t.subject) + '</div><span class="tk-st ' + t.status + '">' + (stLabels[t.status] || t.status) + '</span></div>' +
+      creator + dept +
+      '<div class="tk-desc">' + esc(t.description) + '</div>' +
+      resp +
+      '<div class="tk-date">Criado em ' + d + ' • #' + t.id + '</div>' +
+    '</div>';
   }).join('');
+}
 
-  // Update stats
-  const open = tks.filter(t=>t.status==='aberto').length;
-  const progress = tks.filter(t=>t.status==='em_andamento').length;
-  const resolved = tks.filter(t=>t.status==='resolvido'||t.status==='fechado').length;
-  const so=document.getElementById('statOpen');if(so)so.textContent=open;
-  const sp=document.getElementById('statProgress');if(sp)sp.textContent=progress;
-  const sr=document.getElementById('statResolved');if(sr)sr.textContent=resolved;
+function filterTickets(status) {
+  currentFilter = status;
+  var tabs = document.querySelectorAll('.ftab');
+  tabs.forEach(function(tab) { tab.classList.remove('active'); });
+  event.target.classList.add('active');
+  renderTickets();
+}
 
-  // Update recent list
-  const recentEl=document.getElementById('recentList');
-  if(recentEl){
-    const recent=tks.slice(0,3);
-    recentEl.innerHTML=recent.length?recent.map(t=>{
-      const d=new Date(t.created_at).toLocaleDateString('pt-BR');
-      return '<div class="recent-item"><div class="ri-title">'+esc(t.subject)+'</div><div class="ri-date">'+d+'</div></div>';
-    }).join(''):'<div style="font-size:12px;color:#9CA3AF;">Nenhum chamado</div>';
+function updateStats() {
+  var open = allTickets.filter(function(t) { return t.status === 'aberto'; }).length;
+  var progress = allTickets.filter(function(t) { return t.status === 'em_andamento'; }).length;
+  var resolved = allTickets.filter(function(t) { return t.status === 'resolvido' || t.status === 'fechado'; }).length;
+  var so = document.getElementById('statOpen'); if (so) so.textContent = open;
+  var sp = document.getElementById('statProgress'); if (sp) sp.textContent = progress;
+  var sr = document.getElementById('statResolved'); if (sr) sr.textContent = resolved;
+}
+
+function updateRecent() {
+  var recentEl = document.getElementById('recentList');
+  if (!recentEl) return;
+  var recent = allTickets.slice(0, 4);
+  if (!recent.length) { recentEl.innerHTML = '<div style="font-size:12px;color:#9CA3AF;">Nenhum chamado</div>'; return; }
+  recentEl.innerHTML = recent.map(function(t) {
+    var d = new Date(t.created_at).toLocaleDateString('pt-BR');
+    var stLabels = { aberto: 'Aberto', em_andamento: 'Em Andamento', resolvido: 'Resolvido', fechado: 'Fechado' };
+    return '<div class="recent-item"><div class="ri-title">' + esc(t.subject) + '</div><div class="ri-meta"><span>' + d + '</span><span style="font-weight:700;color:' + (t.status === 'aberto' ? '#D97706' : t.status === 'em_andamento' ? '#6366F1' : '#10B981') + '">' + (stLabels[t.status] || t.status) + '</span></div></div>';
+  }).join('');
+}
+
+function esc(s) { return (s || '').replace(/[&<>"']/g, function(c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+
+async function sendTicket() {
+  var dept = document.getElementById('dept').value;
+  var subj = document.getElementById('subj').value.trim();
+  var desc = document.getElementById('desc').value.trim();
+  var prio = document.getElementById('prio').value;
+  if (!dept) { toast('Selecione o setor destinatário', 'error'); return; }
+  if (!subj || !desc) { toast('Preencha assunto e descrição', 'error'); return; }
+  var btn = document.getElementById('btnSend');
+  btn.disabled = true; btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Enviando...';
+  var r = await fetch('/api/client/tickets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ subject: subj, description: desc, priority: prio, department: dept }) });
+  btn.disabled = false; btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Enviar Chamado';
+  if (r.ok) {
+    document.getElementById('dept').value = '';
+    document.getElementById('subj').value = '';
+    document.getElementById('desc').value = '';
+    toast('Chamado enviado com sucesso!');
+    loadTickets();
+  } else {
+    var d = await r.json();
+    toast(d.error || 'Erro ao enviar', 'error');
   }
 }
-function esc(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
-async function sendTicket(){
-  const dept=document.getElementById('dept').value;
-  const subj=document.getElementById('subj').value.trim();
-  const desc=document.getElementById('desc').value.trim();
-  const prio=document.getElementById('prio').value;
-  if(!dept){alert('Selecione o setor destinatÃ¡rio');return;}
-  if(!subj||!desc){alert('Preencha assunto e descriÃ§Ã£o');return;}
-  const btn=document.getElementById('btnSend');btn.disabled=true;btn.textContent='Enviando...';
-  const r=await fetch('/api/client/tickets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:subj,description:desc,priority:prio,department:dept})});
-  btn.disabled=false;btn.textContent='Enviar Chamado';
-  if(r.ok){document.getElementById('dept').value='';document.getElementById('subj').value='';document.getElementById('desc').value='';loadTickets();}
-  else{const d=await r.json();alert(d.error||'Erro');}
-}
-async function logout(){await fetch('/api/client/logout',{method:'POST'});window.location.href='/cliente/login';}
+
+async function logout() { await fetch('/api/client/logout', { method: 'POST' }); window.location.href = '/cliente/login'; }
 init();
 </script>
 </body>
